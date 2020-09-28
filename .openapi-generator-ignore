@@ -1,0 +1,5 @@
+server/controllers/*
+openapi_server/controllers/*
+test/*
+tests/*
+*.txt

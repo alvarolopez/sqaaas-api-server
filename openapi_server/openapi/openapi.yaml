@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  description: API for the Software and Service Quality Assurance as a Service (SQAaaS)
+    component.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: SQAaaS API
+  version: 0.1.0
+servers:
+- description: Optional server description, e.g. Main (production) server
+  url: http://api.sqaaas.eosc-synergy.eu/v1
+- description: Optional server description, e.g. Internal staging server for testing
+  url: http://staging-api.sqaaas.eosc-synergy.eu
+paths:
+  /pipeline:
+    post:
+      description: |
+        Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
+      operationId: add_pipeline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline'
+        required: true
+        x-body-name: body
+      responses:
+        "201":
+          description: Created
+      summary: Creates a pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
+  /pipeline/{pipeline_id}:
+    get:
+      operationId: get_pipeline_by_id
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pipeline'
+          description: Successful operation
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Find pipeline by ID
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+components:
+  schemas:
+    Pipeline:
+      example:
+        sqa_criteria:
+        - qc_style
+        - qc_style
+        id: 0
+      properties:
+        id:
+          type: integer
+        sqa_criteria:
+          items:
+            enum:
+            - qc_style
+            - qc_unit
+            - qc_functional
+            - qc_security
+            - qc_doc
+            type: string
+          type: array
+      type: object
