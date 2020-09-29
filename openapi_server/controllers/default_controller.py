@@ -1,4 +1,5 @@
-import shelve
+import json
+import os
 import uuid
 
 from typing import List, Dict
@@ -8,20 +9,29 @@ from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
 
 
-DB_FILE = 'sqaaas.shelve'
+DB_FILE = 'sqaaas.json'
 
 
 def load_db_content():
-    return shelve.open(DB_FILE)
+    data = {}
+    if os.path.exists(DB_FILE) and os.stat(DB_FILE).st_size > 0:
+        with open(DB_FILE) as db:
+            data = json.load(db)
+    return data
 
 
-def store_db_content(d):
-    with shelve.open(DB_FILE) as db:
-        db = d
-        print('### Pipeline DB ##')
-        for k in db.keys():
-            print(k, db[k])
-        print('##################')
+def store_db_content(data):
+    with open(DB_FILE, 'w') as db:
+        json.dump(data, db)
+    print_db_content()
+
+
+def print_db_content():
+    data = load_db_content()
+    print('### Pipeline DB ##')
+    for k in data.keys():
+        print(k, data[k])
+    print('##################')
 
 
 async def add_pipeline(request: web.Request, body) -> web.Response:
@@ -42,10 +52,21 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     return web.Response(status=200)
 
 
+async def get_pipelines(request: web.Request) -> web.Response:
+    """Gets pipeline IDs.
+
+    Returns the list of IDs for the defined pipelines.
+
+    """
+    db = load_db_content()
+    # return web.Response(status=200)
+    return web.json_response(db)
+
+
 async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     """Find pipeline by ID
 
-    
+
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: int

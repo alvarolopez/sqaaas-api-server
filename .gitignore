@@ -84,5 +84,6 @@ tags
 # Persistent undo
 [._]*.un~
 
-# shelve
+# Temporary DBs
+sqaaas.json
 *.shelve.db

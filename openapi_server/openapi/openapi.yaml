@@ -14,6 +14,21 @@ servers:
   url: http://staging-api.sqaaas.eosc-synergy.eu
 paths:
   /pipeline:
+    get:
+      description: |
+        Returns the list of IDs for the defined pipelines.
+      operationId: get_pipelines
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Pipeline'
+                type: array
+          description: Successful operation
+      summary: Gets pipeline IDs.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     post:
       description: |
         Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
