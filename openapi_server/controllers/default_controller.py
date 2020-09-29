@@ -8,12 +8,15 @@ from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
 
 
+DB_FILE = 'sqaaas.shelve'
+
+
 def load_db_content():
-    return shelve.open('sqaaas')
+    return shelve.open(DB_FILE)
 
 
 def store_db_content(d):
-    with shelve.open('db.shelve') as db:
+    with shelve.open(DB_FILE) as db:
         db = d
         print('### Pipeline DB ##')
         for k in db.keys():
