@@ -59,8 +59,7 @@ async def get_pipelines(request: web.Request) -> web.Response:
 
     """
     db = load_db_content()
-    # return web.Response(status=200)
-    return web.json_response(db)
+    return web.json_response(db, status=200)
 
 
 async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
