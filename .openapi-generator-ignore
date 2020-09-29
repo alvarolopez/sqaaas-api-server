@@ -3,3 +3,4 @@ openapi_server/controllers/*
 test/*
 tests/*
 *.txt
+.gitignore
