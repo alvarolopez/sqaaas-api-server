@@ -60,13 +60,13 @@ components:
   schemas:
     Pipeline:
       example:
+        pipeline_id: pipeline_id
         sqa_criteria:
         - qc_style
         - qc_style
-        id: 0
       properties:
-        id:
-          type: integer
+        pipeline_id:
+          type: string
         sqa_criteria:
           items:
             enum:
