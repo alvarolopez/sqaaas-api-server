@@ -14,23 +14,19 @@ class Pipeline(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, pipeline_id: str=None, sqa_criteria: List[str]=None):
+    def __init__(self, sqa_criteria: List[str]=None):
         """Pipeline - a model defined in OpenAPI
 
-        :param pipeline_id: The pipeline_id of this Pipeline.
         :param sqa_criteria: The sqa_criteria of this Pipeline.
         """
         self.openapi_types = {
-            'pipeline_id': str,
             'sqa_criteria': List[str]
         }
 
         self.attribute_map = {
-            'pipeline_id': 'pipeline_id',
             'sqa_criteria': 'sqa_criteria'
         }
 
-        self._pipeline_id = pipeline_id
         self._sqa_criteria = sqa_criteria
 
     @classmethod
@@ -41,27 +37,6 @@ class Pipeline(Model):
         :return: The Pipeline of this Pipeline.
         """
         return util.deserialize_model(dikt, cls)
-
-    @property
-    def pipeline_id(self):
-        """Gets the pipeline_id of this Pipeline.
-
-
-        :return: The pipeline_id of this Pipeline.
-        :rtype: str
-        """
-        return self._pipeline_id
-
-    @pipeline_id.setter
-    def pipeline_id(self, pipeline_id):
-        """Sets the pipeline_id of this Pipeline.
-
-
-        :param pipeline_id: The pipeline_id of this Pipeline.
-        :type pipeline_id: str
-        """
-
-        self._pipeline_id = pipeline_id
 
     @property
     def sqa_criteria(self):

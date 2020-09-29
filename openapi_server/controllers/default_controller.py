@@ -27,17 +27,16 @@ def store_db_content(d):
 async def add_pipeline(request: web.Request, body) -> web.Response:
     """Creates a pipeline.
 
-    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library. 
+    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
 
-    :param body: 
+    :param body:
     :type body: dict | bytes
 
     """
     pipeline_id = str(uuid.uuid4())
     body = Pipeline.from_dict(body)
-    d = {'id': body.pipeline_id, 'sqa_criteria': body.sqa_criteria}
     db = load_db_content()
-    db[pipeline_id] = d
+    db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
     store_db_content(db)
 
     return web.Response(status=200)
