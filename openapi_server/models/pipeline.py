@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.criterion_with_repo import CriterionWithRepo
 from openapi_server import util
 
 
@@ -14,13 +15,13 @@ class Pipeline(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, sqa_criteria: List[str]=None):
+    def __init__(self, sqa_criteria: List[CriterionWithRepo]=None):
         """Pipeline - a model defined in OpenAPI
 
         :param sqa_criteria: The sqa_criteria of this Pipeline.
         """
         self.openapi_types = {
-            'sqa_criteria': List[str]
+            'sqa_criteria': List[CriterionWithRepo]
         }
 
         self.attribute_map = {
@@ -44,7 +45,7 @@ class Pipeline(Model):
 
 
         :return: The sqa_criteria of this Pipeline.
-        :rtype: List[str]
+        :rtype: List[CriterionWithRepo]
         """
         return self._sqa_criteria
 
@@ -54,14 +55,7 @@ class Pipeline(Model):
 
 
         :param sqa_criteria: The sqa_criteria of this Pipeline.
-        :type sqa_criteria: List[str]
+        :type sqa_criteria: List[CriterionWithRepo]
         """
-        allowed_values = ["qc_style", "qc_unit", "qc_functional", "qc_security", "qc_doc"]  # noqa: E501
-        if not set(sqa_criteria).issubset(set(allowed_values)):
-            raise ValueError(
-                "Invalid values for `sqa_criteria` [{0}], must be a subset of [{1}]"
-                .format(", ".join(map(str, set(sqa_criteria) - set(allowed_values))),
-                        ", ".join(map(str, allowed_values)))
-            )
 
         self._sqa_criteria = sqa_criteria

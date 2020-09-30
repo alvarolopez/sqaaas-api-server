@@ -73,20 +73,63 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
   schemas:
+    Repository:
+      properties:
+        repo:
+          format: uri
+          type: string
+        branch:
+          type: string
+      type: object
+    CriterionWithRepo:
+      example:
+        criterion: qc_style
+        repos:
+        - ""
+        - ""
+      properties:
+        criterion:
+          enum:
+          - qc_style
+          - qc_unit
+          - qc_functional
+          - qc_security
+          - qc_doc
+          type: string
+        repos:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Repository'
+            - properties:
+                container:
+                  type: string
+                build_tool:
+                  enum:
+                  - Tox
+                  - Command
+                  type: string
+              required:
+              - container
+              type: object
+          type: array
+      required:
+      - criterion
+      - repos
+      type: object
     Pipeline:
       example:
         sqa_criteria:
-        - qc_style
-        - qc_style
+        - criterion: qc_style
+          repos:
+          - ""
+          - ""
+        - criterion: qc_style
+          repos:
+          - ""
+          - ""
       properties:
         sqa_criteria:
           items:
-            enum:
-            - qc_style
-            - qc_unit
-            - qc_functional
-            - qc_security
-            - qc_doc
-            type: string
+            $ref: '#/components/schemas/CriterionWithRepo'
           type: array
       type: object
