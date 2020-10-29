@@ -49,6 +49,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/inline_response_201'
           description: Created
+          links:
+            get_pipeline_by_pipeline_id:
+              description: |
+                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              operationId: get_pipeline_by_id
+              parameters:
+                pipeline_id: $response.body#/id
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -62,7 +69,7 @@ paths:
         name: pipeline_id
         required: true
         schema:
-          type: integer
+          type: string
         style: simple
       responses:
         "200":
@@ -89,7 +96,7 @@ paths:
         name: pipeline_id
         required: true
         schema:
-          type: integer
+          type: string
         style: simple
       responses:
         "200":
@@ -114,7 +121,7 @@ paths:
         name: pipeline_id
         required: true
         schema:
-          type: integer
+          type: string
         style: simple
       responses:
         "200":
@@ -139,7 +146,7 @@ paths:
         name: pipeline_id
         required: true
         schema:
-          type: integer
+          type: string
         style: simple
       responses:
         "200":
@@ -224,6 +231,9 @@ components:
           type: string
       type: object
     Commands:
+      example:
+        commands:
+        - mvn checkstyle:check
       properties:
         commands:
           default: []
@@ -233,21 +243,20 @@ components:
             type: string
           type: array
       type: object
-    Tox:
-      properties:
-        tox:
-          $ref: '#/components/schemas/Tox_tox'
-      type: object
     CriterionBuild:
       example:
         criterion: qc_style
         repos:
         - container: checkstyle
           repo_id: simple-java-maven-app
-          build_tool: ""
+          build_tool:
+            commands:
+            - mvn checkstyle:check
         - container: checkstyle
           repo_id: simple-java-maven-app
-          build_tool: ""
+          build_tool:
+            commands:
+            - mvn checkstyle:check
       properties:
         criterion:
           enum:
@@ -279,18 +288,26 @@ components:
           repos:
           - container: checkstyle
             repo_id: simple-java-maven-app
-            build_tool: ""
+            build_tool:
+              commands:
+              - mvn checkstyle:check
           - container: checkstyle
             repo_id: simple-java-maven-app
-            build_tool: ""
+            build_tool:
+              commands:
+              - mvn checkstyle:check
         - criterion: qc_style
           repos:
           - container: checkstyle
             repo_id: simple-java-maven-app
-            build_tool: ""
+            build_tool:
+              commands:
+              - mvn checkstyle:check
           - container: checkstyle
             repo_id: simple-java-maven-app
-            build_tool: ""
+            build_tool:
+              commands:
+              - mvn checkstyle:check
       properties:
         project_repos:
           items:
@@ -411,18 +428,26 @@ components:
             repos:
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
           - criterion: qc_style
             repos:
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
         - project_repos:
           - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
             repo_id: simple-java-maven-app
@@ -435,18 +460,26 @@ components:
             repos:
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
           - criterion: qc_style
             repos:
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
             - container: checkstyle
               repo_id: simple-java-maven-app
-              build_tool: ""
+              build_tool:
+                commands:
+                - mvn checkstyle:check
         composer_data:
           services:
           - image: checkstyle/maven-builder-image
@@ -498,6 +531,7 @@ components:
       properties:
         id:
           example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+          readOnly: true
           type: string
         config_data:
           items:
@@ -513,6 +547,7 @@ components:
         id: id
       properties:
         id:
+          description: UUID identifying the pipeline
           type: string
       type: object
     inline_response_200:
@@ -531,25 +566,13 @@ components:
           format: uri
           type: string
       type: object
-    Tox_tox:
-      properties:
-        testenv:
-          example: cover
-          items:
-            type: string
-          type: array
-        tox_file:
-          default: tox.ini
-          example: tox.ini
-          type: string
-      required:
-      - testenv
-      type: object
     CriterionBuild_repos:
       example:
         container: checkstyle
         repo_id: simple-java-maven-app
-        build_tool: ""
+        build_tool:
+          commands:
+          - mvn checkstyle:check
       properties:
         repo_id:
           example: simple-java-maven-app
@@ -558,9 +581,7 @@ components:
           example: checkstyle
           type: string
         build_tool:
-          anyOf:
-          - $ref: '#/components/schemas/Commands'
-          - $ref: '#/components/schemas/Tox'
+          $ref: '#/components/schemas/Commands'
       required:
       - build_tool
       - container

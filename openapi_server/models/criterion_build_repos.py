@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.any_of_commands_tox import AnyOfCommandsTox
+from openapi_server.models.commands import Commands
 from openapi_server import util
 
 
@@ -15,7 +15,7 @@ class CriterionBuildRepos(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_id: str=None, container: str=None, build_tool: AnyOfCommandsTox=None):
+    def __init__(self, repo_id: str=None, container: str=None, build_tool: Commands=None):
         """CriterionBuildRepos - a model defined in OpenAPI
 
         :param repo_id: The repo_id of this CriterionBuildRepos.
@@ -25,7 +25,7 @@ class CriterionBuildRepos(Model):
         self.openapi_types = {
             'repo_id': str,
             'container': str,
-            'build_tool': AnyOfCommandsTox
+            'build_tool': Commands
         }
 
         self.attribute_map = {
@@ -99,7 +99,7 @@ class CriterionBuildRepos(Model):
 
 
         :return: The build_tool of this CriterionBuildRepos.
-        :rtype: AnyOfCommandsTox
+        :rtype: Commands
         """
         return self._build_tool
 
@@ -109,7 +109,7 @@ class CriterionBuildRepos(Model):
 
 
         :param build_tool: The build_tool of this CriterionBuildRepos.
-        :type build_tool: AnyOfCommandsTox
+        :type build_tool: Commands
         """
         if build_tool is None:
             raise ValueError("Invalid value for `build_tool`, must not be `None`")

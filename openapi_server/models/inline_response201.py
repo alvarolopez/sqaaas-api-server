@@ -42,6 +42,7 @@ class InlineResponse201(Model):
     def id(self):
         """Gets the id of this InlineResponse201.
 
+        UUID identifying the pipeline
 
         :return: The id of this InlineResponse201.
         :rtype: str
@@ -52,6 +53,7 @@ class InlineResponse201(Model):
     def id(self, id):
         """Sets the id of this InlineResponse201.
 
+        UUID identifying the pipeline
 
         :param id: The id of this InlineResponse201.
         :type id: str

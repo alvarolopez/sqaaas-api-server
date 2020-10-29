@@ -17,5 +17,3 @@ from openapi_server.models.pipeline import Pipeline
 from openapi_server.models.repository import Repository
 from openapi_server.models.service_docker_compose import ServiceDockerCompose
 from openapi_server.models.service_docker_compose_volumes import ServiceDockerComposeVolumes
-from openapi_server.models.tox import Tox
-from openapi_server.models.tox_tox import ToxTox
