@@ -68,7 +68,67 @@ async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
 
 
     :param pipeline_id: ID of the pipeline to get
-    :type pipeline_id: int
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
+async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Response:
+    """Gets composer configuration used by the pipeline.
+
+    Returns the content of JePL&#39;s docker-compose.yml file. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
+async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response:
+    """Gets pipeline&#39;s main configuration.
+
+    Returns the content of JePL&#39;s config.yml file. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
+async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
+    """Gets Jenkins pipeline definition used by the pipeline.
+
+    Returns the content of JePL&#39;s Jenkinsfile file. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
+async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
+    """Get pipeline status.
+
+    Obtains the build URL in Jenkins for the given pipeline. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
+async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
+    """Runs pipeline.
+
+    Executes the given pipeline by means of the Jenkins API. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
 
     """
     return web.Response(status=200)
