@@ -5,6 +5,9 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.je_pl_composer import JePLComposer
+from openapi_server.models.je_pl_config import JePLConfig
+from openapi_server.models.je_pl_jenkinsfile import JePLJenkinsfile
 from openapi_server import util
 
 
@@ -14,20 +17,32 @@ class Pipeline(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, sqa_criteria: List[str]=None):
+    def __init__(self, id: str=None, config_data: List[JePLConfig]=None, composer_data: JePLComposer=None, jenkinsfile_data: JePLJenkinsfile=None):
         """Pipeline - a model defined in OpenAPI
 
-        :param sqa_criteria: The sqa_criteria of this Pipeline.
+        :param id: The id of this Pipeline.
+        :param config_data: The config_data of this Pipeline.
+        :param composer_data: The composer_data of this Pipeline.
+        :param jenkinsfile_data: The jenkinsfile_data of this Pipeline.
         """
         self.openapi_types = {
-            'sqa_criteria': List[str]
+            'id': str,
+            'config_data': List[JePLConfig],
+            'composer_data': JePLComposer,
+            'jenkinsfile_data': JePLJenkinsfile
         }
 
         self.attribute_map = {
-            'sqa_criteria': 'sqa_criteria'
+            'id': 'id',
+            'config_data': 'config_data',
+            'composer_data': 'composer_data',
+            'jenkinsfile_data': 'jenkinsfile_data'
         }
 
-        self._sqa_criteria = sqa_criteria
+        self._id = id
+        self._config_data = config_data
+        self._composer_data = composer_data
+        self._jenkinsfile_data = jenkinsfile_data
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Pipeline':
@@ -39,29 +54,85 @@ class Pipeline(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def sqa_criteria(self):
-        """Gets the sqa_criteria of this Pipeline.
+    def id(self):
+        """Gets the id of this Pipeline.
 
 
-        :return: The sqa_criteria of this Pipeline.
-        :rtype: List[str]
+        :return: The id of this Pipeline.
+        :rtype: str
         """
-        return self._sqa_criteria
+        return self._id
 
-    @sqa_criteria.setter
-    def sqa_criteria(self, sqa_criteria):
-        """Sets the sqa_criteria of this Pipeline.
+    @id.setter
+    def id(self, id):
+        """Sets the id of this Pipeline.
 
 
-        :param sqa_criteria: The sqa_criteria of this Pipeline.
-        :type sqa_criteria: List[str]
+        :param id: The id of this Pipeline.
+        :type id: str
         """
-        allowed_values = ["qc_style", "qc_unit", "qc_functional", "qc_security", "qc_doc"]  # noqa: E501
-        if not set(sqa_criteria).issubset(set(allowed_values)):
-            raise ValueError(
-                "Invalid values for `sqa_criteria` [{0}], must be a subset of [{1}]"
-                .format(", ".join(map(str, set(sqa_criteria) - set(allowed_values))),
-                        ", ".join(map(str, allowed_values)))
-            )
 
-        self._sqa_criteria = sqa_criteria
+        self._id = id
+
+    @property
+    def config_data(self):
+        """Gets the config_data of this Pipeline.
+
+
+        :return: The config_data of this Pipeline.
+        :rtype: List[JePLConfig]
+        """
+        return self._config_data
+
+    @config_data.setter
+    def config_data(self, config_data):
+        """Sets the config_data of this Pipeline.
+
+
+        :param config_data: The config_data of this Pipeline.
+        :type config_data: List[JePLConfig]
+        """
+
+        self._config_data = config_data
+
+    @property
+    def composer_data(self):
+        """Gets the composer_data of this Pipeline.
+
+
+        :return: The composer_data of this Pipeline.
+        :rtype: JePLComposer
+        """
+        return self._composer_data
+
+    @composer_data.setter
+    def composer_data(self, composer_data):
+        """Sets the composer_data of this Pipeline.
+
+
+        :param composer_data: The composer_data of this Pipeline.
+        :type composer_data: JePLComposer
+        """
+
+        self._composer_data = composer_data
+
+    @property
+    def jenkinsfile_data(self):
+        """Gets the jenkinsfile_data of this Pipeline.
+
+
+        :return: The jenkinsfile_data of this Pipeline.
+        :rtype: JePLJenkinsfile
+        """
+        return self._jenkinsfile_data
+
+    @jenkinsfile_data.setter
+    def jenkinsfile_data(self, jenkinsfile_data):
+        """Sets the jenkinsfile_data of this Pipeline.
+
+
+        :param jenkinsfile_data: The jenkinsfile_data of this Pipeline.
+        :type jenkinsfile_data: JePLJenkinsfile
+        """
+
+        self._jenkinsfile_data = jenkinsfile_data

@@ -42,6 +42,12 @@ paths:
         x-body-name: body
       responses:
         "201":
+          content:
+            application/json:
+              example:
+                id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
           description: Created
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
@@ -71,22 +77,563 @@ paths:
           description: Pipeline not found
       summary: Find pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/composer:
+    get:
+      description: |
+        Returns the content of JePL's docker-compose.yml file.
+      operationId: get_pipeline_composer
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/JePL_composer'
+                type: array
+          description: Successful operation
+      summary: Gets composer configuration used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config:
+    get:
+      description: |
+        Returns the content of JePL's config.yml file.
+      operationId: get_pipeline_config
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/JePL_config'
+                type: array
+          description: Successful operation
+      summary: Gets pipeline's main configuration.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/jenkinsfile:
+    get:
+      description: |
+        Returns the content of JePL's Jenkinsfile file.
+      operationId: get_pipeline_jenkinsfile
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/JePL_jenkinsfile'
+                type: array
+          description: Successful operation
+      summary: Gets Jenkins pipeline definition used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/run:
+    post:
+      description: |
+        Executes the given pipeline by means of the Jenkins API.
+      operationId: run_pipeline
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+          description: Successful operation
+        "403":
+          description: Unsuccessful operation
+      summary: Runs pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/status:
+    get:
+      description: |
+        Obtains the build URL in Jenkins for the given pipeline.
+      operationId: get_pipeline_status
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+          description: Successful operation
+        "403":
+          description: Unsuccessful operation
+      summary: Get pipeline status.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
   schemas:
-    Pipeline:
+    Repository:
       example:
-        sqa_criteria:
-        - qc_style
-        - qc_style
+        repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+        repo_id: simple-java-maven-app
+        branch: master
       properties:
-        sqa_criteria:
+        repo_id:
+          example: simple-java-maven-app
+          type: string
+        repo_url:
+          example: https://github.com/jenkins-docs/simple-java-maven-app
+          format: uri
+          type: string
+        branch:
+          example: master
+          type: string
+      type: object
+    Commands:
+      properties:
+        commands:
+          default: []
+          example:
+          - mvn checkstyle:check
           items:
-            enum:
-            - qc_style
-            - qc_unit
-            - qc_functional
-            - qc_security
-            - qc_doc
             type: string
           type: array
+      type: object
+    Tox:
+      properties:
+        tox:
+          $ref: '#/components/schemas/Tox_tox'
+      type: object
+    CriterionBuild:
+      example:
+        criterion: qc_style
+        repos:
+        - container: checkstyle
+          repo_id: simple-java-maven-app
+          build_tool: ""
+        - container: checkstyle
+          repo_id: simple-java-maven-app
+          build_tool: ""
+      properties:
+        criterion:
+          enum:
+          - qc_style
+          - qc_unit
+          - qc_functional
+          - qc_security
+          - qc_doc
+          type: string
+        repos:
+          items:
+            $ref: '#/components/schemas/CriterionBuild_repos'
+          type: array
+      required:
+      - criterion
+      - repos
+      type: object
+    JePL_config:
+      example:
+        project_repos:
+        - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+          repo_id: simple-java-maven-app
+          branch: master
+        - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+          repo_id: simple-java-maven-app
+          branch: master
+        sqa_criteria:
+        - criterion: qc_style
+          repos:
+          - container: checkstyle
+            repo_id: simple-java-maven-app
+            build_tool: ""
+          - container: checkstyle
+            repo_id: simple-java-maven-app
+            build_tool: ""
+        - criterion: qc_style
+          repos:
+          - container: checkstyle
+            repo_id: simple-java-maven-app
+            build_tool: ""
+          - container: checkstyle
+            repo_id: simple-java-maven-app
+            build_tool: ""
+      properties:
+        project_repos:
+          items:
+            $ref: '#/components/schemas/Repository'
+          type: array
+        sqa_criteria:
+          items:
+            $ref: '#/components/schemas/CriterionBuild'
+          type: array
+      type: object
+    ServiceDockerCompose:
+      example:
+        image: checkstyle/maven-builder-image
+        hostname: checkstyle-host
+        service_id: checkstyle
+        volumes:
+        - volume_source: ./
+          volume_type: bind
+          volume_target: ./simple-java-app
+        - volume_source: ./
+          volume_type: bind
+          volume_target: ./simple-java-app
+        command: sleep 600000
+      properties:
+        service_id:
+          example: checkstyle
+          type: string
+        image:
+          example: checkstyle/maven-builder-image
+          type: string
+        hostname:
+          example: checkstyle-host
+          type: string
+        volumes:
+          items:
+            $ref: '#/components/schemas/ServiceDockerCompose_volumes'
+          type: array
+        command:
+          example: sleep 600000
+          type: string
+      type: object
+    JePL_composer:
+      example:
+        services:
+        - image: checkstyle/maven-builder-image
+          hostname: checkstyle-host
+          service_id: checkstyle
+          volumes:
+          - volume_source: ./
+            volume_type: bind
+            volume_target: ./simple-java-app
+          - volume_source: ./
+            volume_type: bind
+            volume_target: ./simple-java-app
+          command: sleep 600000
+        - image: checkstyle/maven-builder-image
+          hostname: checkstyle-host
+          service_id: checkstyle
+          volumes:
+          - volume_source: ./
+            volume_type: bind
+            volume_target: ./simple-java-app
+          - volume_source: ./
+            volume_type: bind
+            volume_target: ./simple-java-app
+          command: sleep 600000
+        version: "3.7"
+      properties:
+        version:
+          example: "3.7"
+          type: string
+        services:
+          items:
+            $ref: '#/components/schemas/ServiceDockerCompose'
+          type: array
+      type: object
+    JePL_jenkinsfile:
+      example:
+        stages:
+        - pipeline_config:
+            credentials_id: userpass_dockerhub
+            base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+            base_repository: master
+            jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
+            config_file: ./.sqa/config.yml
+          when:
+            branches:
+            - master
+            - master
+        - pipeline_config:
+            credentials_id: userpass_dockerhub
+            base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+            base_repository: master
+            jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
+            config_file: ./.sqa/config.yml
+          when:
+            branches:
+            - master
+            - master
+      properties:
+        stages:
+          items:
+            $ref: '#/components/schemas/JePL_jenkinsfile_stages'
+          type: array
+      type: object
+    Pipeline:
+      example:
+        config_data:
+        - project_repos:
+          - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+            repo_id: simple-java-maven-app
+            branch: master
+          - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+            repo_id: simple-java-maven-app
+            branch: master
+          sqa_criteria:
+          - criterion: qc_style
+            repos:
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+          - criterion: qc_style
+            repos:
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+        - project_repos:
+          - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+            repo_id: simple-java-maven-app
+            branch: master
+          - repo_url: https://github.com/jenkins-docs/simple-java-maven-app
+            repo_id: simple-java-maven-app
+            branch: master
+          sqa_criteria:
+          - criterion: qc_style
+            repos:
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+          - criterion: qc_style
+            repos:
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+            - container: checkstyle
+              repo_id: simple-java-maven-app
+              build_tool: ""
+        composer_data:
+          services:
+          - image: checkstyle/maven-builder-image
+            hostname: checkstyle-host
+            service_id: checkstyle
+            volumes:
+            - volume_source: ./
+              volume_type: bind
+              volume_target: ./simple-java-app
+            - volume_source: ./
+              volume_type: bind
+              volume_target: ./simple-java-app
+            command: sleep 600000
+          - image: checkstyle/maven-builder-image
+            hostname: checkstyle-host
+            service_id: checkstyle
+            volumes:
+            - volume_source: ./
+              volume_type: bind
+              volume_target: ./simple-java-app
+            - volume_source: ./
+              volume_type: bind
+              volume_target: ./simple-java-app
+            command: sleep 600000
+          version: "3.7"
+        id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+        jenkinsfile_data:
+          stages:
+          - pipeline_config:
+              credentials_id: userpass_dockerhub
+              base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+              base_repository: master
+              jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
+              config_file: ./.sqa/config.yml
+            when:
+              branches:
+              - master
+              - master
+          - pipeline_config:
+              credentials_id: userpass_dockerhub
+              base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+              base_repository: master
+              jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
+              config_file: ./.sqa/config.yml
+            when:
+              branches:
+              - master
+              - master
+      properties:
+        id:
+          example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+          type: string
+        config_data:
+          items:
+            $ref: '#/components/schemas/JePL_config'
+          type: array
+        composer_data:
+          $ref: '#/components/schemas/JePL_composer'
+        jenkinsfile_data:
+          $ref: '#/components/schemas/JePL_jenkinsfile'
+      type: object
+    inline_response_201:
+      example:
+        id: id
+      properties:
+        id:
+          type: string
+      type: object
+    inline_response_200:
+      example:
+        build_url: https://openapi-generator.tech
+      properties:
+        build_url:
+          format: uri
+          type: string
+      type: object
+    inline_response_200_1:
+      example:
+        build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
+      properties:
+        build_url:
+          format: uri
+          type: string
+      type: object
+    Tox_tox:
+      properties:
+        testenv:
+          example: cover
+          items:
+            type: string
+          type: array
+        tox_file:
+          default: tox.ini
+          example: tox.ini
+          type: string
+      required:
+      - testenv
+      type: object
+    CriterionBuild_repos:
+      example:
+        container: checkstyle
+        repo_id: simple-java-maven-app
+        build_tool: ""
+      properties:
+        repo_id:
+          example: simple-java-maven-app
+          type: string
+        container:
+          example: checkstyle
+          type: string
+        build_tool:
+          anyOf:
+          - $ref: '#/components/schemas/Commands'
+          - $ref: '#/components/schemas/Tox'
+      required:
+      - build_tool
+      - container
+      - repo_id
+      type: object
+    ServiceDockerCompose_volumes:
+      example:
+        volume_source: ./
+        volume_type: bind
+        volume_target: ./simple-java-app
+      properties:
+        volume_type:
+          enum:
+          - bind
+          type: string
+        volume_source:
+          example: ./
+          type: string
+        volume_target:
+          example: ./simple-java-app
+          type: string
+      type: object
+    JePL_jenkinsfile_when:
+      example:
+        branches:
+        - master
+        - master
+      properties:
+        branches:
+          items:
+            example: master
+            type: string
+          type: array
+      type: object
+    JePL_jenkinsfile_pipeline_config:
+      example:
+        credentials_id: userpass_dockerhub
+        base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+        base_repository: master
+        jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
+        config_file: ./.sqa/config.yml
+      properties:
+        config_file:
+          example: ./.sqa/config.yml
+          type: string
+        base_repository:
+          example: master
+          type: string
+        base_branch:
+          example: https://github.com/jenkins-docs/simple-java-maven-app
+          type: string
+        credentials_id:
+          example: userpass_dockerhub
+          type: string
+        jepl_validator_docker_image:
+          example: eoscsynergy/jpl-validator:1.1.0
+          type: string
+      type: object
+    JePL_jenkinsfile_stages:
+      example:
+        pipeline_config:
+          credentials_id: userpass_dockerhub
+          base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+          base_repository: master
+          jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
+          config_file: ./.sqa/config.yml
+        when:
+          branches:
+          - master
+          - master
+      properties:
+        when:
+          $ref: '#/components/schemas/JePL_jenkinsfile_when'
+        pipeline_config:
+          $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       type: object
