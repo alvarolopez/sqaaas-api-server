@@ -87,3 +87,4 @@ tags
 # Temporary DBs
 sqaaas.json
 *.shelve.db
+customization.sh
