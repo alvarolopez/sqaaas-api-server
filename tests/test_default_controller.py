@@ -134,7 +134,6 @@ async def test_add_pipeline(client):
     } ],
     "version" : "3.7"
   },
-  "id" : "dd7d8481-81a3-407f-95f0-a2f1cb382a4b",
   "jenkinsfile_data" : {
     "stages" : [ {
       "pipeline_config" : {
