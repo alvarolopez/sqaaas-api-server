@@ -7,7 +7,7 @@ from aiohttp import web
 
 from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
-from openapi_server.controllers.github import GitHubUtils as gh_utils
+from openapi_server.controllers.github import GitHubUtils
 
 
 DB_FILE = 'sqaaas.json'
@@ -51,6 +51,10 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     # The main repo should be selected by the user, provided by the client
     main_repo = body.config_data[0].project_repos[0].repo_id
     main_repo += ".sqaaas"
+
+    with open('.gh_token','r') as f:
+        token = f.read()
+    gh_utils = GitHubUtils(token)
 
     if not gh_utils.get_org_repository(main_repo):
         gh_utils.create_org_repository(main_repo)
