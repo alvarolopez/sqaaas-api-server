@@ -16,7 +16,10 @@ class GitHubUtils(object):
 
     def get_org_repository(org_name='eosc-synergy', repo_name):
         org = self.client.get_organization(org_name)
-        return org.get_repo(repo_name.raw_data)
+        try:
+            return org.get_repo(repo_name.raw_data)
+        except github.GithubException.UnknownObjectException:
+            return False
 
     def create_org_repository(org_name='eosc-synergy', repo_name):
         org = self.client.get_organization(org_name)
