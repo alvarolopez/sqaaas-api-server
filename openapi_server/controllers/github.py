@@ -14,13 +14,13 @@ class GitHubUtils(object):
         """
         self.client = GitHub(self.access_token)
 
-    def get_org_repository(org_name='eosc-synergy', repo_name):
+    def get_org_repository(repo_name, org_name='eosc-synergy'):
         org = self.client.get_organization(org_name)
         try:
             return org.get_repo(repo_name.raw_data)
         except github.GithubException.UnknownObjectException:
             return False
 
-    def create_org_repository(org_name='eosc-synergy', repo_name):
+    def create_org_repository(repo_name, org_name='eosc-synergy'):
         org = self.client.get_organization(org_name)
         repo = org.create_repo(repo_name)
