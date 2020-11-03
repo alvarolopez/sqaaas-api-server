@@ -8,7 +8,7 @@ class GitHubUtils(object):
 
     """
     def __init__(self, access_token=None):
-        """GitHubUtils object
+        """GitHubUtils object definition.
 
         :param access_token: GitHub's access token
         """
