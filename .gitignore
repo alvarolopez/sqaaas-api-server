@@ -88,3 +88,4 @@ tags
 sqaaas.json
 *.shelve.db
 customization.sh
+.gh_token
