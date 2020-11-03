@@ -45,9 +45,10 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     """
     pipeline_id = str(uuid.uuid4())
     body = Pipeline.from_dict(body)
-    db = load_db_content()
-    db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
-    store_db_content(db)
+    print(len(body.config_data))
+    # db = load_db_content()
+    # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
+    # store_db_content(db)
 
     return web.Response(status=200)
 
