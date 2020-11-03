@@ -50,6 +50,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     # FIXME Get the first defined repo as the main one
     # The main repo should be selected by the user, provided by the client
     main_repo = body.config_data[0].project_repos[0].repo_id
+    main_repo += ".sqaaas"
 
     if not gh_utils.get_org_repository(main_repo):
         gh_utils.create_org_repository(main_repo)
