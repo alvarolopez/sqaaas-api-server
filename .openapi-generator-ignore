@@ -1,5 +1,6 @@
 server/controllers/*
 openapi_server/controllers/*
+openapi_server/__init__.py
 test/*
 tests/*
 *.txt

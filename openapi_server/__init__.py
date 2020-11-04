@@ -1,8 +1,19 @@
 import os
 import connexion
+import logging
+
+
+def set_log():
+    logger = logging.getLogger('sqaaas_api')
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
 
 def main():
+    set_log()
     options = {
         "swagger_ui": True
         }
