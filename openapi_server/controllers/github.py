@@ -1,3 +1,5 @@
+import logging
+
 from github import Github
 
 
@@ -12,6 +14,8 @@ class GitHubUtils(object):
         :param access_token: GitHub's access token
         """
         self.client = Github(access_token)
+        self.logger = logging.getLogger('sqaaas_api.github.GitHubUtils')
+        self.logger.info('Hello from GitHubUtils class')
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         org = self.client.get_organization(org_name)
