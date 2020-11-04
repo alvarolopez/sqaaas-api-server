@@ -1,6 +1,7 @@
 import logging
 
 from github import Github
+from github.GithubException import UnknownObjectException
 
 
 class GitHubUtils(object):
@@ -20,8 +21,8 @@ class GitHubUtils(object):
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         org = self.client.get_organization(org_name)
         try:
-            return org.get_repo(repo_name.raw_data)
-        except github.GithubException.UnknownObjectException:
+            return org.get_repo(repo_name).raw_data
+        except UnknownObjectException:
             return False
 
     def create_org_repository(self, repo_name, org_name='eosc-synergy'):
