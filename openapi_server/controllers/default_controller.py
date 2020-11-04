@@ -53,7 +53,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     main_repo += ".sqaaas"
 
     with open('.gh_token','r') as f:
-        token = f.read()
+        token = f.read().strip()
     gh_utils = GitHubUtils(token)
 
     if not gh_utils.get_org_repository(main_repo):
