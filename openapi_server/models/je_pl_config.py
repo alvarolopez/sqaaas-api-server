@@ -5,8 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_build import CriterionBuild
-from openapi_server.models.repository import Repository
+from openapi_server.models.je_pl_config_config import JePLConfigConfig
 from openapi_server import util
 
 
@@ -16,24 +15,28 @@ class JePLConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, project_repos: List[Repository]=None, sqa_criteria: List[CriterionBuild]=None):
+    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, Dict[str, object]]=None, environment: Dict[str, str]=None):
         """JePLConfig - a model defined in OpenAPI
 
-        :param project_repos: The project_repos of this JePLConfig.
+        :param config: The config of this JePLConfig.
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
+        :param environment: The environment of this JePLConfig.
         """
         self.openapi_types = {
-            'project_repos': List[Repository],
-            'sqa_criteria': List[CriterionBuild]
+            'config': JePLConfigConfig,
+            'sqa_criteria': Dict[str, Dict[str, object]],
+            'environment': Dict[str, str]
         }
 
         self.attribute_map = {
-            'project_repos': 'project_repos',
-            'sqa_criteria': 'sqa_criteria'
+            'config': 'config',
+            'sqa_criteria': 'sqa_criteria',
+            'environment': 'environment'
         }
 
-        self._project_repos = project_repos
+        self._config = config
         self._sqa_criteria = sqa_criteria
+        self._environment = environment
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'JePLConfig':
@@ -45,25 +48,25 @@ class JePLConfig(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def project_repos(self):
-        """Gets the project_repos of this JePLConfig.
+    def config(self):
+        """Gets the config of this JePLConfig.
 
 
-        :return: The project_repos of this JePLConfig.
-        :rtype: List[Repository]
+        :return: The config of this JePLConfig.
+        :rtype: JePLConfigConfig
         """
-        return self._project_repos
+        return self._config
 
-    @project_repos.setter
-    def project_repos(self, project_repos):
-        """Sets the project_repos of this JePLConfig.
+    @config.setter
+    def config(self, config):
+        """Sets the config of this JePLConfig.
 
 
-        :param project_repos: The project_repos of this JePLConfig.
-        :type project_repos: List[Repository]
+        :param config: The config of this JePLConfig.
+        :type config: JePLConfigConfig
         """
 
-        self._project_repos = project_repos
+        self._config = config
 
     @property
     def sqa_criteria(self):
@@ -71,7 +74,7 @@ class JePLConfig(Model):
 
 
         :return: The sqa_criteria of this JePLConfig.
-        :rtype: List[CriterionBuild]
+        :rtype: Dict[str, Dict[str, object]]
         """
         return self._sqa_criteria
 
@@ -81,7 +84,28 @@ class JePLConfig(Model):
 
 
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
-        :type sqa_criteria: List[CriterionBuild]
+        :type sqa_criteria: Dict[str, Dict[str, object]]
         """
 
         self._sqa_criteria = sqa_criteria
+
+    @property
+    def environment(self):
+        """Gets the environment of this JePLConfig.
+
+
+        :return: The environment of this JePLConfig.
+        :rtype: Dict[str, str]
+        """
+        return self._environment
+
+    @environment.setter
+    def environment(self, environment):
+        """Sets the environment of this JePLConfig.
+
+
+        :param environment: The environment of this JePLConfig.
+        :type environment: Dict[str, str]
+        """
+
+        self._environment = environment

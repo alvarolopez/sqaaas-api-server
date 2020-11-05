@@ -2,18 +2,15 @@
 
 # import models into model package
 from openapi_server.models.commands import Commands
-from openapi_server.models.criterion_build import CriterionBuild
-from openapi_server.models.criterion_build_repos import CriterionBuildRepos
+from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response2001 import InlineResponse2001
 from openapi_server.models.inline_response201 import InlineResponse201
 from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server.models.je_pl_config import JePLConfig
+from openapi_server.models.je_pl_config_config import JePLConfigConfig
 from openapi_server.models.je_pl_jenkinsfile import JePLJenkinsfile
 from openapi_server.models.je_pl_jenkinsfile_pipeline_config import JePLJenkinsfilePipelineConfig
 from openapi_server.models.je_pl_jenkinsfile_stages import JePLJenkinsfileStages
 from openapi_server.models.je_pl_jenkinsfile_when import JePLJenkinsfileWhen
 from openapi_server.models.pipeline import Pipeline
-from openapi_server.models.repository import Repository
-from openapi_server.models.service_docker_compose import ServiceDockerCompose
-from openapi_server.models.service_docker_compose_volumes import ServiceDockerComposeVolumes
