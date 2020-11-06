@@ -89,9 +89,9 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
     jk_utils.scan_organization()
     # FIXME here we need to wait for scan to finish
-    org_jobs = jk_utils.get_job_info('eosc-synergy-org')[0]
-    repo_urls = [job['url'] for job in org_jobs['jobs'] if job['name'] == main_repo]
-    logging.info('Jenkins job URLs for defined repositories: %s' % repo_urls)
+    org_jobs = jk_utils.get_job_info('eosc-synergy-org')
+    repo_urls = [job['url'] for job in org_jobs['jobs'] if job['name'] == repo_name]
+    logger.info('Jenkins job URLs for defined repositories: %s' % repo_urls)
 
     # db = load_db_content()
     # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
