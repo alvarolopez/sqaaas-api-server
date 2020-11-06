@@ -63,26 +63,24 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         config_json, composer_json)
     jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile_data)
 
-    # FIXME Get the first defined repo as the main one
-    # The main repo should be selected by the user, provided by the client
-    main_repo = list(config_json['config']['project_repos'])[0]
-    main_repo += ".sqaaas"
-    logger.debug('Using GitHub repository name: %s' % main_repo)
+    for repo in list(config_json['config']['project_repos']):
+        repo_name = repo + ".sqaaas"
+        logger.debug('Using GitHub repository name: %s' % repo_name)
 
-    # Create the repository in GitHub & push JePL files
-    with open('.gh_token','r') as f:
-        token = f.read().strip()
-    logger.debug('Loading GitHub token from local filesystem')
-    gh_utils = GitHubUtils(token)
+        # Create the repository in GitHub & push JePL files
+        with open('.gh_token','r') as f:
+            token = f.read().strip()
+        logger.debug('Loading GitHub token from local filesystem')
+        gh_utils = GitHubUtils(token)
 
-    gh_utils.create_org_repository(main_repo)
-    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', main_repo)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % main_repo)
-    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', main_repo)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % main_repo)
-    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', main_repo)
-    logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % main_repo)
-    logger.info('GitHub repository <%s> created with the JePL file structure' % main_repo)
+        gh_utils.create_org_repository(repo_name)
+        gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo_name)
+        logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo_name)
+        gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo_name)
+        logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo_name)
+        gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo_name)
+        logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % repo_name)
+        logger.info('GitHub repository <%s> created with the JePL file structure' % repo_name)
 
     # Trigger GitHub organization re-scan in Jenkins
     with open('.jk_token','r') as f:
