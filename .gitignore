@@ -84,8 +84,12 @@ tags
 # Persistent undo
 [._]*.un~
 
-# Temporary DBs
+## SQAaaS ##
+# temporary DBs
 sqaaas.json
 *.shelve.db
+# scripts
 customization.sh
+# tokens
 .gh_token
+.jk_token
