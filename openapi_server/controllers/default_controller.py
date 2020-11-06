@@ -10,9 +10,13 @@ from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jepl import JePLUtils
+from openapi_server.controllers.jenkins import JenkinsUtils
 
 
 DB_FILE = 'sqaaas.json'
+JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
+JENKINS_USER = 'orviz'
+
 logger = logging.getLogger('sqaaas_api.controller')
 
 
@@ -70,7 +74,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         token = f.read().strip()
     logger.debug('Loading GitHub token from local filesystem')
     gh_utils = GitHubUtils(token)
-    
+
     gh_utils.create_org_repository(main_repo)
     gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', main_repo)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % main_repo)
@@ -79,6 +83,17 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', main_repo)
     logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % main_repo)
     logger.info('GitHub repository <%s> created with the JePL file structure' % main_repo)
+
+    # Trigger GitHub organization re-scan in Jenkins
+    with open('.jk_token','r') as f:
+        jk_token = f.read().strip()
+    logger.debug('Loading Jenkins token from local filesystem')
+    jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+    jk_utils.scan_organization()
+    # FIXME here we need to wait for scan to finish
+    org_jobs = jk_utils.get_job_info('eosc-synergy-org')[0]
+    repo_urls = [job['url'] for job in org_jobs['jobs'] if job['name'] == main_repo]
+    logging.info('Jenkins job URLs for defined repositories: %s' % repo_urls)
 
     # db = load_db_content()
     # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
