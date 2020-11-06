@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import uuid
+import time
 
 from typing import List, Dict
 from aiohttp import web
@@ -63,9 +64,12 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         config_json, composer_json)
     jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile_data)
 
-    for repo in list(config_json['config']['project_repos']):
+    project_repos = list(config_json['config']['project_repos'])
+    project_repos_org = []
+    for repo in project_repos:
         repo_name = repo + ".sqaaas"
         logger.debug('Using GitHub repository name: %s' % repo_name)
+        project_repos_org.append(repo_name)
 
         # Create the repository in GitHub & push JePL files
         with open('.gh_token','r') as f:
@@ -88,9 +92,12 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     logger.debug('Loading Jenkins token from local filesystem')
     jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
     jk_utils.scan_organization()
-    # FIXME here we need to wait for scan to finish
-    org_jobs = jk_utils.get_job_info('eosc-synergy-org')
-    repo_urls = [job['url'] for job in org_jobs['jobs'] if job['name'] == repo_name]
+    repo_urls = []
+    while len(repo_urls) != len(project_repos_org):
+        repo_urls = jk_utils.get_job_url(project_repos_org)
+        logger.debug('Waiting for scan organization process to finish..')
+        time.sleep(1)
+    logger.debug('Scan organization finished')
     logger.info('Jenkins job URLs for defined repositories: %s' % repo_urls)
 
     # db = load_db_content()
