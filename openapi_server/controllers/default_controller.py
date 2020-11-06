@@ -62,15 +62,15 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     main_repo = list(config_json['config']['project_repos'])[0]
     main_repo += ".sqaaas"
 
-    # # Create the repository in GitHub
+    # Create the repository in GitHub & push JePL files
     with open('.gh_token','r') as f:
         token = f.read().strip()
     gh_utils = GitHubUtils(token)
     if not gh_utils.get_org_repository(main_repo):
         gh_utils.create_org_repository(main_repo)
-    # gh_utils.create_file('config.yml', config_yml, 'Update config.yml', main_repo)
-    gh_utils.create_file('docker-compose.yml', composer_yml, 'Update docker-compose.yml', main_repo)
-    gh_utils.create_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', main_repo)
+    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', main_repo)
+    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', main_repo)
+    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', main_repo)
 
     # db = load_db_content()
     # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}

@@ -29,6 +29,17 @@ class GitHubUtils(object):
         org = self.client.get_organization(org_name)
         repo = org.create_repo(repo_name)
 
-    def create_file(self, file_name, file_data, commit_msg, repo_name, org_name='eosc-synergy'):
+    def get_repo_content(self, repo_name, org_name='eosc-synergy', file_name=''):
         repo = self.get_org_repository(repo_name, org_name)
-        repo.create_file(file_name, commit_msg, file_data)
+        try:
+            return repo.get_contents(file_name)
+        except UnknownObjectException:
+            return False
+
+    def push_file(self, file_name, file_data, commit_msg, repo_name, org_name='eosc-synergy'):
+        repo = self.get_org_repository(repo_name, org_name)
+        contents = self.get_repo_content(repo_name, org_name=org_name, file_name=file_name)
+        if contents:
+            repo.update_file(contents.path, commit_msg, file_data, contents.sha)
+        else:
+            repo.create_file(file_name, commit_msg, file_data)
