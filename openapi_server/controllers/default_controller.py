@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 
@@ -12,6 +13,7 @@ from openapi_server.controllers.jepl import JePLUtils
 
 
 DB_FILE = 'sqaaas.json'
+logger = logging.getLogger('sqaaas_api.controller')
 
 
 def load_db_content():
@@ -61,16 +63,25 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     # The main repo should be selected by the user, provided by the client
     main_repo = list(config_json['config']['project_repos'])[0]
     main_repo += ".sqaaas"
+    logger.debug('Using GitHub repository name: %s' % main_repo)
 
     # Create the repository in GitHub & push JePL files
     with open('.gh_token','r') as f:
         token = f.read().strip()
+    logger.debug('Loading GitHub token from local filesystem')
     gh_utils = GitHubUtils(token)
     if not gh_utils.get_org_repository(main_repo):
         gh_utils.create_org_repository(main_repo)
+        logger.debug('GitHub repository <%s> does not exist, creating..' % main_repo)
+    else:
+        logger.debug('GitHub repository <%s> already exists' % main_repo)
     gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', main_repo)
+    logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % main_repo)
     gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', main_repo)
+    logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % main_repo)
     gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', main_repo)
+    logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % main_repo)
+    logger.info('GitHub repository <%s> created with the JePL file structure' % main_repo)
 
     # db = load_db_content()
     # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
