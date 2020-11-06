@@ -49,21 +49,28 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     # body = Pipeline.from_dict(body)
 
     # FIXME For the time being, we just support one config.yml
+    config_json = body['config_data'][0]
+    composer_json = body['composer_data']
+    jenkinsfile_data = body['jenkinsfile_data']
+
     config_yml, composer_yml = JePLUtils.get_sqa_files(
-        body['config_data'][0], body['composer_data'])
-    print(config_yml)
+        config_json, composer_json)
+    jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile_data)
 
     # FIXME Get the first defined repo as the main one
     # The main repo should be selected by the user, provided by the client
-    # main_repo = body.config_data[0].project_repos[0].repo_id
-    # main_repo += ".sqaaas"
+    main_repo = list(config_json['config']['project_repos'])[0]
+    main_repo += ".sqaaas"
 
-    # Create the repository in GitHub
-    # with open('.gh_token','r') as f:
-    #     token = f.read().strip()
-    # gh_utils = GitHubUtils(token)
-    # if not gh_utils.get_org_repository(main_repo):
-    #     gh_utils.create_org_repository(main_repo)
+    # # Create the repository in GitHub
+    with open('.gh_token','r') as f:
+        token = f.read().strip()
+    gh_utils = GitHubUtils(token)
+    if not gh_utils.get_org_repository(main_repo):
+        gh_utils.create_org_repository(main_repo)
+    # gh_utils.create_file('config.yml', config_yml, 'Update config.yml', main_repo)
+    gh_utils.create_file('docker-compose.yml', composer_yml, 'Update docker-compose.yml', main_repo)
+    gh_utils.create_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', main_repo)
 
     # db = load_db_content()
     # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
