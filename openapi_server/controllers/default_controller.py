@@ -70,11 +70,8 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         token = f.read().strip()
     logger.debug('Loading GitHub token from local filesystem')
     gh_utils = GitHubUtils(token)
-    if not gh_utils.get_org_repository(main_repo):
-        gh_utils.create_org_repository(main_repo)
-        logger.debug('GitHub repository <%s> does not exist, creating..' % main_repo)
-    else:
-        logger.debug('GitHub repository <%s> already exists' % main_repo)
+    
+    gh_utils.create_org_repository(main_repo)
     gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', main_repo)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % main_repo)
     gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', main_repo)

@@ -15,8 +15,7 @@ class GitHubUtils(object):
         :param access_token: GitHub's access token
         """
         self.client = Github(access_token)
-        self.logger = logging.getLogger('sqaaas_api.github.GitHubUtils')
-        self.logger.info('Hello from GitHubUtils class')
+        self.logger = logging.getLogger('sqaaas_api.github')
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         org = self.client.get_organization(org_name)
@@ -26,8 +25,12 @@ class GitHubUtils(object):
             return False
 
     def create_org_repository(self, repo_name, org_name='eosc-synergy'):
-        org = self.client.get_organization(org_name)
-        repo = org.create_repo(repo_name)
+        if not self.get_org_repository(repo_name):
+            org = self.client.get_organization(org_name)
+            repo = org.create_repo(repo_name)
+            self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
+        else:
+            self.logger.debug('GitHub repository <%s> already exists' % repo_name)
 
     def get_repo_content(self, repo_name, org_name='eosc-synergy', file_name=''):
         repo = self.get_org_repository(repo_name, org_name)
