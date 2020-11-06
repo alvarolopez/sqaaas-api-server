@@ -44,5 +44,7 @@ class GitHubUtils(object):
         contents = self.get_repo_content(repo_name, org_name=org_name, file_name=file_name)
         if contents:
             repo.update_file(contents.path, commit_msg, file_data, contents.sha)
+            self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
         else:
             repo.create_file(file_name, commit_msg, file_data)
+            self.logger.debug('File <%s> already exist in the repository, updating..' % file_name)
