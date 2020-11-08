@@ -1,6 +1,7 @@
 import logging
 
 from github import Github
+from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
 
 
@@ -36,7 +37,7 @@ class GitHubUtils(object):
         repo = self.get_org_repository(repo_name, org_name)
         try:
             return repo.get_contents(file_name)
-        except UnknownObjectException:
+        except (UnknownObjectException, GithubException):
             return False
 
     def push_file(self, file_name, file_data, commit_msg, repo_name, org_name='eosc-synergy'):
