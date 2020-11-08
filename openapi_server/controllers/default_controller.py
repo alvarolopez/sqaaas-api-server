@@ -97,9 +97,16 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     logger.debug('Scan organization finished')
     logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
 
-    # db = load_db_content()
-    # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
-    # store_db_content(db)
+    db = load_db_content()
+    db[pipeline_id] = {
+        'sqaaas_repo': sqaaas_repo,
+        'data': {
+            'config_data': config_json,
+            'composer_data': composer_json,
+            'jenkinsfile': jenkinsfile_data
+        }
+    }
+    store_db_content(db)
 
     return web.Response(status=200)
 
