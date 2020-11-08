@@ -107,8 +107,9 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         }
     }
     store_db_content(db)
-
-    return web.Response(status=200)
+    
+    r = {'id': pipeline_id}
+    return web.json_response(r, status=200)
 
 
 async def get_pipelines(request: web.Request) -> web.Response:
