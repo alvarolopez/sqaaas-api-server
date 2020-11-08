@@ -64,27 +64,24 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         config_json, composer_json)
     jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile_data)
 
-    project_repos = list(config_json['config']['project_repos'])
-    project_repos_org = []
-    for repo in project_repos:
-        repo_name = repo + ".sqaaas"
-        logger.debug('Using GitHub repository name: %s' % repo_name)
-        project_repos_org.append(repo_name)
+    # FIXME sqaaas_repo must be provided by the user
+    sqaaas_repo = list(config_json['config']['project_repos'])[0] + '.sqaaas'
+    logger.debug('Using GitHub repository name: %s' % sqaaas_repo)
 
-        # Create the repository in GitHub & push JePL files
-        with open('.gh_token','r') as f:
-            token = f.read().strip()
-        logger.debug('Loading GitHub token from local filesystem')
-        gh_utils = GitHubUtils(token)
+    # Create the repository in GitHub & push JePL files
+    with open('.gh_token','r') as f:
+        token = f.read().strip()
+    logger.debug('Loading GitHub token from local filesystem')
+    gh_utils = GitHubUtils(token)
 
-        gh_utils.create_org_repository(repo_name)
-        gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo_name)
-        logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo_name)
-        gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo_name)
-        logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo_name)
-        gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo_name)
-        logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % repo_name)
-        logger.info('GitHub repository <%s> created with the JePL file structure' % repo_name)
+    gh_utils.create_org_repository(sqaaas_repo)
+    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', sqaaas_repo)
+    logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % sqaaas_repo)
+    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', sqaaas_repo)
+    logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % sqaaas_repo)
+    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', sqaaas_repo)
+    logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % sqaaas_repo)
+    logger.info('GitHub repository <%s> created with the JePL file structure' % sqaaas_repo)
 
     # Trigger GitHub organization re-scan in Jenkins
     with open('.jk_token','r') as f:
@@ -92,13 +89,13 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     logger.debug('Loading Jenkins token from local filesystem')
     jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
     jk_utils.scan_organization()
-    repo_urls = []
-    while len(repo_urls) != len(project_repos_org):
-        repo_urls = jk_utils.get_job_url(project_repos_org)
+    sqaaas_repo_url = None
+    while not sqaaas_repo_url:
+        sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
         logger.debug('Waiting for scan organization process to finish..')
         time.sleep(1)
     logger.debug('Scan organization finished')
-    logger.info('Jenkins job URLs for defined repositories: %s' % repo_urls)
+    logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
 
     # db = load_db_content()
     # db[pipeline_id] = {'sqa_criteria': body.sqa_criteria}
