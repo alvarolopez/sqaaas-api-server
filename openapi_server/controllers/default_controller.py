@@ -68,35 +68,6 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     sqaaas_repo = list(config_json['config']['project_repos'])[0] + '.sqaaas'
     logger.debug('Using GitHub repository name: %s' % sqaaas_repo)
 
-    # Create the repository in GitHub & push JePL files
-    with open('.gh_token','r') as f:
-        token = f.read().strip()
-    logger.debug('Loading GitHub token from local filesystem')
-    gh_utils = GitHubUtils(token)
-
-    gh_utils.create_org_repository(sqaaas_repo)
-    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', sqaaas_repo)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % sqaaas_repo)
-    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', sqaaas_repo)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % sqaaas_repo)
-    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', sqaaas_repo)
-    logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % sqaaas_repo)
-    logger.info('GitHub repository <%s> created with the JePL file structure' % sqaaas_repo)
-
-    # Trigger GitHub organization re-scan in Jenkins
-    with open('.jk_token','r') as f:
-        jk_token = f.read().strip()
-    logger.debug('Loading Jenkins token from local filesystem')
-    jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
-    jk_utils.scan_organization()
-    sqaaas_repo_url = None
-    while not sqaaas_repo_url:
-        sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
-        logger.debug('Waiting for scan organization process to finish..')
-        time.sleep(1)
-    logger.debug('Scan organization finished')
-    logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
-
     db = load_db_content()
     db[pipeline_id] = {
         'sqaaas_repo': sqaaas_repo,
@@ -191,4 +162,46 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
+    db = load_db_content()
+    pipeline_data = db[pipeline_id]
+    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+
+    # Create the repository in GitHub & push JePL files
+    with open('.gh_token','r') as f:
+        token = f.read().strip()
+    logger.debug('Loading GitHub token from local filesystem')
+    gh_utils = GitHubUtils(token)
+
+    sqaaas_repo = pipeline_data['sqaaas_repo']
+    repo_data = gh_utils.get_org_repository(sqaaas_repo).raw_data
+    if repo_data:
+        logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
+    else:
+        gh_utils.create_org_repository(sqaaas_repo)
+        gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', sqaaas_repo)
+        logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % sqaaas_repo)
+        gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', sqaaas_repo)
+        logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % sqaaas_repo)
+        gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', sqaaas_repo)
+        logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % sqaaas_repo)
+        logger.info('GitHub repository <%s> created with the JePL file structure' % sqaaas_repo)
+
+    # Trigger GitHub organization re-scan in Jenkins
+    with open('.jk_token','r') as f:
+        jk_token = f.read().strip()
+    logger.debug('Loading Jenkins token from local filesystem')
+    jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+    if jk_utils.get_job_url(sqaaas_repo):
+        logger.warning('Jenkins job <%s> already exists!' % sqaaas_repo)
+        # TODO trigger job!
+    else:
+        jk_utils.scan_organization()
+    # sqaaas_repo_url = None
+    # while not sqaaas_repo_url:
+    #     sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
+    #     logger.debug('Waiting for scan organization process to finish..')
+    #     time.sleep(1)
+    # logger.debug('Scan organization finished')
+    # logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
+
     return web.Response(status=200)
