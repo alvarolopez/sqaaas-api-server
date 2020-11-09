@@ -225,8 +225,15 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
             logger.debug('Waiting for scan organization process to finish..')
             time.sleep(30)
         logger.debug('Scan organization finished')
+    build_no = build_url['number']
     build_url = build_url['url']
     logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (sqaaas_repo, build_url))
+
+    db[pipeline_id]['build'] = {
+        'number': build_no,
+        'url': build_url
+    }
+    store_db_content(db)
 
     r = {'build_url': build_url}
     return web.json_response(r, status=200)
