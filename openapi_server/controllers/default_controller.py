@@ -197,12 +197,13 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         raise NotImplementedError('Trigger job in Jenkins is not currently implemented!')
     else:
         jk_utils.scan_organization()
-    # sqaaas_repo_url = None
-    # while not sqaaas_repo_url:
-    #     sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
-    #     logger.debug('Waiting for scan organization process to finish..')
-    #     time.sleep(1)
-    # logger.debug('Scan organization finished')
-    # logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
+        sqaaas_repo_url = None
+        while not sqaaas_repo_url:
+            sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
+            logger.debug('Waiting for scan organization process to finish..')
+            time.sleep(1)
+        logger.debug('Scan organization finished')
+        logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
 
-    return web.Response(status=200)
+    r = {'build_url': sqaaas_repo_url}
+    return web.json_response(status=200)
