@@ -201,7 +201,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         while not sqaaas_repo_url:
             sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
             logger.debug('Waiting for scan organization process to finish..')
-            time.sleep(1)
+            time.sleep(30)
         logger.debug('Scan organization finished')
         logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
 
