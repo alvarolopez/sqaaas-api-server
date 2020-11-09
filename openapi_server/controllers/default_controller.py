@@ -175,7 +175,8 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
 
     """
     db = load_db_content()
-    pipeline_data = db[pipeline_id]
+    pipeline_name = db[pipeline_id]['sqaaas_repo']
+    pipeline_data = db[pipeline_id]['data']
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
     # Create the repository in GitHub & push JePL files
@@ -184,7 +185,10 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     logger.debug('Loading GitHub token from local filesystem')
     gh_utils = GitHubUtils(token)
 
-    sqaaas_repo = pipeline_data['sqaaas_repo']
+    sqaaas_repo = pipeline_name
+    config_yml = pipeline_data['config_data']
+    compose_yml = pipeline_data['composer_data']
+    jenkinsfile = pipeline_data['jenkinsfile']
     repo_data = gh_utils.get_org_repository(sqaaas_repo)
     if repo_data:
         logger.warning('Repository <%s> already exists!' % repo_data.raw_data['full_name'])
