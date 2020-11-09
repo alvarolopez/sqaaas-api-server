@@ -205,22 +205,25 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         jk_token = f.read().strip()
     logger.debug('Loading Jenkins token from local filesystem')
     jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+
+    build_url = None
     if jk_utils.get_job_url(sqaaas_repo):
         logger.warning('Jenkins job <%s> already exists!' % sqaaas_repo)
-        # TODO trigger job!
-        raise NotImplementedError('Trigger job in Jenkins is not currently implemented!')
+        build_url = jk_utils.build_job(
+            sqaaas_repo,
+            branch_name=repo_data.raw_data['default_branch'])
     else:
         jk_utils.scan_organization()
-        sqaaas_repo_url = None
-        while not sqaaas_repo_url:
-            sqaaas_repo_url = jk_utils.get_job_url(sqaaas_repo)
+        while not build_url:
+            build_url = jk_utils.get_job_url(sqaaas_repo)
             logger.debug('Waiting for scan organization process to finish..')
             time.sleep(30)
         logger.debug('Scan organization finished')
-        logger.info('Jenkins job URL obtained for repository: %s' % sqaaas_repo_url)
+    build_url = build_url['url']
+    logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (sqaaas_repo, build_url))
 
-    r = {'build_url': sqaaas_repo_url}
-    return web.json_response(status=200)
+    r = {'build_url': build_url}
+    return web.json_response(r, status=200)
 
 
 async def create_pull_request(request: web.Request, pipeline_id) -> web.Response:
