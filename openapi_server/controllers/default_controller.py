@@ -60,10 +60,6 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     composer_json = body['composer_data']
     jenkinsfile_data = body['jenkinsfile_data']
 
-    config_yml, composer_yml = JePLUtils.get_sqa_files(
-        config_json, composer_json)
-    jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile_data)
-
     # FIXME sqaaas_repo must be provided by the user
     sqaaas_repo = list(config_json['config']['project_repos'])[0] + '.sqaaas'
     logger.debug('Using GitHub repository name: %s' % sqaaas_repo)
@@ -186,9 +182,11 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     gh_utils = GitHubUtils(token)
 
     sqaaas_repo = pipeline_name
-    config_yml = pipeline_data['config_data']
-    compose_yml = pipeline_data['composer_data']
-    jenkinsfile = pipeline_data['jenkinsfile']
+    config_yml, composer_yml = JePLUtils.get_sqa_files(
+        pipeline_data['config_data'],
+        pipeline_data['composer_data'])
+    jenkinsfile = JePLUtils.get_jenkinsfile(pipeline_data['jenkinsfile'])
+
     repo_data = gh_utils.get_org_repository(sqaaas_repo)
     if repo_data:
         logger.warning('Repository <%s> already exists!' % repo_data.raw_data['full_name'])
