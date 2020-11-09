@@ -194,6 +194,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     if jk_utils.get_job_url(sqaaas_repo):
         logger.warning('Jenkins job <%s> already exists!' % sqaaas_repo)
         # TODO trigger job!
+        raise NotImplementedError('Trigger job in Jenkins is not currently implemented!')
     else:
         jk_utils.scan_organization()
     # sqaaas_repo_url = None
