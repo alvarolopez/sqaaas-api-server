@@ -170,7 +170,20 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    return web.Response(status=200)
+    db = load_db_content()
+    build_url = db[pipeline_id]['build']['url']
+    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+
+    full_job_name = db[pipeline_id]['full_job_name']
+    build_no = db[pipeline_id]['build']['number']
+    build_status = jk_utils.get_build_status(
+        full_job_name,
+        build_no
+    )
+    logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, full_job_name, build_no))
+
+    r = {'build_status': build_status}
+    return web.json_response(r, status=200)
 
 
 async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
@@ -212,7 +225,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         sqaaas_repo,
         repo_data.raw_data['default_branch']
     ])
-    db[pipeline_id]['job_name'] = full_job_name
+    db[pipeline_id]['full_job_name'] = full_job_name
 
     build_url = None
     if jk_utils.get_job_url(sqaaas_repo):

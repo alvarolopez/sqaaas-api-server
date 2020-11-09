@@ -60,3 +60,7 @@ class JenkinsUtils(object):
             queue_data = self.server.get_queue_item(item_no)
 
         return queue_data['executable']
+
+    def get_build_status(self, full_job_name, build_no):
+        self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))
+        return self.server.get_build_info(full_job_name, build_no)['result']
