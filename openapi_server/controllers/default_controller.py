@@ -22,6 +22,17 @@ JENKINS_GITHUB_ORG = 'eosc-synergy-org'
 logger = logging.getLogger('sqaaas_api.controller')
 
 
+with open('.gh_token','r') as f:
+    token = f.read().strip()
+logger.debug('Loading GitHub token from local filesystem')
+gh_utils = GitHubUtils(token)
+
+with open('.jk_token','r') as f:
+    jk_token = f.read().strip()
+logger.debug('Loading Jenkins token from local filesystem')
+jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+
+
 def load_db_content():
     data = {}
     if os.path.exists(DB_FILE) and os.stat(DB_FILE).st_size > 0:
@@ -175,12 +186,6 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     pipeline_name = db[pipeline_id]['sqaaas_repo']
     pipeline_data = db[pipeline_id]['data']
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
-
-    # Create the repository in GitHub & push JePL files
-    with open('.gh_token','r') as f:
-        token = f.read().strip()
-    logger.debug('Loading GitHub token from local filesystem')
-    gh_utils = GitHubUtils(token)
 
     sqaaas_repo = pipeline_name
     config_yml, composer_yml = JePLUtils.get_sqa_files(
