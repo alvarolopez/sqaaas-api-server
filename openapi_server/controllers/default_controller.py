@@ -173,9 +173,9 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     gh_utils = GitHubUtils(token)
 
     sqaaas_repo = pipeline_data['sqaaas_repo']
-    repo_data = gh_utils.get_org_repository(sqaaas_repo).raw_data
+    repo_data = gh_utils.get_org_repository(sqaaas_repo)
     if repo_data:
-        logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
+        logger.warning('Repository <%s> already exists!' % repo_data.raw_data['full_name'])
     else:
         gh_utils.create_org_repository(sqaaas_repo)
         gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', sqaaas_repo)
