@@ -17,6 +17,7 @@ from openapi_server.controllers.jenkins import JenkinsUtils
 DB_FILE = 'sqaaas.json'
 JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
 JENKINS_USER = 'orviz'
+JENKINS_GITHUB_ORG = 'eosc-synergy-org'
 
 logger = logging.getLogger('sqaaas_api.controller')
 
@@ -199,19 +200,19 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', sqaaas_repo)
         logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % sqaaas_repo)
         logger.info('GitHub repository <%s> created with the JePL file structure' % sqaaas_repo)
+        repo_data = gh_utils.get_org_repository(sqaaas_repo)
 
-    # Trigger GitHub organization re-scan in Jenkins
-    with open('.jk_token','r') as f:
-        jk_token = f.read().strip()
-    logger.debug('Loading Jenkins token from local filesystem')
-    jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+    full_job_name = '/'.join([
+        JENKINS_GITHUB_ORG,
+        sqaaas_repo,
+        repo_data.raw_data['default_branch']
+    ])
+    db[pipeline_id]['job_name'] = full_job_name
 
     build_url = None
     if jk_utils.get_job_url(sqaaas_repo):
-        logger.warning('Jenkins job <%s> already exists!' % sqaaas_repo)
-        build_url = jk_utils.build_job(
-            sqaaas_repo,
-            branch_name=repo_data.raw_data['default_branch'])
+        logger.warning('Jenkins job <%s> already exists!' % full_job_name)
+        build_url = jk_utils.build_job(full_job_name)
     else:
         jk_utils.scan_organization()
         while not build_url:

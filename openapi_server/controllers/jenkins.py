@@ -49,10 +49,9 @@ class JenkinsUtils(object):
         jobs = job_info['jobs']
         return [j['url'] for j in jobs if j['name'] == job_name]
 
-    def build_job(self, job_name, branch_name, org_name='eosc-synergy-org'):
-        full_job_name = '/'.join([org_name, job_name, branch_name])
+    def build_job(self, full_job_name):
         item_no = self.server.build_job(full_job_name)
-        self.logger.debug('Triggered job build (item number: %s)' % item_no)
+        self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
         queue_data = {}
         sleep_time_seconds = 15
         while 'executable' not in list(queue_data):
