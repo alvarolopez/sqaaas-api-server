@@ -17,16 +17,18 @@ class Pipeline(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, config_data: List[JePLConfig]=None, composer_data: JePLComposer=None, jenkinsfile_data: JePLJenkinsfile=None):
+    def __init__(self, id: str=None, name: str=None, config_data: List[JePLConfig]=None, composer_data: JePLComposer=None, jenkinsfile_data: JePLJenkinsfile=None):
         """Pipeline - a model defined in OpenAPI
 
         :param id: The id of this Pipeline.
+        :param name: The name of this Pipeline.
         :param config_data: The config_data of this Pipeline.
         :param composer_data: The composer_data of this Pipeline.
         :param jenkinsfile_data: The jenkinsfile_data of this Pipeline.
         """
         self.openapi_types = {
             'id': str,
+            'name': str,
             'config_data': List[JePLConfig],
             'composer_data': JePLComposer,
             'jenkinsfile_data': JePLJenkinsfile
@@ -34,12 +36,14 @@ class Pipeline(Model):
 
         self.attribute_map = {
             'id': 'id',
+            'name': 'name',
             'config_data': 'config_data',
             'composer_data': 'composer_data',
             'jenkinsfile_data': 'jenkinsfile_data'
         }
 
         self._id = id
+        self._name = name
         self._config_data = config_data
         self._composer_data = composer_data
         self._jenkinsfile_data = jenkinsfile_data
@@ -73,6 +77,27 @@ class Pipeline(Model):
         """
 
         self._id = id
+
+    @property
+    def name(self):
+        """Gets the name of this Pipeline.
+
+
+        :return: The name of this Pipeline.
+        :rtype: str
+        """
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        """Sets the name of this Pipeline.
+
+
+        :param name: The name of this Pipeline.
+        :type name: str
+        """
+
+        self._name = name
 
     @property
     def config_data(self):

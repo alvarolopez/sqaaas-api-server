@@ -5,6 +5,7 @@ openapi_server/models/commands.py
 openapi_server/models/creds_user_pass.py
 openapi_server/models/inline_response200.py
 openapi_server/models/inline_response2001.py
+openapi_server/models/inline_response2002.py
 openapi_server/models/inline_response201.py
 openapi_server/models/je_pl_composer.py
 openapi_server/models/je_pl_config.py

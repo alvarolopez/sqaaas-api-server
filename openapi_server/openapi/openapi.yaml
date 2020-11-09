@@ -60,6 +60,26 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
   /pipeline/{pipeline_id}:
+    delete:
+      operationId: delete_pipeline_by_id
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Pipeline successfully deleted
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Delete pipeline by ID
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     get:
       operationId: get_pipeline_by_id
       parameters:
@@ -108,6 +128,32 @@ paths:
                 type: array
           description: Successful operation
       summary: Gets composer configuration used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/compressed_files:
+    get:
+      description: |
+        Obtains the generated JePL files in compressed format.
+      operationId: get_compressed_files
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: ZIP fle with JePL files
+        "403":
+          description: Unsuccessful operation
+      summary: Get JePL files in compressed format.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/config:
     get:
@@ -158,6 +204,33 @@ paths:
                 type: array
           description: Successful operation
       summary: Gets Jenkins pipeline definition used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/pull_request:
+    post:
+      description: |
+        Create a pull request with the generated JePL files.
+      operationId: create_pull_request
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+          description: Successful operation
+        "403":
+          description: Unsuccessful operation
+      summary: Creates pull request with JePL files.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/run:
     post:
@@ -528,6 +601,7 @@ components:
                 type: bind
               command: sleep 600000
           version: "3.7"
+        name: sqaaas-api-spec
         id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
         jenkinsfile_data:
           stages:
@@ -556,6 +630,9 @@ components:
           example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
           readOnly: true
           type: string
+        name:
+          example: sqaaas-api-spec
+          type: string
         config_data:
           items:
             $ref: '#/components/schemas/JePL_config'
@@ -583,9 +660,22 @@ components:
       type: object
     inline_response_200_1:
       example:
-        build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
+        build_status: success
       properties:
-        build_url:
+        build_status:
+          enum:
+          - success
+          - failure
+          - aborted
+          - not_built
+          - unstable
+          type: string
+      type: object
+    inline_response_200_2:
+      example:
+        pull_request_url: https://openapi-generator.tech
+      properties:
+        pull_request_url:
           format: uri
           type: string
       type: object

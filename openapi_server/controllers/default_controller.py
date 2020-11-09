@@ -83,6 +83,18 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     return web.json_response(r, status=200)
 
 
+async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
+    """Delete pipeline by ID
+
+    
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
 async def get_pipelines(request: web.Request) -> web.Response:
     """Gets pipeline IDs.
 
@@ -207,3 +219,29 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
 
     r = {'build_url': sqaaas_repo_url}
     return web.json_response(status=200)
+
+
+async def create_pull_request(request: web.Request, pipeline_id) -> web.Response:
+    """Creates pull request with JePL files.
+
+    Create a pull request with the generated JePL files. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+
+async def get_compressed_files(request: web.Request, pipeline_id) -> web.Response:
+    """Get JePL files in compressed format.
+
+    Obtains the generated JePL files in compressed format. 
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
+
+

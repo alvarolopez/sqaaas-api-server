@@ -5,6 +5,7 @@ from openapi_server.models.commands import Commands
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response2001 import InlineResponse2001
+from openapi_server.models.inline_response2002 import InlineResponse2002
 from openapi_server.models.inline_response201 import InlineResponse201
 from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server.models.je_pl_config import JePLConfig
