@@ -94,7 +94,9 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     jenkinsfile_data = body['jenkinsfile_data']
 
     # FIXME sqaaas_repo must be provided by the user
-    sqaaas_repo = list(config_json['config']['project_repos'])[0] + '.sqaaas'
+    pipeline_name = body['name']
+    sqaaas_repo = pipeline_name + '.sqaaas'
+    logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, sqaaas_repo))
     logger.debug('Using GitHub repository name: %s' % sqaaas_repo)
 
     db = load_db_content()
