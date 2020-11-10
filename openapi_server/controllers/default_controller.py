@@ -1,9 +1,11 @@
 import functools
+import io
 import json
 import logging
 import os
 import uuid
 import time
+from zipfile import ZipFile, ZipInfo
 
 from typing import List, Dict
 from aiohttp import web
@@ -13,6 +15,7 @@ from openapi_server import util
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
+from openapi_server.controllers import utils as ctls_utils
 
 
 DB_FILE = 'sqaaas.json'
@@ -286,6 +289,7 @@ async def create_pull_request(request: web.Request, pipeline_id) -> web.Response
     return web.Response(status=200)
 
 
+@validate_request
 async def get_compressed_files(request: web.Request, pipeline_id) -> web.Response:
     """Get JePL files in compressed format.
 
@@ -295,6 +299,24 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     :type pipeline_id: str
 
     """
-    return web.Response(status=200)
+    db = load_db_content()
+    pipeline_data = db[pipeline_id]['data']
 
+    config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
+        pipeline_data['config_data'],
+        pipeline_data['composer_data'],
+        pipeline_data['jenkinsfile']
+    )
 
+    binary_stream = io.BytesIO()
+    with ZipFile(binary_stream, 'w') as zfile:
+        for t in [('.sqa/config.yml', config_yml),
+                  ('.sqa/docker-compose.yml', composer_yml),
+                  ('Jenkinsfile', jenkinsfile)]:
+            zinfo = ZipInfo(t[0])
+            zfile.writestr(zinfo, t[1].encode('UTF-8'))
+
+    return web.Response(
+        body=binary_stream.getbuffer(),
+        headers={'Content-Encoding':'gzip'},
+        status=200)
