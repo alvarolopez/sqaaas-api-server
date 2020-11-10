@@ -98,7 +98,22 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    return web.Response(status=200)
+    _status = 200
+    try:
+        uuid.UUID(pipeline_id, version=4)
+        db = load_db_content()
+        if pipeline_id in list(db):
+            db.pop(pipeline_id)
+            logger.info('Pipeline <%s> removed from DB' % pipeline_id)
+        else:
+            logger.warning('Pipeline not found!: %s' % pipeline_id)
+            status = 404
+        store_db_content(db)
+    except ValueError:
+        logger.warning('Invalid pipeline ID supplied!: %s' % pipeline_id)
+        status = 400
+
+    return web.Response(status=_status)
 
 
 async def get_pipelines(request: web.Request) -> web.Response:
