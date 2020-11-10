@@ -3,6 +3,7 @@
 # import models into model package
 from openapi_server.models.commands import Commands
 from openapi_server.models.creds_user_pass import CredsUserPass
+from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response2001 import InlineResponse2001
 from openapi_server.models.inline_response2002 import InlineResponse2002

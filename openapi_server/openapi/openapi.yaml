@@ -219,6 +219,19 @@ paths:
         schema:
           type: string
         style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object'
+        content:
+          application/json:
+            schema:
+              properties:
+                repo:
+                  description: URL of the upstream repo
+                  format: uri
+                  type: string
+              type: object
+        required: true
+        x-body-name: body
       responses:
         "200":
           content:
@@ -232,6 +245,7 @@ paths:
           description: Unsuccessful operation
       summary: Creates pull request with JePL files.
       x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
   /pipeline/{pipeline_id}/run:
     post:
       description: |
@@ -285,6 +299,13 @@ paths:
       summary: Get pipeline status.
       x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
+  requestBodies:
+    inline_object:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object'
+      required: true
   schemas:
     Repository:
       additionalProperties:
@@ -669,6 +690,13 @@ components:
           - aborted
           - not_built
           - unstable
+          type: string
+      type: object
+    inline_object:
+      properties:
+        repo:
+          description: URL of the upstream repo
+          format: uri
           type: string
       type: object
     inline_response_200_2:

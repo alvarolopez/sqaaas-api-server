@@ -16,6 +16,7 @@ from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers import utils as ctls_utils
+from openapi_server.models.inline_object import InlineObject
 
 
 DB_FILE = 'sqaaas.json'
@@ -280,15 +281,18 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=200)
 
 
-async def create_pull_request(request: web.Request, pipeline_id) -> web.Response:
+async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Response:
     """Creates pull request with JePL files.
 
     Create a pull request with the generated JePL files.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
+    :param body:
+    :type body: dict | bytes
 
     """
+    body = InlineObject.from_dict(body)
     return web.Response(status=200)
 
 

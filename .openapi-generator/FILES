@@ -3,6 +3,7 @@ openapi_server/models/__init__.py
 openapi_server/models/base_model_.py
 openapi_server/models/commands.py
 openapi_server/models/creds_user_pass.py
+openapi_server/models/inline_object.py
 openapi_server/models/inline_response200.py
 openapi_server/models/inline_response2001.py
 openapi_server/models/inline_response2002.py
