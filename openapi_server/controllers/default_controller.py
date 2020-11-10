@@ -295,6 +295,15 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     # step 1: create the fork
     fork = gh_utils.create_fork(upstream_repo)
     fork_repo = fork['full_name'].lower()
+    # step 2: push JePL files to fork
+    db = load_db_content()
+    pipeline_data = db[pipeline_id]['data']
+    ctls_utils.push_jepl_files(
+        gh_utils,
+        fork_repo,
+        pipeline_data['config_data'],
+        pipeline_data['composer_data'],
+        pipeline_data['jenkinsfile'])
 
     return web.Response(status=200)
 
