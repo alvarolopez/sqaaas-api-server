@@ -230,24 +230,17 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
     sqaaas_repo = pipeline_name
-    config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
-        pipeline_data['config_data'],
-        pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile']
-    )
-
     repo_data = gh_utils.get_org_repository(sqaaas_repo)
     if repo_data:
         logger.warning('Repository <%s> already exists!' % repo_data.raw_data['full_name'])
     else:
         gh_utils.create_org_repository(sqaaas_repo)
-        gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', sqaaas_repo)
-        logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % sqaaas_repo)
-        gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', sqaaas_repo)
-        logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % sqaaas_repo)
-        gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', sqaaas_repo)
-        logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % sqaaas_repo)
-        logger.info('GitHub repository <%s> created with the JePL file structure' % sqaaas_repo)
+        ctls_utils.push_jepl_files(
+            gh_utils,
+            fork_repo,
+            pipeline_data['config_data'],
+            pipeline_data['composer_data'],
+            pipeline_data['jenkinsfile'])
         repo_data = gh_utils.get_org_repository(sqaaas_repo)
 
     full_job_name = '/'.join([

@@ -33,16 +33,16 @@ class GitHubUtils(object):
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
 
-    def get_repo_content(self, repo_name, org_name='eosc-synergy', file_name=''):
-        repo = self.get_org_repository(repo_name, org_name)
+    def get_repo_content(self, repo_name, file_name=''):
+        repo = self.client.get_repo(repo_name)
         try:
             return repo.get_contents(file_name)
         except (UnknownObjectException, GithubException):
             return False
 
-    def push_file(self, file_name, file_data, commit_msg, repo_name, org_name='eosc-synergy'):
-        repo = self.get_org_repository(repo_name, org_name)
-        contents = self.get_repo_content(repo_name, org_name=org_name, file_name=file_name)
+    def push_file(self, file_name, file_data, commit_msg, repo_name):
+        repo = self.client.get_repo(repo_name)
+        contents = self.get_repo_content(repo_name, file_name)
         if contents:
             repo.update_file(contents.path, commit_msg, file_data, contents.sha)
             self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
