@@ -226,10 +226,11 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
     sqaaas_repo = pipeline_name
-    config_yml, composer_yml = JePLUtils.get_sqa_files(
+    config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
         pipeline_data['config_data'],
-        pipeline_data['composer_data'])
-    jenkinsfile = JePLUtils.get_jenkinsfile(pipeline_data['jenkinsfile'])
+        pipeline_data['composer_data'],
+        pipeline_data['jenkinsfile']
+    )
 
     repo_data = gh_utils.get_org_repository(sqaaas_repo)
     if repo_data:
