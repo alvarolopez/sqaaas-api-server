@@ -69,11 +69,8 @@ def store_db_content(data):
 
 
 def print_db_content():
-    data = load_db_content()
-    print('### Pipeline DB ##')
-    for k in data.keys():
-        print(k, data[k])
-    print('##################')
+    db = load_db_content()
+    logger.debug('Current DB content: %s' % list(db))
 
 
 async def add_pipeline(request: web.Request, body) -> web.Response:
