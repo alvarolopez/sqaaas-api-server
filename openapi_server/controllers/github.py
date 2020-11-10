@@ -63,3 +63,23 @@ class GitHubUtils(object):
         fork = org.create_fork(repo)
         self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
         return fork.raw_data
+
+    def create_pull_request(self, upstream_repo_name, repo_name, upstream_branch='master', branch='master'):
+        repo = self.client.get_repo(upstream_repo_name)
+        body = '''
+        Add JePL folder structure via SQAaaS.
+
+        FILES
+          - [x] .sqa/config.yml
+          - [x] .sqa/docker-compose.yml
+          - [x] Jenkinsfile
+        '''
+        _repo_org = repo_name.split('/')[0]
+        head = ':'.join([_repo_org, branch])
+        pr = repo.create_pull(
+            title='Set up JePL in project <%s>' % upstream_repo_name,
+            body=body,
+            head=head,
+            base=upstream_branch)
+        self.logger.debug('Pull request created: %s (head) -> %s (base)' % (head, upstream_branch))
+        return pr.raw_data

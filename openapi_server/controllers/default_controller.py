@@ -295,6 +295,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     # step 1: create the fork
     fork = gh_utils.create_fork(upstream_repo)
     fork_repo = fork['full_name'].lower()
+    fork_default_branch = fork['default_branch']
     # step 2: push JePL files to fork
     db = load_db_content()
     pipeline_data = db[pipeline_id]['data']
@@ -304,8 +305,15 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         pipeline_data['config_data'],
         pipeline_data['composer_data'],
         pipeline_data['jenkinsfile'])
+    # step 3: create PR
+    pr = gh_utils.create_pull_request(
+        upstream_repo,
+        fork_repo,
+        branch=fork_default_branch)
+    pr_url = pr['url']
 
-    return web.Response(status=200)
+    r = {'pull_request_url': pr_url}
+    return web.json_response(r, status=200)
 
 
 @validate_request
