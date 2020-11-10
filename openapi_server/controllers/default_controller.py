@@ -1,3 +1,4 @@
+import functools
 import json
 import logging
 import os
@@ -31,6 +32,26 @@ with open('.jk_token','r') as f:
     jk_token = f.read().strip()
 logger.debug('Loading Jenkins token from local filesystem')
 jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+
+
+def validate_request(f):
+  @functools.wraps(f)
+  def decorated_function(*args, **kwargs):
+    _pipeline_id = kwargs['pipeline_id']
+    try:
+        uuid.UUID(_pipeline_id, version=4)
+        db = load_db_content()
+        if _pipeline_id in list(db):
+            logger.debug('Pipeline <%s> found in DB' % _pipeline_id)
+        else:
+            logger.warning('Pipeline not found!: %s' % _pipeline_id)
+            return web.Response(status=404)
+        store_db_content(db)
+    except ValueError:
+        logger.warning('Invalid pipeline ID supplied!: %s' % _pipeline_id)
+        return web.Response(status=400)
+    return f(*args, **kwargs)
+  return decorated_function
 
 
 def load_db_content():
@@ -91,6 +112,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     return web.json_response(r, status=200)
 
 
+@validate_request
 async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     """Delete pipeline by ID
 
@@ -98,22 +120,11 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    _status = 200
-    try:
-        uuid.UUID(pipeline_id, version=4)
-        db = load_db_content()
-        if pipeline_id in list(db):
-            db.pop(pipeline_id)
-            logger.info('Pipeline <%s> removed from DB' % pipeline_id)
-        else:
-            logger.warning('Pipeline not found!: %s' % pipeline_id)
-            status = 404
-        store_db_content(db)
-    except ValueError:
-        logger.warning('Invalid pipeline ID supplied!: %s' % pipeline_id)
-        status = 400
+    db = load_db_content()
+    db.pop(pipeline_id)
+    logger.info('Pipeline <%s> removed from DB' % pipeline_id)
 
-    return web.Response(status=_status)
+    return web.Response(status=200)
 
 
 async def get_pipelines(request: web.Request) -> web.Response:
@@ -199,6 +210,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
+@validate_request
 async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     """Runs pipeline.
 
