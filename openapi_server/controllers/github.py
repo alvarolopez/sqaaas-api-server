@@ -62,3 +62,4 @@ class GitHubUtils(object):
         repo = self.client.get_repo(upstream_repo_name)
         fork = org.create_fork(repo)
         self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
+        return fork.raw_data

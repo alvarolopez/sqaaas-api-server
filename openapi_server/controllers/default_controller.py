@@ -292,7 +292,9 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     upstream_repo = upstream_repo.lstrip('/')
     logger.debug('Upstream repository path: %s' % upstream_repo)
 
-    gh_utils.create_fork(upstream_repo)
+    # step 1: create the fork
+    fork = gh_utils.create_fork(upstream_repo)
+    fork_repo = fork['full_name'].lower()
 
     return web.Response(status=200)
 
