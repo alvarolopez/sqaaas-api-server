@@ -86,15 +86,13 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         }
     }
     store_db_content(db)
-    
+
     r = {'id': pipeline_id}
     return web.json_response(r, status=200)
 
 
 async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     """Delete pipeline by ID
-
-    
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
@@ -140,7 +138,7 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
 async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response:
     """Gets pipeline&#39;s main configuration.
 
-    Returns the content of JePL&#39;s config.yml file. 
+    Returns the content of JePL&#39;s config.yml file.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
@@ -152,7 +150,7 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
 async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
     """Gets Jenkins pipeline definition used by the pipeline.
 
-    Returns the content of JePL&#39;s Jenkinsfile file. 
+    Returns the content of JePL&#39;s Jenkinsfile file.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
@@ -164,7 +162,7 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
 async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
     """Get pipeline status.
 
-    Obtains the build URL in Jenkins for the given pipeline. 
+    Obtains the build URL in Jenkins for the given pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
@@ -189,7 +187,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     """Runs pipeline.
 
-    Executes the given pipeline by means of the Jenkins API. 
+    Executes the given pipeline by means of the Jenkins API.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
@@ -255,7 +253,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
 async def create_pull_request(request: web.Request, pipeline_id) -> web.Response:
     """Creates pull request with JePL files.
 
-    Create a pull request with the generated JePL files. 
+    Create a pull request with the generated JePL files.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
@@ -267,7 +265,7 @@ async def create_pull_request(request: web.Request, pipeline_id) -> web.Response
 async def get_compressed_files(request: web.Request, pipeline_id) -> web.Response:
     """Get JePL files in compressed format.
 
-    Obtains the generated JePL files in compressed format. 
+    Obtains the generated JePL files in compressed format.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
