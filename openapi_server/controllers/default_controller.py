@@ -9,6 +9,7 @@ from zipfile import ZipFile, ZipInfo
 
 from typing import List, Dict
 from aiohttp import web
+from urllib.parse import urlparse
 
 from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
@@ -281,6 +282,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=200)
 
 
+@validate_request
 async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Response:
     """Creates pull request with JePL files.
 
@@ -293,6 +295,12 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
 
     """
     body = InlineObject.from_dict(body)
+    upstream_repo = urlparse(body.repo).path
+    upstream_repo = upstream_repo.lstrip('/')
+    logger.debug('Upstream repository path: %s' % upstream_repo)
+
+    gh_utils.create_fork(upstream_repo)
+
     return web.Response(status=200)
 
 
