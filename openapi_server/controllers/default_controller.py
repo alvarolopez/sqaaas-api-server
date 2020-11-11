@@ -20,7 +20,7 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
 
-DB_FILE = 'sqaaas.json'
+DB_FILE = '/sqaaas/sqaaas.json'
 JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
 JENKINS_USER = 'orviz'
 JENKINS_GITHUB_ORG = 'eosc-synergy-org'
@@ -28,12 +28,12 @@ JENKINS_GITHUB_ORG = 'eosc-synergy-org'
 logger = logging.getLogger('sqaaas_api.controller')
 
 
-with open('.gh_token','r') as f:
+with open('/sqaaas/.gh_token','r') as f:
     token = f.read().strip()
 logger.debug('Loading GitHub token from local filesystem')
 gh_utils = GitHubUtils(token)
 
-with open('.jk_token','r') as f:
+with open('/sqaaas/.jk_token','r') as f:
     jk_token = f.read().strip()
 logger.debug('Loading Jenkins token from local filesystem')
 jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
