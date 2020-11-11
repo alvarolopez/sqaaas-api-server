@@ -51,7 +51,6 @@ def validate_request(f):
         else:
             logger.warning('Pipeline not found!: %s' % _pipeline_id)
             return web.Response(status=404)
-        store_db_content(db)
     except ValueError:
         logger.warning('Invalid pipeline ID supplied!: %s' % _pipeline_id)
         return web.Response(status=400)
