@@ -21,6 +21,7 @@ from openapi_server.models.inline_object import InlineObject
 
 
 DB_FILE = '/sqaaas/sqaaas.json'
+GITHUB_ORG = 'EOSC-Synergy'
 JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
 JENKINS_USER = 'orviz'
 JENKINS_GITHUB_ORG = 'eosc-synergy-org'
@@ -96,13 +97,14 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
 
     # FIXME sqaaas_repo must be provided by the user
     pipeline_name = body['name']
-    sqaaas_repo = pipeline_name + '.sqaaas'
-    logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, sqaaas_repo))
-    logger.debug('Using GitHub repository name: %s' % sqaaas_repo)
+    pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
+    # sqaaas_repo = pipeline_name + '.sqaaas'
+    logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
+    logger.debug('Using GitHub repository name: %s' % pipeline_repo)
 
     db = load_db_content()
     db[pipeline_id] = {
-        'sqaaas_repo': sqaaas_repo,
+        'pipeline_repo': pipeline_repo,
         'data': {
             'config_data': config_json,
             'composer_data': composer_json,
