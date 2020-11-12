@@ -25,14 +25,6 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def create_org_repository(self, repo_name, org_name='eosc-synergy'):
-        if not self.get_org_repository(repo_name):
-            org = self.client.get_organization(org_name)
-            repo = org.create_repo(repo_name)
-            self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
-        else:
-            self.logger.debug('GitHub repository <%s> already exists' % repo_name)
-
     def get_repo_content(self, repo_name, file_name=''):
         repo = self.client.get_repo(repo_name)
         try:
@@ -83,3 +75,21 @@ class GitHubUtils(object):
             base=upstream_branch)
         self.logger.debug('Pull request created: %s (head) -> %s (base)' % (head, upstream_branch))
         return pr.raw_data
+
+    def get_repository(self, repo_name):
+        try:
+            repo = self.client.get_repo(repo_name)
+            self.logger.debug('Repository <%s> found' % repo_name)
+            return repo.raw_data
+        except UnknownObjectException:
+            self.logger.debug('Repository <%s> not found!' % repo_name)
+            return False
+
+    def create_org_repository(self, repo_name):
+        _org_name, _repo_name = repo_name.split('/')
+        if not self.get_org_repository(repo_name):
+            org = self.client.get_organization(_org_name)
+            repo = org.create_repo(_repo_name)
+            self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
+        else:
+            self.logger.debug('GitHub repository <%s> already exists' % repo_name)

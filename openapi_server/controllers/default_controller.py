@@ -25,6 +25,8 @@ GITHUB_ORG = 'EOSC-Synergy'
 JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
 JENKINS_USER = 'orviz'
 JENKINS_GITHUB_ORG = 'eosc-synergy-org'
+JENKINS_SCAN_TIMEOUT_SECONDS = 150
+JENKINS_SCAN_CHECK_SECONDS = 30
 
 logger = logging.getLogger('sqaaas_api.controller')
 
@@ -98,7 +100,6 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     # FIXME sqaaas_repo must be provided by the user
     pipeline_name = body['name']
     pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
-    # sqaaas_repo = pipeline_name + '.sqaaas'
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
 
@@ -226,45 +227,51 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
 
     """
     db = load_db_content()
-    pipeline_name = db[pipeline_id]['sqaaas_repo']
+    pipeline_repo = db[pipeline_id]['pipeline_repo']
     pipeline_data = db[pipeline_id]['data']
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
-    sqaaas_repo = pipeline_name
-    repo_data = gh_utils.get_org_repository(sqaaas_repo)
+    repo_data = gh_utils.get_repository(pipeline_repo)
     if repo_data:
-        logger.warning('Repository <%s> already exists!' % repo_data.raw_data['full_name'])
+        logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
     else:
-        gh_utils.create_org_repository(sqaaas_repo)
-        ctls_utils.push_jepl_files(
-            gh_utils,
-            sqaaas_repo,
-            pipeline_data['config_data'],
-            pipeline_data['composer_data'],
-            pipeline_data['jenkinsfile'])
-        repo_data = gh_utils.get_org_repository(sqaaas_repo)
+        gh_utils.create_org_repository(pipeline_repo)
+    ctls_utils.push_jepl_files(
+        gh_utils,
+        pipeline_repo,
+        pipeline_data['config_data'],
+        pipeline_data['composer_data'],
+        pipeline_data['jenkinsfile'])
+    repo_data = gh_utils.get_repository(pipeline_repo)
 
-    full_job_name = '/'.join([
+    _pipeline_repo_name = pipeline_repo.split('/')[-1]
+    jk_job_name = '/'.join([
         JENKINS_GITHUB_ORG,
-        sqaaas_repo,
-        repo_data.raw_data['default_branch']
+        _pipeline_repo_name,
+        repo_data['default_branch']
     ])
-    db[pipeline_id]['full_job_name'] = full_job_name
+    db[pipeline_id]['jk_job_name'] = jk_job_name
 
-    build_url = None
-    if jk_utils.get_job_url(sqaaas_repo):
-        logger.warning('Jenkins job <%s> already exists!' % full_job_name)
-        build_url = jk_utils.build_job(full_job_name)
+    last_build_data = None
+    if jk_utils.get_job_url(_pipeline_repo_name):
+        logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
+        last_build_data = jk_utils.build_job(jk_job_name)
     else:
         jk_utils.scan_organization()
-        while not build_url:
-            build_url = jk_utils.get_job_url(sqaaas_repo)
-            logger.debug('Waiting for scan organization process to finish..')
+        _loop_counter = 1
+        _loop_total = int(JENKINS_SCAN_TIMEOUT_SECONDS/JENKINS_SCAN_CHECK_SECONDS)
+        _build_data = {}
+        while not _build_data or _loop_counter < _loop_total:
             time.sleep(30)
+            # build_url = jk_utils.get_job_url(_pipeline_repo_name)
+            _build_data = jk_utils.get_job_info(jk_job_name)
+            logger.debug('Waiting for scan organization process to finish (loop %s out of %s)..' % (_loop_counter, _loop_total))
+            _loop_counter += 1
         logger.debug('Scan organization finished')
-    build_no = build_url['number']
-    build_url = build_url['url']
-    logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (sqaaas_repo, build_url))
+        last_build_data = _build_data['lastBuild']
+    build_no = last_build_data['number']
+    build_url = last_build_data['url']
+    logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
 
     db[pipeline_id]['build'] = {
         'number': build_no,

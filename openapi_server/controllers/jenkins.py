@@ -37,10 +37,11 @@ class JenkinsUtils(object):
         self.logger.debug('Triggered GitHub organization scan')
 
     def get_job_info(self, name, depth=0):
-        job_info = self.server.get_job_info(name, depth=depth)
-        if job_info:
+        job_info = {}
+        try:
+            job_info = self.server.get_job_info(name, depth=depth)
             self.logger.debug('Information job <%s> obtained from Jenkins' % name)
-        else:
+        except jenkins.JenkinsException:
             self.logger.error('No info could be fetched for Jenkins job <%s>' % name)
         return job_info
 
