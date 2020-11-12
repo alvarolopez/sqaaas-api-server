@@ -236,7 +236,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         gh_utils.create_org_repository(sqaaas_repo)
         ctls_utils.push_jepl_files(
             gh_utils,
-            fork_repo,
+            sqaaas_repo,
             pipeline_data['config_data'],
             pipeline_data['composer_data'],
             pipeline_data['jenkinsfile'])
