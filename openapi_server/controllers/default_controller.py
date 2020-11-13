@@ -143,16 +143,17 @@ async def get_pipelines(request: web.Request) -> web.Response:
     return web.json_response(db, status=200)
 
 
+@validate_request
 async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     """Find pipeline by ID
-
-
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
 
     """
-    return web.Response(status=200)
+    db = load_db_content()
+    r = db[pipeline_id]
+    return web.json_response(r, status=200)
 
 
 async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Response:
