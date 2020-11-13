@@ -180,7 +180,10 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    return web.Response(status=200)
+    db = load_db_content()
+    pipeline_data = db[pipeline_id]['data']
+    r = pipeline_data['config_data']
+    return web.json_response(r, status=200)
 
 
 async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
