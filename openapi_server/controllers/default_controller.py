@@ -264,7 +264,6 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         _build_data = {}
         while not _build_data or _loop_counter < _loop_total:
             time.sleep(30)
-            # build_url = jk_utils.get_job_url(_pipeline_repo_name)
             _build_data = jk_utils.get_job_info(jk_job_name)
             logger.debug('Waiting for scan organization process to finish (loop %s out of %s)..' % (_loop_counter, _loop_total))
             _loop_counter += 1
