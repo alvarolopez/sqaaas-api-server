@@ -130,7 +130,7 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     db.pop(pipeline_id)
     logger.info('Pipeline <%s> removed from DB' % pipeline_id)
 
-    return web.Response(status=200)
+    return web.Response(status=204)
 
 
 async def get_pipelines(request: web.Request) -> web.Response:
