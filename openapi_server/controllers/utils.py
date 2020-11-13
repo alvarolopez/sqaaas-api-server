@@ -20,10 +20,10 @@ def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile):
         config_json,
         composer_json,
         jenkinsfile)
-    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo)
-    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo)
+    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo)
-    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo)
+    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo)
     logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % repo)
+    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo)
     logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
