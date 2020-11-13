@@ -115,7 +115,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     store_db_content(db)
 
     r = {'id': pipeline_id}
-    return web.json_response(r, status=200)
+    return web.json_response(r, status=201)
 
 
 @validate_request
