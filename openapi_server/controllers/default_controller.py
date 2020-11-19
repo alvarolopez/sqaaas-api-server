@@ -21,6 +21,8 @@ from openapi_server.models.inline_object import InlineObject
 
 
 DB_FILE = '/sqaaas/sqaaas.json'
+TOKEN_GH_FILE = '/etc/sqaaas/.gh_token'
+TOKEN_JK_FILE = '/etc/sqaaas/.jk_token'
 GITHUB_ORG = 'EOSC-Synergy'
 JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
 JENKINS_USER = 'orviz'
@@ -31,12 +33,12 @@ JENKINS_SCAN_CHECK_SECONDS = 30
 logger = logging.getLogger('sqaaas_api.controller')
 
 
-with open('/sqaaas/.gh_token','r') as f:
+with open(TOKEN_GH_FILE,'r') as f:
     token = f.read().strip()
 logger.debug('Loading GitHub token from local filesystem')
 gh_utils = GitHubUtils(token)
 
-with open('/sqaaas/.jk_token','r') as f:
+with open(TOKEN_JK_FILE,'r') as f:
     jk_token = f.read().strip()
 logger.debug('Loading Jenkins token from local filesystem')
 jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
