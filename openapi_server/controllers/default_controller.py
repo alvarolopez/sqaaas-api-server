@@ -362,7 +362,13 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
             zinfo = ZipInfo(t[0])
             zfile.writestr(zinfo, t[1].encode('UTF-8'))
 
-    return web.Response(
-        body=binary_stream.getbuffer(),
-        headers={'Content-Encoding':'gzip'},
-        status=200)
+    zip_data = binary_stream.getbuffer()
+    response = web.StreamResponse()
+    response.content_type = 'application/zip'
+    response.content_length = len(zip_data)
+    response.headers.add(
+        'Content-Disposition', 'attachment; filename="sqaaas.zip"')
+    await response.prepare(request)
+    await response.write(zip_data)
+
+    return response
