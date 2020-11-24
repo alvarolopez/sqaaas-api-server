@@ -1,9 +1,5 @@
-import functools
 import io
-import json
 import logging
-import os
-import uuid
 import time
 from zipfile import ZipFile, ZipInfo
 
@@ -13,6 +9,7 @@ from urllib.parse import urlparse
 
 from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
+from openapi_server.controllers import db
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
@@ -20,7 +17,6 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
 
-DB_FILE = '/sqaaas/sqaaas.json'
 TOKEN_GH_FILE = '/etc/sqaaas/.gh_token'
 TOKEN_JK_FILE = '/etc/sqaaas/.jk_token'
 GITHUB_ORG = 'EOSC-Synergy'
@@ -42,25 +38,6 @@ with open(TOKEN_JK_FILE,'r') as f:
     jk_token = f.read().strip()
 logger.debug('Loading Jenkins token from local filesystem')
 jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
-
-
-def load_db_content():
-    data = {}
-    if os.path.exists(DB_FILE) and os.stat(DB_FILE).st_size > 0:
-        with open(DB_FILE) as db:
-            data = json.load(db)
-    return data
-
-
-def store_db_content(data):
-    with open(DB_FILE, 'w') as db:
-        json.dump(data, db)
-    print_db_content()
-
-
-def print_db_content():
-    db = load_db_content()
-    logger.debug('Current DB content: %s' % list(db))
 
 
 async def add_pipeline(request: web.Request, body) -> web.Response:
@@ -86,8 +63,8 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
 
-    db = load_db_content()
-    db[pipeline_id] = {
+    _db = db.load_content()
+    _db[pipeline_id] = {
         'pipeline_repo': pipeline_repo,
         'data': {
             'config_data': config_json,
@@ -95,7 +72,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
             'jenkinsfile': jenkinsfile_data
         }
     }
-    store_db_content(db)
+    db.store_content(_db)
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
@@ -109,8 +86,8 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    db.pop(pipeline_id)
+    _db = db.load_content()
+    _db.pop(pipeline_id)
     logger.info('Pipeline <%s> removed from DB' % pipeline_id)
 
     return web.Response(status=204)
@@ -122,8 +99,8 @@ async def get_pipelines(request: web.Request) -> web.Response:
     Returns the list of IDs for the defined pipelines.
 
     """
-    db = load_db_content()
-    return web.json_response(db, status=200)
+    _db = db.load_content()
+    return web.json_response(_db, status=200)
 
 
 @ctls_utils.validate_request
@@ -134,22 +111,22 @@ async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    r = db[pipeline_id]
+    _db = db.load_content()
+    r = _db[pipeline_id]
     return web.json_response(r, status=200)
 
 
 async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Response:
     """Gets composer configuration used by the pipeline.
 
-    Returns the content of JePL&#39;s docker-compose.yml file. 
+    Returns the content of JePL&#39;s docker-compose.yml file.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    pipeline_data = db[pipeline_id]['data']
+    _db = db.load_content()
+    pipeline_data = _db[pipeline_id]['data']
     r = pipeline_data['composer_data']
     return web.json_response(r, status=200)
 
@@ -163,8 +140,8 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    pipeline_data = db[pipeline_id]['data']
+    _db = db.load_content()
+    pipeline_data = _db[pipeline_id]['data']
     r = pipeline_data['config_data']
     return web.json_response(r, status=200)
 
@@ -178,8 +155,8 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    pipeline_data = db[pipeline_id]['data']
+    _db = db.load_content()
+    pipeline_data = _db[pipeline_id]['data']
     r = pipeline_data['jenkinsfile']
     return web.json_response(r, status=200)
 
@@ -193,12 +170,12 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    build_url = db[pipeline_id]['build']['url']
+    _db = db.load_content()
+    build_url = _db[pipeline_id]['build']['url']
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
-    jk_job_name = db[pipeline_id]['jk_job_name']
-    build_no = db[pipeline_id]['build']['number']
+    jk_job_name = _db[pipeline_id]['jk_job_name']
+    build_no = _db[pipeline_id]['build']['number']
     build_status = jk_utils.get_build_status(
         jk_job_name,
         build_no
@@ -219,9 +196,9 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    pipeline_repo = db[pipeline_id]['pipeline_repo']
-    pipeline_data = db[pipeline_id]['data']
+    _db = db.load_content()
+    pipeline_repo = _db[pipeline_id]['pipeline_repo']
+    pipeline_data = _db[pipeline_id]['data']
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
     repo_data = gh_utils.get_repository(pipeline_repo)
@@ -243,7 +220,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         _pipeline_repo_name,
         repo_data['default_branch']
     ])
-    db[pipeline_id]['jk_job_name'] = jk_job_name
+    _db[pipeline_id]['jk_job_name'] = jk_job_name
 
     last_build_data = None
     if jk_utils.get_job_url(_pipeline_repo_name):
@@ -265,11 +242,11 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     build_url = last_build_data['url']
     logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
 
-    db[pipeline_id]['build'] = {
+    _db[pipeline_id]['build'] = {
         'number': build_no,
         'url': build_url
     }
-    store_db_content(db)
+    db.store_content(_db)
 
     r = {'build_url': build_url}
     return web.json_response(r, status=200)
@@ -297,8 +274,8 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     fork_repo = fork['full_name'].lower()
     fork_default_branch = fork['default_branch']
     # step 2: push JePL files to fork
-    db = load_db_content()
-    pipeline_data = db[pipeline_id]['data']
+    _db = db.load_content()
+    pipeline_data = _db[pipeline_id]['data']
     ctls_utils.push_jepl_files(
         gh_utils,
         fork_repo,
@@ -326,8 +303,8 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     :type pipeline_id: str
 
     """
-    db = load_db_content()
-    pipeline_data = db[pipeline_id]['data']
+    _db = db.load_content()
+    pipeline_data = _db[pipeline_id]['data']
 
     config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
         pipeline_data['config_data'],

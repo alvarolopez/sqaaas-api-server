@@ -2,6 +2,7 @@ import functools
 import logging
 import uuid
 
+from openapi_server.controllers import db
 from openapi_server.controllers.jepl import JePLUtils
 
 from github.GithubException import GithubException
@@ -17,8 +18,8 @@ def validate_request(f):
     _pipeline_id = kwargs['pipeline_id']
     try:
         uuid.UUID(_pipeline_id, version=4)
-        db = load_db_content()
-        if _pipeline_id in list(db):
+        _db = db.load_content()
+        if _pipeline_id in list(_db):
             logger.debug('Pipeline <%s> found in DB' % _pipeline_id)
         else:
             logger.warning('Pipeline not found!: %s' % _pipeline_id)
