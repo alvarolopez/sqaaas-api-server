@@ -73,7 +73,7 @@ class GitHubUtils(object):
 
         return fork.raw_data
 
-    def create_pull_request(self, upstream_repo_name, repo_name, upstream_branch='master', branch='master'):
+    def create_pull_request(self, upstream_repo_name, repo_name, branch, upstream_branch='master'):
         repo = self.client.get_repo(upstream_repo_name)
         body = '''
         Add JePL folder structure via SQAaaS.
