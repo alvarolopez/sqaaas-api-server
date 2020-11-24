@@ -43,17 +43,34 @@ class GitHubUtils(object):
             self.logger.debug('File <%s> already exist in the repository, updating..' % file_name)
 
     def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
-        repo_name = upstream_repo_name.split('/')[-1]
-        self.logger.debug('Obtained repo name from the upstream one: %s' % repo_name)
-        fork = self.get_org_repository(repo_name, org_name=org_name)
-        if fork:
-            self.logger.debug('Repository (fork) already exists in <%s> organization. Removing..' % org_name)
-            fork.delete()
-            self.logger.debug('Repository (fork) removed from <%s> organization' % org_name)
-        org = self.client.get_organization(org_name)
         repo = self.client.get_repo(upstream_repo_name)
-        fork = org.create_fork(repo)
-        self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
+        fork = None
+        upstream_org_name, repo_name = upstream_repo_name.split('/')
+        self.logger.debug("upstream org: %s" % upstream_org_name)
+        self.logger.debug("org: %s" % org_name)
+        if upstream_org_name.lower() == org_name:
+            self.logger.debug('Upstream organization matches the target organization <%s>' % org_name)
+            _branch_source = repo.raw_data['default_branch']
+            _branch_target = 'sqaaas'
+            self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
+            _branch_source_obj = repo.get_branch(_branch_source)
+            repo.create_git_ref(
+                ref='refs/heads/' + _branch_target,
+                sha=_branch_source_obj.commit.sha)
+            self.logger.debug('Setting default branch as the target one: %s' % _branch_target)
+            repo.raw_data['default_branch'] = _branch_target
+            self.logger.debug('Returning current org repo: %s' % repo.raw_data['full_name'])
+            fork = repo
+        else:
+            org = self.client.get_organization(org_name)
+            fork = org.create_fork(repo)
+            _fork_parent = fork.raw_data['parent']['owner']['login']
+            if _fork_parent not in [upstream_org_name]:
+                self.logger.error('Repository (fork) already exists in <%s> organization. Removing..' % org_name)
+                raise GithubException(status=422, data={'message': 'Reference (fork) already exists'})
+            else:
+                self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
+
         return fork.raw_data
 
     def create_pull_request(self, upstream_repo_name, repo_name, upstream_branch='master', branch='master'):

@@ -273,6 +273,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     fork = gh_utils.create_fork(upstream_repo)
     fork_repo = fork['full_name'].lower()
     fork_default_branch = fork['default_branch']
+    logger.debug('Using fork default branch: %s' % fork_default_branch)
     # step 2: push JePL files to fork
     _db = db.load_content()
     pipeline_data = _db[pipeline_id]['data']
@@ -281,7 +282,8 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         fork_repo,
         pipeline_data['config_data'],
         pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile'])
+        pipeline_data['jenkinsfile'],
+        branch=fork_default_branch)
     # step 3: create PR
     pr = gh_utils.create_pull_request(
         upstream_repo,
