@@ -1,9 +1,37 @@
+import functools
 import logging
+import uuid
 
 from openapi_server.controllers.jepl import JePLUtils
 
+from github.GithubException import GithubException
+from github.GithubException import UnknownObjectException
+
 
 logger = logging.getLogger('sqaaas_api.controller')
+
+
+def validate_request(f):
+  @functools.wraps(f)
+  def decorated_function(*args, **kwargs):
+    _pipeline_id = kwargs['pipeline_id']
+    try:
+        uuid.UUID(_pipeline_id, version=4)
+        db = load_db_content()
+        if _pipeline_id in list(db):
+            logger.debug('Pipeline <%s> found in DB' % _pipeline_id)
+        else:
+            logger.warning('Pipeline not found!: %s' % _pipeline_id)
+            return web.Response(status=404)
+    except ValueError:
+        logger.warning('Invalid pipeline ID supplied!: %s' % _pipeline_id)
+        return web.Response(status=400)
+    try:
+        return f(*args, **kwargs)
+    except (UnknownObjectException, GithubException) as e:
+        logger.error('%s (exit code: %s)' % (e.data['message'], e.status))
+        return web.Response(status=e.status)
+  return decorated_function
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
@@ -15,15 +43,15 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
     return (config_yml, composer_yml, jenkinsfile)
 
 
-def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile):
+def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile, branch='sqaaas'):
     config_yml, composer_yml, jenkinsfile = get_jepl_files(
         config_json,
         composer_json,
         jenkinsfile)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo)
-    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo)
+    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo, branch=branch)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo)
-    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo)
+    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo, branch=branch)
     logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % repo)
-    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo)
+    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo, branch=branch)
     logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
