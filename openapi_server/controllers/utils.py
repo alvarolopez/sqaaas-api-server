@@ -2,6 +2,8 @@ import functools
 import logging
 import uuid
 
+from aiohttp import web
+
 from openapi_server.controllers import db
 from openapi_server.controllers.jepl import JePLUtils
 
@@ -13,26 +15,28 @@ logger = logging.getLogger('sqaaas_api.controller')
 
 
 def validate_request(f):
-  @functools.wraps(f)
-  def decorated_function(*args, **kwargs):
-    _pipeline_id = kwargs['pipeline_id']
-    try:
-        uuid.UUID(_pipeline_id, version=4)
-        _db = db.load_content()
-        if _pipeline_id in list(_db):
-            logger.debug('Pipeline <%s> found in DB' % _pipeline_id)
-        else:
-            logger.warning('Pipeline not found!: %s' % _pipeline_id)
-            return web.Response(status=404)
-    except ValueError:
-        logger.warning('Invalid pipeline ID supplied!: %s' % _pipeline_id)
-        return web.Response(status=400)
-    try:
-        return f(*args, **kwargs)
-    except (UnknownObjectException, GithubException) as e:
-        logger.error('%s (exit code: %s)' % (e.data['message'], e.status))
-        return web.Response(status=e.status)
-  return decorated_function
+    @functools.wraps(f)
+    async def decorated_function(*args, **kwargs):
+        _pipeline_id = kwargs['pipeline_id']
+        try:
+            uuid.UUID(_pipeline_id, version=4)
+            _db = db.load_content()
+            if _pipeline_id in list(_db):
+                logger.debug('Pipeline <%s> found in DB' % _pipeline_id)
+            else:
+                logger.warning('Pipeline not found!: %s' % _pipeline_id)
+                return web.Response(status=404)
+        except ValueError:
+            logger.warning('Invalid pipeline ID supplied!: %s' % _pipeline_id)
+            return web.Response(status=400)
+        try:
+            logger.debug('Running decorated method <%s>' % f.__name__)
+            r = await f(*args, **kwargs)
+        except (UnknownObjectException, GithubException) as e:
+            logger.error('(GitHub) %s (exit code: %s)' % (e.data['message'], e.status))
+            return web.Response(status=e.status)
+        return r
+    return decorated_function
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
