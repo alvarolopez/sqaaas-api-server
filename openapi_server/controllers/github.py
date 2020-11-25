@@ -25,7 +25,7 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def get_repo_content(self, repo_name, file_name=''):
+    def get_repo_content(self, repo_name, file_name):
         repo = self.client.get_repo(repo_name)
         try:
             return repo.get_contents(file_name)
