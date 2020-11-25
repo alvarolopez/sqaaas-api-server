@@ -311,7 +311,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         upstream_repo,
         fork_repo,
         branch=fork_default_branch)
-    pr_url = pr['url']
+    pr_url = pr['html_url']
 
     r = {'pull_request_url': pr_url}
     return web.json_response(r, status=200)
