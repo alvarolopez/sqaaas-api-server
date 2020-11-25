@@ -34,7 +34,7 @@ def validate_request(f):
             ret = await f(*args, **kwargs)
         except (UnknownObjectException, GithubException) as e:
             _status = e.status
-            _reason = e.data['message']
+            _reason = e.data['errors'][0]['message']
             logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
             r = {'upstream_status': _status, 'upstream_reason': _reason}
             return web.json_response(
