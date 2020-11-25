@@ -37,7 +37,7 @@ def validate_request(f):
             _reason = e.data['message']
             logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
             r = {'upstream_status': _status, 'upstream_reason': _reason}
-            return web.Response(
+            return web.json_response(
                 r,
                 status=502,
                 reason='Unsuccessful request to upstream service API')
