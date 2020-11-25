@@ -95,6 +95,10 @@ class GitHubUtils(object):
         return pr.raw_data
 
     def get_repository(self, repo_name):
+        """Return raw data from a GitHub repository.
+
+        :param repo_name: GitHub's repo name (including organization/user)
+        """
         try:
             repo = self.client.get_repo(repo_name)
             self.logger.debug('Repository <%s> found' % repo_name)
