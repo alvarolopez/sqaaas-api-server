@@ -14,6 +14,12 @@ from github.GithubException import UnknownObjectException
 logger = logging.getLogger('sqaaas_api.controller')
 
 
+def upstream_502_response(r):
+    return web.json_response(
+        r,
+        status=502,
+        reason='Unsuccessful request to upstream service API')
+
 def validate_request(f):
     @functools.wraps(f)
     async def decorated_function(*args, **kwargs):
@@ -37,10 +43,7 @@ def validate_request(f):
             _reason = e.data['errors'][0]['message']
             logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
             r = {'upstream_status': _status, 'upstream_reason': _reason}
-            return web.json_response(
-                r,
-                status=502,
-                reason='Unsuccessful request to upstream service API')
+            return upstream_502_response(r)
         return ret
     return decorated_function
 
