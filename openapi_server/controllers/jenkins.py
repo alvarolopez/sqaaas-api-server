@@ -45,10 +45,12 @@ class JenkinsUtils(object):
             self.logger.error('No info could be fetched for Jenkins job <%s>' % name)
         return job_info
 
-    def get_job_url(self, job_name, org_name='eosc-synergy-org'):
-        job_info = self.get_job_info(org_name)
-        jobs = job_info['jobs']
-        return [j['url'] for j in jobs if j['name'] == job_name]
+    def exist_job(self, job_name):
+        """Check whether given job is defined in Jenkins.
+
+        :param job_name: job name including folder/s, name & branch
+        """
+        return self.get_job_info(job_name)
 
     def build_job(self, full_job_name):
         item_no = self.server.build_job(full_job_name)

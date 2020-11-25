@@ -254,7 +254,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
 
     # last_build_data = None
     _status = 200
-    if jk_utils.get_job_url(_pipeline_repo_name):
+    if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
         last_build_data = jk_utils.build_job(jk_job_name)
         build_no = last_build_data['number']
