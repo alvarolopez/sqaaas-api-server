@@ -117,6 +117,7 @@ async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=200)
 
 
+@ctls_utils.validate_request
 async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Response:
     """Gets composer configuration used by the pipeline.
 
@@ -132,6 +133,7 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
     return web.json_response(r, status=200)
 
 
+@ctls_utils.validate_request
 async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response:
     """Gets pipeline&#39;s main configuration.
 
@@ -147,6 +149,7 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
+@ctls_utils.validate_request
 async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
     """Gets Jenkins pipeline definition used by the pipeline.
 
@@ -162,6 +165,7 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
     return web.json_response(r, status=200)
 
 
+@ctls_utils.validate_request
 async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
     """Get pipeline status.
 
