@@ -1,5 +1,6 @@
 import functools
 import logging
+import re
 import uuid
 
 from aiohttp import web
@@ -52,8 +53,14 @@ def validate_request(f):
             r = {'upstream_status': _status, 'upstream_reason': _reason}
             return upstream_502_response(r)
         except JenkinsException as e:
-            logger.error('(Jenkins) %s ' % e)
-            r = {'upstream_status': 404, 'upstream_reason': e}
+            msg_first_line = str(e).splitlines()[0]
+            logger.error('(Jenkins) %s' % msg_first_line)
+            _reason = msg_first_line
+            _status = 404
+            _status_regexp = re.search('.+\[(40\d{1})\].+', _reason)
+            if _status_regexp:
+                _status = int(_status_regexp.groups()[0])
+            r = {'upstream_status': _status, 'upstream_reason': _reason}
             return upstream_502_response(r)
         return ret
     return decorated_function
