@@ -171,19 +171,41 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    build_url = _db[pipeline_id]['build']['url']
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+    _db = db.load_content()
 
-    jk_job_name = _db[pipeline_id]['jk_job_name']
-    build_no = _db[pipeline_id]['build']['number']
-    build_status = jk_utils.get_build_status(
-        jk_job_name,
-        build_no
-    )
+    jenkins_info = _db[pipeline_id]['jenkins']
+    jk_job_name = jenkins_info['job_name']
+    build_url = jenkins_info['build_info']['url']
+    build_no = jenkins_info['build_info']['number']
+
+    if jenkins_info['scan_org_wait']:
+        logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
+        last_build_data = jk_utils.get_job_info(jk_job_name)
+        if last_build_data:
+            build_url = last_build_data['lastBuild']['url']
+            build_no = last_build_data['lastBuild']['number']
+            logger.info('Jenkins job build URL (after Scan Organization finished) obtained: %s' % build_url)
+            jenkins_info['build_info'] = {
+                'url': build_url,
+                'number': build_no,
+            }
+            jenkins_info['scan_org_wait'] = False
+        else:
+            logger.debug('Job still waiting for scan organization to end')
+            build_status = 'WAITING_SCAN_ORG'
+
+    if build_no:
+        build_status = jk_utils.get_build_status(
+            jk_job_name,
+            build_no
+        )
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
-    r = {'build_status': build_status}
+    r = {
+        'build_url': build_url,
+        'build_status': build_status
+    }
     return web.json_response(r, status=200)
 
 
@@ -221,36 +243,46 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         _pipeline_repo_name,
         repo_data['default_branch']
     ])
-    _db[pipeline_id]['jk_job_name'] = jk_job_name
+    _db[pipeline_id]['jenkins'] = {
+        'job_name': jk_job_name,
+        'build_info': {
+            'number': None,
+            'url': None,
+        },
+        'scan_org_wait': False
+    }
 
-    last_build_data = None
+    # last_build_data = None
+    _status = 200
     if jk_utils.get_job_url(_pipeline_repo_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
         last_build_data = jk_utils.build_job(jk_job_name)
+        build_no = last_build_data['number']
+        build_url = last_build_data['url']
+        logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
+        _db[pipeline_id]['jenkins']['build_info'] = {
+            'number': build_no,
+            'url': build_url
+        }
     else:
         jk_utils.scan_organization()
-        _loop_counter = 1
-        _loop_total = int(JENKINS_SCAN_TIMEOUT_SECONDS/JENKINS_SCAN_CHECK_SECONDS)
-        _build_data = {}
-        while not _build_data or _loop_counter < _loop_total:
-            time.sleep(30)
-            _build_data = jk_utils.get_job_info(jk_job_name)
-            logger.debug('Waiting for scan organization process to finish (loop %s out of %s)..' % (_loop_counter, _loop_total))
-            _loop_counter += 1
-        logger.debug('Scan organization finished')
-        last_build_data = _build_data['lastBuild']
-    build_no = last_build_data['number']
-    build_url = last_build_data['url']
-    logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
+        _db[pipeline_id]['jenkins']['scan_org_wait'] = True
+        _status = 204
+        # _loop_counter = 1
+        # _loop_total = int(JENKINS_SCAN_TIMEOUT_SECONDS/JENKINS_SCAN_CHECK_SECONDS)
+        # _build_data = {}
+        # while not _build_data or _loop_counter < _loop_total:
+        #     time.sleep(30)
+        #     _build_data = jk_utils.get_job_info(jk_job_name)
+        #     logger.debug('Waiting for scan organization process to finish (loop %s out of %s)..' % (_loop_counter, _loop_total))
+        #     _loop_counter += 1
+        # logger.debug('Scan organization finished')
+        # last_build_data = _build_data['lastBuild']
 
-    _db[pipeline_id]['build'] = {
-        'number': build_no,
-        'url': build_url
-    }
     db.store_content(_db)
 
-    r = {'build_url': build_url}
-    return web.json_response(r, status=200)
+    r = {'build_url': _db[pipeline_id]['jenkins']['build_info']['url']}
+    return web.json_response(r, status=_status)
 
 
 @ctls_utils.validate_request
