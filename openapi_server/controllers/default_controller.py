@@ -252,7 +252,6 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         'scan_org_wait': False
     }
 
-    # last_build_data = None
     _status = 200
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
@@ -268,16 +267,6 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         jk_utils.scan_organization()
         _db[pipeline_id]['jenkins']['scan_org_wait'] = True
         _status = 204
-        # _loop_counter = 1
-        # _loop_total = int(JENKINS_SCAN_TIMEOUT_SECONDS/JENKINS_SCAN_CHECK_SECONDS)
-        # _build_data = {}
-        # while not _build_data or _loop_counter < _loop_total:
-        #     time.sleep(30)
-        #     _build_data = jk_utils.get_job_info(jk_job_name)
-        #     logger.debug('Waiting for scan organization process to finish (loop %s out of %s)..' % (_loop_counter, _loop_total))
-        #     _loop_counter += 1
-        # logger.debug('Scan organization finished')
-        # last_build_data = _build_data['lastBuild']
 
     db.store_content(_db)
 
