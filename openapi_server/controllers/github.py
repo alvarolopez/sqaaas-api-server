@@ -45,19 +45,20 @@ class GitHubUtils(object):
     def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
         repo = self.client.get_repo(upstream_repo_name)
         fork = None
+        fork_default_branch = 'sqaaas'
         upstream_org_name, repo_name = upstream_repo_name.split('/')
         if upstream_org_name.lower() == org_name:
             self.logger.debug('Upstream organization matches the target organization <%s>' % org_name)
             _branch_source = repo.raw_data['default_branch']
-            _branch_target = 'sqaaas'
-            self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
-            _branch_source_obj = repo.get_branch(_branch_source)
-            repo.create_git_ref(
-                ref='refs/heads/' + _branch_target,
-                sha=_branch_source_obj.commit.sha)
-            self.logger.debug('Setting default branch as the target one: %s' % _branch_target)
-            repo.raw_data['default_branch'] = _branch_target
-            self.logger.debug('Returning current org repo: %s' % repo.raw_data['full_name'])
+            _branch_target = fork_default_branch
+            if repo.get_branch(_branch_target):
+                self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
+            else:
+                self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
+                _branch_source_obj = repo.get_branch(_branch_source)
+                repo.create_git_ref(
+                    ref='refs/heads/' + _branch_target,
+                    sha=_branch_source_obj.commit.sha)
             fork = repo
         else:
             org = self.client.get_organization(org_name)
@@ -68,8 +69,9 @@ class GitHubUtils(object):
                 raise GithubException(status=422, data={'message': 'Reference (fork) already exists'})
             else:
                 self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
+            fork_default_branch = fork.raw_data['parent']['default_branch']
 
-        return fork.raw_data
+        return (fork.raw_data['full_name'], fork_default_branch)
 
     def create_pull_request(self, upstream_repo_name, repo_name, branch, upstream_branch='master'):
         repo = self.client.get_repo(upstream_repo_name)
@@ -83,12 +85,13 @@ class GitHubUtils(object):
         '''
         _repo_org = repo_name.split('/')[0]
         head = ':'.join([_repo_org, branch])
+        self.logger.debug('Creating pull request: %s (head) -> %s (base)' % (head, upstream_branch))
         pr = repo.create_pull(
             title='Set up JePL in project <%s>' % upstream_repo_name,
             body=body,
             head=head,
             base=upstream_branch)
-        self.logger.debug('Pull request created: %s (head) -> %s (base)' % (head, upstream_branch))
+        self.logger.debug('Pull request successfully created: %s (head) -> %s (base)' % (head, upstream_branch))
         return pr.raw_data
 
     def get_repository(self, repo_name):

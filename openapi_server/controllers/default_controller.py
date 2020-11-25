@@ -292,9 +292,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     logger.debug('Upstream repository path: %s' % upstream_repo)
 
     # step 1: create the fork
-    fork = gh_utils.create_fork(upstream_repo)
-    fork_repo = fork['full_name'].lower()
-    fork_default_branch = fork['parent']['default_branch']
+    fork_repo, fork_default_branch = gh_utils.create_fork(upstream_repo)
     logger.debug('Using fork default branch: %s' % fork_default_branch)
     # step 2: push JePL files to fork
     _db = db.load_content()
