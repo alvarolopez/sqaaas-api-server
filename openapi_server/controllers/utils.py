@@ -39,7 +39,13 @@ def validate_request(f):
         try:
             logger.debug('Running decorated method <%s>' % f.__name__)
             ret = await f(*args, **kwargs)
-        except (UnknownObjectException, GithubException) as e:
+        except UnknownObjectException as e:
+            _status = e.status
+            _reason = e.data['message']
+            logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
+            r = {'upstream_status': _status, 'upstream_reason': _reason}
+            return upstream_502_response(r)
+        except GithubException as e:
             _status = e.status
             _reason = e.data['errors'][0]['message']
             logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
