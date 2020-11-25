@@ -88,6 +88,12 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
 
     """
     _db = db.load_content()
+    pipeline_repo = _db[pipeline_id]['pipeline_repo']
+    jk_job_name = _db[pipeline_id]['jenkins']['job_name']
+    if gh_utils.get_repository(pipeline_repo):
+        gh_utils.delete_repo(pipeline_repo)
+    if jk_utils.exist_job(jk_job_name):
+        jk_utils.scan_organization()
     _db.pop(pipeline_id)
     logger.info('Pipeline <%s> removed from DB' % pipeline_id)
 

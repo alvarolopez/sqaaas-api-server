@@ -111,3 +111,13 @@ class GitHubUtils(object):
             self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
+
+    def delete_repo(self, repo_name):
+        """Delete a GitHub repository.
+
+        :param repo_name: GitHub's repo name (including organization/user)
+        """
+        repo = self.client.get_repo(repo_name)
+        self.logger.debug('Deleting repository: %s' % repo_name)
+        repo.delete()
+        self.logger.debug('Repository <%s> successfully deleted' % repo_name)
