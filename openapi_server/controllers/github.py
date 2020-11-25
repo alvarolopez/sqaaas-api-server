@@ -46,8 +46,6 @@ class GitHubUtils(object):
         repo = self.client.get_repo(upstream_repo_name)
         fork = None
         upstream_org_name, repo_name = upstream_repo_name.split('/')
-        self.logger.debug("upstream org: %s" % upstream_org_name)
-        self.logger.debug("org: %s" % org_name)
         if upstream_org_name.lower() == org_name:
             self.logger.debug('Upstream organization matches the target organization <%s>' % org_name)
             _branch_source = repo.raw_data['default_branch']
