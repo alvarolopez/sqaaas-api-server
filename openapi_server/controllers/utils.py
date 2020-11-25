@@ -9,6 +9,7 @@ from openapi_server.controllers.jepl import JePLUtils
 
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
+from jenkins import JenkinsException
 
 
 logger = logging.getLogger('sqaaas_api.controller')
@@ -43,6 +44,10 @@ def validate_request(f):
             _reason = e.data['errors'][0]['message']
             logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
             r = {'upstream_status': _status, 'upstream_reason': _reason}
+            return upstream_502_response(r)
+        except JenkinsException as e:
+            logger.error('(Jenkins) %s ' % e)
+            r = {'upstream_status': 404, 'upstream_reason': e}
             return upstream_502_response(r)
         return ret
     return decorated_function
