@@ -31,13 +31,17 @@ def validate_request(f):
             return web.Response(status=400)
         try:
             logger.debug('Running decorated method <%s>' % f.__name__)
-            r = await f(*args, **kwargs)
+            ret = await f(*args, **kwargs)
         except (UnknownObjectException, GithubException) as e:
             _status = e.status
             _reason = e.data['message']
             logger.error('(GitHub) %s (exit code: %s)' % (_reason, _status))
-            return web.Response(status=_status, reason=_reason)
-        return r
+            r = {'upstream_status': _status, 'upstream_reason': _reason}
+            return web.Response(
+                r,
+                status=502,
+                reason='Unsuccessful request to upstream service API')
+        return ret
     return decorated_function
 
 
