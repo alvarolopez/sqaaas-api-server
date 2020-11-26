@@ -32,11 +32,13 @@ def validate_request(f):
             if _pipeline_id in list(_db):
                 logger.debug('Pipeline <%s> found in DB' % _pipeline_id)
             else:
-                logger.warning('Pipeline not found!: %s' % _pipeline_id)
-                return web.Response(status=404)
+                _reason = 'Pipeline not found!: %s' % _pipeline_id
+                logger.warning(_reason)
+                return web.Response(status=404, reason=_reason)
         except ValueError:
-            logger.warning('Invalid pipeline ID supplied!: %s' % _pipeline_id)
-            return web.Response(status=400)
+            _reason = 'Invalid pipeline ID supplied!: %s' % _pipeline_id
+            logger.warning(_reason)
+            return web.Response(status=400, reason=_reason)
         try:
             logger.debug('Running decorated method <%s>' % f.__name__)
             ret = await f(*args, **kwargs)
