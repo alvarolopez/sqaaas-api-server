@@ -22,6 +22,7 @@ def upstream_502_response(r):
         status=502,
         reason='Unsuccessful request to upstream service API')
 
+
 def validate_request(f):
     @functools.wraps(f)
     async def decorated_function(*args, **kwargs):
