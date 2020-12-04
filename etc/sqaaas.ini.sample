@@ -1,0 +1,35 @@
+[DEFAULT]
+## Mandatory parameters ##
+## - Backend used for the repository management. Options: 'github'
+##   A section with this name MUST be defined below
+repository_backend = github
+
+
+[jenkins]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+## - Jenkins URL endpoint
+url = https://example.org/
+## - Jenkins user with admin permissions
+user = paco
+## - Name in Jenkins of the base repository organization
+github_organization_name = my_org
+
+## ------------------- ##
+## Optional parameters ##
+## ------------------- ##
+## - Path to file containing the previous user's token
+# token = /etc/sqaaas/.jk_token
+
+
+[github]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+organization = my_github_org
+
+## ------------------- ##
+## Optional parameters ##
+## ------------------- ##
+# token = /etc/sqaaas/.gh_token

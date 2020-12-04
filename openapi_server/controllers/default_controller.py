@@ -8,6 +8,7 @@ from typing import List, Dict
 from aiohttp import web
 from urllib.parse import urlparse
 
+from openapi_server import config
 from openapi_server.models.pipeline import Pipeline
 from openapi_server import util
 from openapi_server.controllers import db
@@ -18,17 +19,17 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
 
-TOKEN_GH_FILE = '/etc/sqaaas/.gh_token'
-TOKEN_JK_FILE = '/etc/sqaaas/.jk_token'
-GITHUB_ORG = 'EOSC-Synergy'
-JENKINS_URL = 'https://jenkins.eosc-synergy.eu/'
-JENKINS_USER = 'orviz'
-JENKINS_GITHUB_ORG = 'eosc-synergy-org'
-JENKINS_SCAN_TIMEOUT_SECONDS = 150
-JENKINS_SCAN_CHECK_SECONDS = 30
+TOKEN_GH_FILE = config.get_repo(
+    'token', fallback='/etc/sqaaas/.gh_token')
+GITHUB_ORG = config.get_repo('organization')
+
+TOKEN_JK_FILE = config.get_ci(
+    'token', fallback='/etc/sqaaas/.jk_token')
+JENKINS_URL = config.get_ci('url')
+JENKINS_USER = config.get_ci('user')
+JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 
 logger = logging.getLogger('sqaaas_api.controller')
-
 
 with open(TOKEN_GH_FILE,'r') as f:
     token = f.read().strip()

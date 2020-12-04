@@ -2,6 +2,8 @@ import os
 import connexion
 import logging
 
+from openapi_server import config
+
 
 def set_log():
     logger = logging.getLogger('sqaaas_api')
@@ -14,6 +16,7 @@ def set_log():
 
 def main():
     set_log()
+    config.init()
     options = {
         "swagger_ui": True
         }
