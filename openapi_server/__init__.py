@@ -28,6 +28,13 @@ def set_parser():
         default='/etc/sqaaas/sqaaas.ini',
         help='Main configuration file (default: /etc/sqaaas/sqaaas.ini). '
              'For a complete example, please check <%s>' % sample_config)
+    parser.add_argument(
+        '-p',
+        '--port',
+        metavar='PORT',
+        dest='port',
+        default='8080',
+        help='Port number to be used when exposing the API server')
 
     return parser.parse_args()
 
@@ -47,4 +54,4 @@ def main():
                 arguments={'title': 'SQAaaS API'},
                 pythonic_params=True,
                 pass_context_arg_name='request')
-    app.run(port=8080)
+    app.run(port=options_cli.port)
