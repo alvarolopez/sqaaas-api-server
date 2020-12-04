@@ -6,18 +6,17 @@ from configparser import ConfigParser
 
 logger = logging.getLogger('sqaaas_api.config')
 
-CONF_FILE = '/etc/sqaaas/sqaaas.ini' # FIXME get this through argparse
 CI_SECTION = 'jenkins'
 
 
-def init():
+def init(config_file):
     global CONF
     global REPO_BACKEND
 
     CONF = ConfigParser()
-    config_exists = CONF.read(CONF_FILE)
+    config_exists = CONF.read(config_file)
     if not config_exists:
-        logger.error('Configuration file <%s> does not exist' % CONF_FILE)
+        logger.error('Configuration file <%s> does not exist' % config_file)
         sys.exit(1)
     REPO_BACKEND = CONF.defaults()['repository_backend']
 

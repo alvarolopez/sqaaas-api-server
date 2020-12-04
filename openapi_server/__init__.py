@@ -1,5 +1,6 @@
-import os
+import argparse
 import connexion
+import os
 import logging
 
 from openapi_server import config
@@ -14,12 +15,28 @@ def set_log():
     logger.addHandler(ch)
 
 
+def set_parser():
+    parser = argparse.ArgumentParser(description='SQAaaS API server.')
+    parser.add_argument(
+        '-c',
+        '--config',
+        metavar='CONFIG_FILE',
+        dest='config_file',
+        default='/etc/sqaaas/sqaaas.ini',
+        help='Main configuration file (default: /etc/sqaaas/sqaaas.ini)')
+
+    return parser.parse_args()
+
+
 def main():
-    set_log()
-    config.init()
+    options_cli = set_parser()
     options = {
         "swagger_ui": True
-        }
+    }
+
+    set_log()
+    config.init(options_cli.config_file)
+
     specification_dir = os.path.join(os.path.dirname(__file__), 'openapi')
     app = connexion.AioHttpApp(__name__, specification_dir=specification_dir, options=options)
     app.add_api('openapi.yaml',
