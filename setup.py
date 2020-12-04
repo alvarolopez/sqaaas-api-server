@@ -3,7 +3,7 @@
 import sys
 from setuptools import setup, find_packages
 
-NAME = "openapi_server"
+NAME = "sqaaas_api_server"
 VERSION = "1.0.0"
 
 # To install the library, run the following
@@ -17,21 +17,24 @@ REQUIRES = [
     "connexion==2.6.0",
     "swagger-ui-bundle==0.0.6",
     "aiohttp_jinja2==1.2.0",
+    "PyGithub>=1.53",
+    "python-jenkins>=1.7.0"
 ]
 
 setup(
     name=NAME,
     version=VERSION,
     description="SQAaaS API",
-    author_email="",
+    author_email="orviz@ifca.unican.es",
     url="",
     keywords=["OpenAPI", "SQAaaS API"],
     install_requires=REQUIRES,
     packages=find_packages(),
-    package_data={'': ['openapi/openapi.yaml']},
-    include_package_data=True,
+    package_data={'openapi_server': [
+        'openapi/openapi.yaml', '../etc/sqaaas.ini.sample']},
+    include_package_data=False,
     entry_points={
-        'console_scripts': ['openapi_server=openapi_server.__main__:main']},
+        'console_scripts': ['sqaaas_api_server=openapi_server.__main__:main']},
     long_description="""\
     API for the Software and Service Quality Assurance as a Service (SQAaaS) component.
     """
