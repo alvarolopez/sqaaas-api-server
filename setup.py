@@ -3,7 +3,7 @@
 import sys
 from setuptools import setup, find_packages
 
-NAME = "openapi_server"
+NAME = "sqaaas_api_server"
 VERSION = "1.0.0"
 
 # To install the library, run the following
@@ -31,7 +31,7 @@ setup(
     package_data={'': ['openapi/openapi.yaml', 'etc/sqaaas.ini.sample']},
     include_package_data=True,
     entry_points={
-        'console_scripts': ['openapi_server=openapi_server.__main__:main']},
+        'console_scripts': ['sqaaas_api_server=openapi_server.__main__:main']},
     long_description="""\
     API for the Software and Service Quality Assurance as a Service (SQAaaS) component.
     """
