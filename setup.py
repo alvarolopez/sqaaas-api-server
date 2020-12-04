@@ -28,7 +28,7 @@ setup(
     keywords=["OpenAPI", "SQAaaS API"],
     install_requires=REQUIRES,
     packages=find_packages(),
-    package_data={'': ['openapi/openapi.yaml']},
+    package_data={'': ['openapi/openapi.yaml', 'etc/sqaaas.ini.sample']},
     include_package_data=True,
     entry_points={
         'console_scripts': ['openapi_server=openapi_server.__main__:main']},
