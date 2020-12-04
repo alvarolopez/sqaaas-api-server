@@ -17,13 +17,17 @@ def set_log():
 
 def set_parser():
     parser = argparse.ArgumentParser(description='SQAaaS API server.')
+    current_folder = os.path.dirname(os.path.realpath(__file__))
+    sample_config = os.path.join(
+        os.path.dirname(current_folder), 'etc/sqaaas.ini.sample')
     parser.add_argument(
         '-c',
         '--config',
         metavar='CONFIG_FILE',
         dest='config_file',
         default='/etc/sqaaas/sqaaas.ini',
-        help='Main configuration file (default: /etc/sqaaas/sqaaas.ini)')
+        help='Main configuration file (default: /etc/sqaaas/sqaaas.ini). '
+             'For a complete example, please check <%s>' % sample_config)
 
     return parser.parse_args()
 
