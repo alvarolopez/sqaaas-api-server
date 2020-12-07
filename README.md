@@ -38,10 +38,31 @@ The SQAaaS OpenAPI definition can be accessed through:
 ```
 http://localhost:8080/v1/openapi.json
 ```
-## Tests
+
+### Docker
+Different SQAaaS API server versions will be made available as Docker images through [Docker Hub site](https://hub.docker.com/orgs/eoscsynergy/repositories). 
+
+The following command will execute a given version of the SQAaaS API server container, having the required files in the `my-sqaaas-api-environ` folder:
+```
+$ docker run -v <my-sqaaas-api-environ>:/etc/sqaaas -t eoscsynergy/sqaaas-api-server:<version>
+```
+
+## Development
+### Deploy in editable mode
+Within the root path repository, execute:
+```
+$ pip3 install -e .
+```
+
+### Running tests
 
 To launch the integration tests, use pytest:
 ```
 sudo pip install -r test-requirements.txt
 pytest
+```
+### Building the Docker image
+In the root path of the current repository, execute:
+```
+$ docker build -t eoscsynergy/sqaaas-api-server:<version> -f docker/Dockerfile .
 ```
