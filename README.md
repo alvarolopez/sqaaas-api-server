@@ -17,17 +17,30 @@ The SQAaaS API uses Python's [Connexion](https://github.com/zalando/connexion) l
 The generator does not modify the set of files maintained in the [.openapi-generator-ignore](.openapi-generator-ignore).
 
 ## Requirements
-Python 3.5.2+ & [requirements.txt](requirements.txt)
+- Python 3.5.2+ 
+- Dependencies: [requirements.txt](requirements.txt)
 
 ## Usage
 To run the API server, please execute the following from the root directory:
 
 ```
-pip3 install -r requirements.txt
-python3 -m openapi_server
+$ pip3 install .
+$ sqaaas_api_server --help
+usage: sqaaas_api_server [-h] [-c CONFIG_FILE] [-p PORT] [-d]
+
+SQAaaS API server.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config CONFIG_FILE
+                        Main configuration file (default: /etc/sqaaas/sqaaas.ini). For a complete example, please check </usr/local/lib/python3.8/dist-packages/etc/sqaaas.ini.sample>
+  -p PORT, --port PORT  Port number to be used when exposing the API server (default: 8080)
+  -d, --debug           Set DEBUG log level
 ```
 
-and open your browser to here:
+In order to run successfully, the SQAaaS API server requires the presence of a general configuration file, by default in `/etc/sqaaas/sqaaas.ini`. The Python package is distributed with a sample configuration (`sqaaas.ini.sample`).
+
+Assuming the default port 8080 is used, use Swagger UI by opening your browser to here:
 
 ```
 http://localhost:8080/v1/ui/
@@ -42,14 +55,14 @@ http://localhost:8080/v1/openapi.json
 ### Docker
 Different SQAaaS API server versions will be made available as Docker images through [Docker Hub site](https://hub.docker.com/orgs/eoscsynergy/repositories). 
 
-The following command will execute a given version of the SQAaaS API server container, having the required files in the `my-sqaaas-api-environ` folder:
+The following command will execute the given version of the SQAaaS API server container, having the required files in the `my-sqaaas-api-environ` folder:
 ```
 $ docker run -v <my-sqaaas-api-environ>:/etc/sqaaas -t eoscsynergy/sqaaas-api-server:<version>
 ```
 
 ## Development
 ### Deploy in editable mode
-Within the root path repository, execute:
+Within the root path, execute:
 ```
 $ pip3 install -e .
 ```
