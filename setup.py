@@ -33,6 +33,7 @@ setup(
     package_data={'openapi_server': [
         'LICENSE',
         'openapi/openapi.yaml',
+        'templates/Jenkinsfile',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={
