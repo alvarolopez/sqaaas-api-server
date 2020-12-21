@@ -22,7 +22,7 @@ def init(config_file):
 
 
 def get(key, fallback=None):
-    return CONF.get(key, fallback=fallback)
+    return CONF.get('DEFAULT', key, fallback=fallback)
 
 
 def get_repo(key, fallback=None):
