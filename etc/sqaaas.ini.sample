@@ -1,8 +1,16 @@
 [DEFAULT]
+## -------------------- ##
 ## Mandatory parameters ##
+## -------------------- ##
 ## - Backend used for the repository management. Options: 'github'
 ##   A section with this name MUST be defined below
 repository_backend = github
+## - Path to the JSON file used as DB
+
+## ------------------- ##
+## Optional parameters ##
+## ------------------- ##
+# db_file = /sqaaas/sqaaas.json
 
 
 [jenkins]

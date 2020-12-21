@@ -21,6 +21,10 @@ def init(config_file):
     REPO_BACKEND = CONF.defaults()['repository_backend']
 
 
+def get(key, fallback=None):
+    return CONF.get('DEFAULT', key, fallback=fallback)
+
+
 def get_repo(key, fallback=None):
     return CONF.get(REPO_BACKEND, key, fallback=fallback)
 
