@@ -2,8 +2,10 @@ import json
 import logging
 import os
 
+from openapi_server import config
 
-DB_FILE = '/sqaaas/sqaaas.json'
+
+DB_FILE = config.get('db_file', fallback='/sqaaas/sqaaas.json')
 logger = logging.getLogger('sqaaas_api.controller.db')
 
 
