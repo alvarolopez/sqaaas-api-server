@@ -70,6 +70,24 @@ def validate_request(f):
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
+    # Extract & parse special treatment properties
+    ## JPL_DOCKER* envvars
+    for srv_name, srv_data in composer_json['services'].items():
+        if 'registry' in srv_data['image'].keys():
+            registry_data = srv_data['image'].pop('registry')
+            if not 'environment' in config_json.keys():
+                config_json['environment'] = {}
+            # JPL_DOCKERPUSH
+            if registry_data['push']:
+                srv_push = config_json['environment'].get('JPL_DOCKERPUSH', '')
+                srv_push += ' %s' % srv_name
+                srv_push = srv_push.strip()
+                config_json['environment']['JPL_DOCKERPUSH'] = srv_push
+            # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
+            # so defaulting to the last match
+            if registry_data['url']:
+                config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
+
     config_yml, composer_yml = JePLUtils.get_sqa_files(
         config_json,
         composer_json)
