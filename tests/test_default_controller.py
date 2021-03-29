@@ -4,13 +4,16 @@ import pytest
 import json
 from aiohttp import web
 
+from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response2001 import InlineResponse2001
+from openapi_server.models.inline_response2002 import InlineResponse2002
 from openapi_server.models.inline_response201 import InlineResponse201
 from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server.models.je_pl_config import JePLConfig
 from openapi_server.models.je_pl_jenkinsfile import JePLJenkinsfile
 from openapi_server.models.pipeline import Pipeline
+from openapi_server.models.upstream_error import UpstreamError
 
 
 async def test_add_pipeline(client):
@@ -20,120 +23,100 @@ async def test_add_pipeline(client):
     """
     body = {
   "config_data" : [ {
-    "project_repos" : [ {
-      "repo_url" : "https://github.com/jenkins-docs/simple-java-maven-app",
-      "repo_id" : "simple-java-maven-app",
-      "branch" : "master"
-    }, {
-      "repo_url" : "https://github.com/jenkins-docs/simple-java-maven-app",
-      "repo_id" : "simple-java-maven-app",
-      "branch" : "master"
-    } ],
-    "sqa_criteria" : [ {
-      "criterion" : "qc_style",
-      "repos" : [ {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
+    "environment" : {
+      "JPL_IGNOREFAILURES" : "defined",
+      "JPL_DOCKERPUSH" : "docs service1 service4"
+    },
+    "sqa_criteria" : {
+      "qc_style" : {
+        "repos" : {
+          "simple-java-maven-app" : {
+            "container" : "checkstyle",
+            "commands" : [ "mvn checkstyle:check" ]
+          }
         }
+      }
+    },
+    "config" : {
+      "project_repos" : {
+        "simple-java-maven-app" : {
+          "repo" : "https://github.com/jenkins-docs/simple-java-maven-app",
+          "branch" : "master"
+        }
+      },
+      "credentials" : [ {
+        "password_var" : "GIT_PASS",
+        "username_var" : "GIT_USER",
+        "id" : "my-dockerhub-token",
+        "type" : "username_password"
       }, {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
-        }
+        "password_var" : "GIT_PASS",
+        "username_var" : "GIT_USER",
+        "id" : "my-dockerhub-token",
+        "type" : "username_password"
       } ]
-    }, {
-      "criterion" : "qc_style",
-      "repos" : [ {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
-        }
-      }, {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
-        }
-      } ]
-    } ]
+    },
+    "timeout" : 0
   }, {
-    "project_repos" : [ {
-      "repo_url" : "https://github.com/jenkins-docs/simple-java-maven-app",
-      "repo_id" : "simple-java-maven-app",
-      "branch" : "master"
-    }, {
-      "repo_url" : "https://github.com/jenkins-docs/simple-java-maven-app",
-      "repo_id" : "simple-java-maven-app",
-      "branch" : "master"
-    } ],
-    "sqa_criteria" : [ {
-      "criterion" : "qc_style",
-      "repos" : [ {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
+    "environment" : {
+      "JPL_IGNOREFAILURES" : "defined",
+      "JPL_DOCKERPUSH" : "docs service1 service4"
+    },
+    "sqa_criteria" : {
+      "qc_style" : {
+        "repos" : {
+          "simple-java-maven-app" : {
+            "container" : "checkstyle",
+            "commands" : [ "mvn checkstyle:check" ]
+          }
         }
+      }
+    },
+    "config" : {
+      "project_repos" : {
+        "simple-java-maven-app" : {
+          "repo" : "https://github.com/jenkins-docs/simple-java-maven-app",
+          "branch" : "master"
+        }
+      },
+      "credentials" : [ {
+        "password_var" : "GIT_PASS",
+        "username_var" : "GIT_USER",
+        "id" : "my-dockerhub-token",
+        "type" : "username_password"
       }, {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
-        }
+        "password_var" : "GIT_PASS",
+        "username_var" : "GIT_USER",
+        "id" : "my-dockerhub-token",
+        "type" : "username_password"
       } ]
-    }, {
-      "criterion" : "qc_style",
-      "repos" : [ {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
-        }
-      }, {
-        "container" : "checkstyle",
-        "repo_id" : "simple-java-maven-app",
-        "build_tool" : {
-          "commands" : [ "mvn checkstyle:check" ]
-        }
-      } ]
-    } ]
+    },
+    "timeout" : 0
   } ],
   "composer_data" : {
-    "services" : [ {
-      "image" : "checkstyle/maven-builder-image",
-      "hostname" : "checkstyle-host",
-      "service_id" : "checkstyle",
-      "volumes" : [ {
-        "volume_source" : "./",
-        "volume_type" : "bind",
-        "volume_target" : "./simple-java-app"
-      }, {
-        "volume_source" : "./",
-        "volume_type" : "bind",
-        "volume_target" : "./simple-java-app"
-      } ],
-      "command" : "sleep 600000"
-    }, {
-      "image" : "checkstyle/maven-builder-image",
-      "hostname" : "checkstyle-host",
-      "service_id" : "checkstyle",
-      "volumes" : [ {
-        "volume_source" : "./",
-        "volume_type" : "bind",
-        "volume_target" : "./simple-java-app"
-      }, {
-        "volume_source" : "./",
-        "volume_type" : "bind",
-        "volume_target" : "./simple-java-app"
-      } ],
-      "command" : "sleep 600000"
-    } ],
+    "services" : {
+      "checkstyle" : {
+        "image" : {
+          "name" : "checkstyle/maven-builder-image",
+          "registry" : {
+            "push" : true,
+            "url" : "https://hub.docker.com/",
+            "credential_id" : "my-dockerhub-cred"
+          }
+        },
+        "hostname" : "checkstyle-host",
+        "volumes" : [ {
+          "source" : "./",
+          "target" : "./simple-java-app",
+          "type" : "bind"
+        } ],
+        "command" : "sleep 600000"
+      }
+    },
     "version" : "3.7"
   },
+  "name" : "sqaaas-api-spec",
+  "id" : "dd7d8481-81a3-407f-95f0-a2f1cb382a4b",
   "jenkinsfile_data" : {
     "stages" : [ {
       "pipeline_config" : {
@@ -169,6 +152,57 @@ async def test_add_pipeline(client):
         path='/v1/pipeline',
         headers=headers,
         json=body,
+        )
+    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
+
+
+async def test_create_pull_request(client):
+    """Test case for create_pull_request
+
+    Creates pull request with JePL files.
+    """
+    body = openapi_server.InlineObject()
+    headers = { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    }
+    response = await client.request(
+        method='POST',
+        path='/v1/pipeline/{pipeline_id}/pull_request'.format(pipeline_id='pipeline_id_example'),
+        headers=headers,
+        json=body,
+        )
+    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
+
+
+async def test_delete_pipeline_by_id(client):
+    """Test case for delete_pipeline_by_id
+
+    Delete pipeline by ID
+    """
+    headers = { 
+        'Accept': 'application/json',
+    }
+    response = await client.request(
+        method='DELETE',
+        path='/v1/pipeline/{pipeline_id}'.format(pipeline_id='pipeline_id_example'),
+        headers=headers,
+        )
+    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
+
+
+async def test_get_compressed_files(client):
+    """Test case for get_compressed_files
+
+    Get JePL files in compressed format.
+    """
+    headers = { 
+        'Accept': 'application/zip',
+    }
+    response = await client.request(
+        method='GET',
+        path='/v1/pipeline/{pipeline_id}/compressed_files'.format(pipeline_id='pipeline_id_example'),
+        headers=headers,
         )
     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
 

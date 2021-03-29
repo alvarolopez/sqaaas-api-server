@@ -14,19 +14,23 @@ class InlineResponse2001(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_status: str=None):
+    def __init__(self, build_url: str=None, build_status: str=None):
         """InlineResponse2001 - a model defined in OpenAPI
 
+        :param build_url: The build_url of this InlineResponse2001.
         :param build_status: The build_status of this InlineResponse2001.
         """
         self.openapi_types = {
+            'build_url': str,
             'build_status': str
         }
 
         self.attribute_map = {
+            'build_url': 'build_url',
             'build_status': 'build_status'
         }
 
+        self._build_url = build_url
         self._build_status = build_status
 
     @classmethod
@@ -37,6 +41,27 @@ class InlineResponse2001(Model):
         :return: The inline_response_200_1 of this InlineResponse2001.
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def build_url(self):
+        """Gets the build_url of this InlineResponse2001.
+
+
+        :return: The build_url of this InlineResponse2001.
+        :rtype: str
+        """
+        return self._build_url
+
+    @build_url.setter
+    def build_url(self, build_url):
+        """Sets the build_url of this InlineResponse2001.
+
+
+        :param build_url: The build_url of this InlineResponse2001.
+        :type build_url: str
+        """
+
+        self._build_url = build_url
 
     @property
     def build_status(self):
@@ -56,7 +81,7 @@ class InlineResponse2001(Model):
         :param build_status: The build_status of this InlineResponse2001.
         :type build_status: str
         """
-        allowed_values = ["success", "failure", "aborted", "not_built", "unstable"]  # noqa: E501
+        allowed_values = ["success", "failure", "aborted", "not_built", "unstable", "waiting_scan_org"]  # noqa: E501
         if build_status not in allowed_values:
             raise ValueError(
                 "Invalid value for `build_status` ({0}), must be one of {1}"

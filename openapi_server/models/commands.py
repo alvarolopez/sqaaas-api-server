@@ -14,7 +14,7 @@ class Commands(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, commands: List[str]=None):
+    def __init__(self, commands: List[str]=[]):
         """Commands - a model defined in OpenAPI
 
         :param commands: The commands of this Commands.

@@ -15,28 +15,32 @@ class JePLConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, Dict[str, object]]=None, environment: Dict[str, str]=None):
+    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, Dict[str, object]]=None, environment: Dict[str, str]=None, timeout: int=None):
         """JePLConfig - a model defined in OpenAPI
 
         :param config: The config of this JePLConfig.
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
         :param environment: The environment of this JePLConfig.
+        :param timeout: The timeout of this JePLConfig.
         """
         self.openapi_types = {
             'config': JePLConfigConfig,
             'sqa_criteria': Dict[str, Dict[str, object]],
-            'environment': Dict[str, str]
+            'environment': Dict[str, str],
+            'timeout': int
         }
 
         self.attribute_map = {
             'config': 'config',
             'sqa_criteria': 'sqa_criteria',
-            'environment': 'environment'
+            'environment': 'environment',
+            'timeout': 'timeout'
         }
 
         self._config = config
         self._sqa_criteria = sqa_criteria
         self._environment = environment
+        self._timeout = timeout
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'JePLConfig':
@@ -109,3 +113,24 @@ class JePLConfig(Model):
         """
 
         self._environment = environment
+
+    @property
+    def timeout(self):
+        """Gets the timeout of this JePLConfig.
+
+
+        :return: The timeout of this JePLConfig.
+        :rtype: int
+        """
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout):
+        """Sets the timeout of this JePLConfig.
+
+
+        :param timeout: The timeout of this JePLConfig.
+        :type timeout: int
+        """
+
+        self._timeout = timeout

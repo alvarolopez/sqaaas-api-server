@@ -1,17 +1,19 @@
 openapi: 3.0.0
 info:
-  description: API for the Software and Service Quality Assurance as a Service (SQAaaS)
-    component.
+  description: OpenAPI specification for the Software and Service Quality Assurance
+    as a Service (SQAaaS) component.
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   title: SQAaaS API
-  version: 0.1.0
+  version: 1.1.0
 servers:
-- description: Optional server description, e.g. Main (production) server
+- description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
-- description: Optional server description, e.g. Internal staging server for testing
-  url: http://staging-api.sqaaas.eosc-synergy.eu
+- description: Staging API server for testing
+  url: https://api-staging.sqaaas.eosc-synergy.eu
+- description: Development API server (mock server)
+  url: https://api-dev.sqaaas.eosc-synergy.eu
 paths:
   /pipeline:
     get:
@@ -75,9 +77,18 @@ paths:
         "204":
           description: Pipeline successfully deleted
         "400":
-          description: Invalid ID supplied
+          description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Delete pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
     get:
@@ -99,7 +110,7 @@ paths:
                 $ref: '#/components/schemas/Pipeline'
           description: Successful operation
         "400":
-          description: Invalid ID supplied
+          description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
       summary: Find pipeline by ID
@@ -127,6 +138,10 @@ paths:
                   $ref: '#/components/schemas/JePL_composer'
                 type: array
           description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Gets composer configuration used by the pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/compressed_files:
@@ -151,8 +166,10 @@ paths:
                 format: binary
                 type: string
           description: ZIP fle with JePL files
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Get JePL files in compressed format.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/config:
@@ -178,6 +195,10 @@ paths:
                   $ref: '#/components/schemas/JePL_config'
                 type: array
           description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Gets pipeline's main configuration.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/jenkinsfile:
@@ -203,6 +224,10 @@ paths:
                   $ref: '#/components/schemas/JePL_jenkinsfile'
                 type: array
           description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Gets Jenkins pipeline definition used by the pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/pull_request:
@@ -241,8 +266,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/inline_response_200_2'
           description: Successful operation
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Creates pull request with JePL files.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -269,8 +305,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/inline_response_200'
           description: Successful operation
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Runs pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/status:
@@ -294,8 +341,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/inline_response_200_1'
           description: Successful operation
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Get pipeline status.
       x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
@@ -306,6 +364,16 @@ components:
           schema:
             $ref: '#/components/schemas/inline_object'
       required: true
+  responses:
+    BadGateway:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpstreamError'
+      description: |
+        The server while acting as a gateway or a proxy, received
+        an invalid response from the upstream server it accessed
+        in attempting to fulfill the request.
   schemas:
     Repository:
       additionalProperties:
@@ -322,6 +390,7 @@ components:
         simple-java-maven-app:
           repo: https://github.com/jenkins-docs/simple-java-maven-app
           branch: master
+      title: Repository
       type: object
     Creds_user_pass:
       example:
@@ -332,31 +401,31 @@ components:
       properties:
         id:
           example: my-dockerhub-token
+          title: id
           type: string
         type:
           enum:
           - username_password
+          title: type
           type: string
         username_var:
           example: GIT_USER
+          title: username_var
           type: string
         password_var:
           example: GIT_PASS
+          title: password_var
           type: string
       required:
       - id
       - password_var
       - username_var
+      title: Creds_user_pass
       type: object
-    Commands:
+    Tox:
       properties:
-        commands:
-          default: []
-          example:
-          - mvn checkstyle:check
-          items:
-            type: string
-          type: array
+        tox:
+          $ref: '#/components/schemas/Tox_tox'
       type: object
     CriterionBuild:
       additionalProperties:
@@ -365,7 +434,8 @@ components:
             repos:
               additionalProperties:
                 additionalProperties:
-                  $ref: '#/components/schemas/Commands'
+                  anyOf:
+                  - $ref: '#/components/schemas/Tox'
                 properties:
                   container:
                     type: string
@@ -380,6 +450,7 @@ components:
               container: checkstyle
               commands:
               - mvn checkstyle:check
+      title: sqa_criteria
       type: object
     Environment:
       additionalProperties:
@@ -387,6 +458,7 @@ components:
       example:
         JPL_IGNOREFAILURES: defined
         JPL_DOCKERPUSH: docs service1 service4
+      title: environment
       type: object
     JePL_config:
       example:
@@ -414,6 +486,7 @@ components:
             username_var: GIT_USER
             id: my-dockerhub-token
             type: username_password
+        timeout: 0
       properties:
         config:
           $ref: '#/components/schemas/JePL_config_config'
@@ -424,7 +497,8 @@ components:
                 repos:
                   additionalProperties:
                     additionalProperties:
-                      $ref: '#/components/schemas/Commands'
+                      anyOf:
+                      - $ref: '#/components/schemas/Tox'
                     properties:
                       container:
                         type: string
@@ -439,6 +513,7 @@ components:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+          title: sqa_criteria
           type: object
         environment:
           additionalProperties:
@@ -446,13 +521,31 @@ components:
           example:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
+          title: environment
           type: object
+        timeout:
+          title: timeout
+          type: integer
+      title: JePL_config
       type: object
     ServiceDockerCompose:
       additionalProperties:
         properties:
           image:
-            type: string
+            properties:
+              name:
+                type: string
+              registry:
+                properties:
+                  push:
+                    type: boolean
+                  url:
+                    format: uri
+                    type: string
+                  credential_id:
+                    type: string
+                type: object
+            type: object
           hostname:
             type: string
           volumes:
@@ -470,22 +563,35 @@ components:
             type: array
           command:
             type: string
+          environment:
+            $ref: '#/components/schemas/Environment'
         type: object
       example:
         checkstyle:
-          image: checkstyle/maven-builder-image
+          image:
+            name: checkstyle/maven-builder-image
+            registry:
+              push: true
+              url: https://hub.docker.com/
+              credential_id: my-dockerhub-cred
           hostname: checkstyle-host
           volumes:
           - source: ./
             target: ./simple-java-app
             type: bind
           command: sleep 600000
+      title: services
       type: object
     JePL_composer:
       example:
         services:
           checkstyle:
-            image: checkstyle/maven-builder-image
+            image:
+              name: checkstyle/maven-builder-image
+              registry:
+                push: true
+                url: https://hub.docker.com/
+                credential_id: my-dockerhub-cred
             hostname: checkstyle-host
             volumes:
             - source: ./
@@ -496,12 +602,26 @@ components:
       properties:
         version:
           example: "3.7"
+          title: version
           type: string
         services:
           additionalProperties:
             properties:
               image:
-                type: string
+                properties:
+                  name:
+                    type: string
+                  registry:
+                    properties:
+                      push:
+                        type: boolean
+                      url:
+                        format: uri
+                        type: string
+                      credential_id:
+                        type: string
+                    type: object
+                type: object
               hostname:
                 type: string
               volumes:
@@ -519,17 +639,26 @@ components:
                 type: array
               command:
                 type: string
+              environment:
+                $ref: '#/components/schemas/Environment'
             type: object
           example:
             checkstyle:
-              image: checkstyle/maven-builder-image
+              image:
+                name: checkstyle/maven-builder-image
+                registry:
+                  push: true
+                  url: https://hub.docker.com/
+                  credential_id: my-dockerhub-cred
               hostname: checkstyle-host
               volumes:
               - source: ./
                 target: ./simple-java-app
                 type: bind
               command: sleep 600000
+          title: services
           type: object
+      title: JePL_composer
       type: object
     JePL_jenkinsfile:
       example:
@@ -558,7 +687,9 @@ components:
         stages:
           items:
             $ref: '#/components/schemas/JePL_jenkinsfile_stages'
+          title: stages
           type: array
+      title: JePL_jenkinsfile
       type: object
     Pipeline:
       example:
@@ -587,6 +718,7 @@ components:
               username_var: GIT_USER
               id: my-dockerhub-token
               type: username_password
+          timeout: 0
         - environment:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
@@ -611,10 +743,16 @@ components:
               username_var: GIT_USER
               id: my-dockerhub-token
               type: username_password
+          timeout: 0
         composer_data:
           services:
             checkstyle:
-              image: checkstyle/maven-builder-image
+              image:
+                name: checkstyle/maven-builder-image
+                registry:
+                  push: true
+                  url: https://hub.docker.com/
+                  credential_id: my-dockerhub-cred
               hostname: checkstyle-host
               volumes:
               - source: ./
@@ -650,18 +788,35 @@ components:
         id:
           example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
           readOnly: true
+          title: id
           type: string
         name:
           example: sqaaas-api-spec
+          title: name
           type: string
         config_data:
           items:
             $ref: '#/components/schemas/JePL_config'
+          title: config_data
           type: array
         composer_data:
           $ref: '#/components/schemas/JePL_composer'
         jenkinsfile_data:
           $ref: '#/components/schemas/JePL_jenkinsfile'
+      title: Pipeline
+      type: object
+    UpstreamError:
+      properties:
+        upstream_status:
+          title: upstream_status
+          type: integer
+        upstream_reason:
+          title: upstream_reason
+          type: string
+      required:
+      - upstream_reason
+      - upstream_status
+      title: UpstreamError
       type: object
     inline_response_201:
       example:
@@ -669,7 +824,9 @@ components:
       properties:
         id:
           description: UUID identifying the pipeline
+          title: id
           type: string
+      title: inline_response_201
       type: object
     inline_response_200:
       example:
@@ -677,12 +834,19 @@ components:
       properties:
         build_url:
           format: uri
+          title: build_url
           type: string
+      title: inline_response_200
       type: object
     inline_response_200_1:
       example:
         build_status: success
+        build_url: https://openapi-generator.tech
       properties:
+        build_url:
+          format: uri
+          title: build_url
+          type: string
         build_status:
           enum:
           - success
@@ -690,7 +854,10 @@ components:
           - aborted
           - not_built
           - unstable
+          - waiting_scan_org
+          title: build_status
           type: string
+      title: inline_response_200_1
       type: object
     inline_object:
       properties:
@@ -705,7 +872,26 @@ components:
       properties:
         pull_request_url:
           format: uri
+          title: pull_request_url
           type: string
+      title: inline_response_200_2
+      type: object
+    Tox_tox:
+      properties:
+        testenv:
+          example: cover
+          items:
+            type: string
+          title: testenv
+          type: array
+        tox_file:
+          default: tox.ini
+          example: tox.ini
+          title: tox_file
+          type: string
+      required:
+      - testenv
+      title: Tox_tox
       type: object
     JePL_config_config:
       example:
@@ -738,11 +924,14 @@ components:
             simple-java-maven-app:
               repo: https://github.com/jenkins-docs/simple-java-maven-app
               branch: master
+          title: Repository
           type: object
         credentials:
           items:
             $ref: '#/components/schemas/Creds_user_pass'
+          title: credentials
           type: array
+      title: JePL_config_config
       type: object
     JePL_jenkinsfile_when:
       example:
@@ -754,7 +943,9 @@ components:
           items:
             example: master
             type: string
+          title: branches
           type: array
+      title: JePL_jenkinsfile_when
       type: object
     JePL_jenkinsfile_pipeline_config:
       example:
@@ -766,19 +957,25 @@ components:
       properties:
         config_file:
           example: ./.sqa/config.yml
+          title: config_file
           type: string
         base_repository:
           example: master
+          title: base_repository
           type: string
         base_branch:
           example: https://github.com/jenkins-docs/simple-java-maven-app
+          title: base_branch
           type: string
         credentials_id:
           example: userpass_dockerhub
+          title: credentials_id
           type: string
         jepl_validator_docker_image:
           example: eoscsynergy/jpl-validator:1.1.0
+          title: jepl_validator_docker_image
           type: string
+      title: JePL_jenkinsfile_pipeline_config
       type: object
     JePL_jenkinsfile_stages:
       example:
@@ -797,4 +994,5 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile_when'
         pipeline_config:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
+      title: JePL_jenkinsfile_stages
       type: object
