@@ -15,7 +15,7 @@ class JePLConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, Dict[str, object]]=None, environment: Dict[str, str]=None, timeout: int=None):
+    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, object]=None, environment: Dict[str, str]=None, timeout: int=None):
         """JePLConfig - a model defined in OpenAPI
 
         :param config: The config of this JePLConfig.
@@ -25,7 +25,7 @@ class JePLConfig(Model):
         """
         self.openapi_types = {
             'config': JePLConfigConfig,
-            'sqa_criteria': Dict[str, Dict[str, object]],
+            'sqa_criteria': Dict[str, object],
             'environment': Dict[str, str],
             'timeout': int
         }
@@ -78,7 +78,7 @@ class JePLConfig(Model):
 
 
         :return: The sqa_criteria of this JePLConfig.
-        :rtype: Dict[str, Dict[str, object]]
+        :rtype: Dict[str, object]
         """
         return self._sqa_criteria
 
@@ -88,7 +88,7 @@ class JePLConfig(Model):
 
 
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
-        :type sqa_criteria: Dict[str, Dict[str, object]]
+        :type sqa_criteria: Dict[str, object]
         """
 
         self._sqa_criteria = sqa_criteria

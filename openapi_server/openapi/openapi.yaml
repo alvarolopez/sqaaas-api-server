@@ -392,12 +392,18 @@ components:
           branch: master
       title: Repository
       type: object
-    Creds_user_pass:
+    Creds_simplified:
+      additionalProperties: false
       example:
-        password_var: GIT_PASS
-        username_var: GIT_USER
+        password_var: KEYSTORE_PASSWORD
+        passphrase_var: KEYFILE_PASSPHRASE
+        username_var: KEYFILE_USERNAME
+        keystore_var: KEYSTORE_TMP_PATH
+        keyfile_var: KEYFILE_TMP_PATH
+        variable: MY_TOKEN
+        alias_var: KEYSTORE_ALIAS_NAME
         id: my-dockerhub-token
-        type: username_password
+        type: file
       properties:
         id:
           example: my-dockerhub-token
@@ -405,43 +411,83 @@ components:
           type: string
         type:
           enum:
+          - file
+          - zip
           - username_password
+          - ssh_user_private_key
           title: type
           type: string
-        username_var:
-          example: GIT_USER
-          title: username_var
+        keystore_var:
+          example: KEYSTORE_TMP_PATH
+          title: keystore_var
+          type: string
+        alias_var:
+          example: KEYSTORE_ALIAS_NAME
+          title: alias_var
           type: string
         password_var:
-          example: GIT_PASS
+          example: KEYSTORE_PASSWORD
           title: password_var
+          type: string
+        variable:
+          example: MY_TOKEN
+          title: variable
+          type: string
+        keyfile_var:
+          example: KEYFILE_TMP_PATH
+          title: keyfile_var
+          type: string
+        passphrase_var:
+          example: KEYFILE_PASSPHRASE
+          title: passphrase_var
+          type: string
+        username_var:
+          example: KEYFILE_USERNAME
+          title: username_var
           type: string
       required:
       - id
-      - password_var
-      - username_var
-      title: Creds_user_pass
+      title: Creds_simplified
       type: object
-    Tox:
+    Commands_simplified:
+      default: []
+      example:
+      - mvn checkstyle:check
+      items:
+        type: string
+      type: array
+    Tox_simplified:
       properties:
-        tox:
-          $ref: '#/components/schemas/Tox_tox'
+        testenv:
+          example: cover
+          items:
+            type: string
+          title: testenv
+          type: array
+        tox_file:
+          default: tox.ini
+          example: tox.ini
+          title: tox_file
+          type: string
+      required:
+      - testenv
+      title: Tox_simplified
       type: object
     CriterionBuild:
       additionalProperties:
-        additionalProperties:
-          properties:
-            repos:
-              additionalProperties:
-                additionalProperties:
-                  anyOf:
-                  - $ref: '#/components/schemas/Tox'
-                properties:
-                  container:
-                    type: string
-                type: object
+        properties:
+          repos:
+            additionalProperties:
+              additionalProperties: false
+              properties:
+                container:
+                  type: string
+                commands:
+                  $ref: '#/components/schemas/Commands_simplified'
+                tox:
+                  $ref: '#/components/schemas/Tox_simplified'
               type: object
-          type: object
+            type: object
         type: object
       example:
         qc_style:
@@ -478,33 +524,43 @@ components:
               repo: https://github.com/jenkins-docs/simple-java-maven-app
               branch: master
           credentials:
-          - password_var: GIT_PASS
-            username_var: GIT_USER
+          - password_var: KEYSTORE_PASSWORD
+            passphrase_var: KEYFILE_PASSPHRASE
+            username_var: KEYFILE_USERNAME
+            keystore_var: KEYSTORE_TMP_PATH
+            keyfile_var: KEYFILE_TMP_PATH
+            variable: MY_TOKEN
+            alias_var: KEYSTORE_ALIAS_NAME
             id: my-dockerhub-token
-            type: username_password
-          - password_var: GIT_PASS
-            username_var: GIT_USER
+            type: file
+          - password_var: KEYSTORE_PASSWORD
+            passphrase_var: KEYFILE_PASSPHRASE
+            username_var: KEYFILE_USERNAME
+            keystore_var: KEYSTORE_TMP_PATH
+            keyfile_var: KEYFILE_TMP_PATH
+            variable: MY_TOKEN
+            alias_var: KEYSTORE_ALIAS_NAME
             id: my-dockerhub-token
-            type: username_password
+            type: file
         timeout: 0
       properties:
         config:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
-            additionalProperties:
-              properties:
-                repos:
-                  additionalProperties:
-                    additionalProperties:
-                      anyOf:
-                      - $ref: '#/components/schemas/Tox'
-                    properties:
-                      container:
-                        type: string
-                    type: object
+            properties:
+              repos:
+                additionalProperties:
+                  additionalProperties: false
+                  properties:
+                    container:
+                      type: string
+                    commands:
+                      $ref: '#/components/schemas/Commands_simplified'
+                    tox:
+                      $ref: '#/components/schemas/Tox_simplified'
                   type: object
-              type: object
+                type: object
             type: object
           example:
             qc_style:
@@ -710,14 +766,24 @@ components:
                 repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
-            - password_var: GIT_PASS
-              username_var: GIT_USER
+            - password_var: KEYSTORE_PASSWORD
+              passphrase_var: KEYFILE_PASSPHRASE
+              username_var: KEYFILE_USERNAME
+              keystore_var: KEYSTORE_TMP_PATH
+              keyfile_var: KEYFILE_TMP_PATH
+              variable: MY_TOKEN
+              alias_var: KEYSTORE_ALIAS_NAME
               id: my-dockerhub-token
-              type: username_password
-            - password_var: GIT_PASS
-              username_var: GIT_USER
+              type: file
+            - password_var: KEYSTORE_PASSWORD
+              passphrase_var: KEYFILE_PASSPHRASE
+              username_var: KEYFILE_USERNAME
+              keystore_var: KEYSTORE_TMP_PATH
+              keyfile_var: KEYFILE_TMP_PATH
+              variable: MY_TOKEN
+              alias_var: KEYSTORE_ALIAS_NAME
               id: my-dockerhub-token
-              type: username_password
+              type: file
           timeout: 0
         - environment:
             JPL_IGNOREFAILURES: defined
@@ -735,14 +801,24 @@ components:
                 repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
-            - password_var: GIT_PASS
-              username_var: GIT_USER
+            - password_var: KEYSTORE_PASSWORD
+              passphrase_var: KEYFILE_PASSPHRASE
+              username_var: KEYFILE_USERNAME
+              keystore_var: KEYSTORE_TMP_PATH
+              keyfile_var: KEYFILE_TMP_PATH
+              variable: MY_TOKEN
+              alias_var: KEYSTORE_ALIAS_NAME
               id: my-dockerhub-token
-              type: username_password
-            - password_var: GIT_PASS
-              username_var: GIT_USER
+              type: file
+            - password_var: KEYSTORE_PASSWORD
+              passphrase_var: KEYFILE_PASSPHRASE
+              username_var: KEYFILE_USERNAME
+              keystore_var: KEYSTORE_TMP_PATH
+              keyfile_var: KEYFILE_TMP_PATH
+              variable: MY_TOKEN
+              alias_var: KEYSTORE_ALIAS_NAME
               id: my-dockerhub-token
-              type: username_password
+              type: file
           timeout: 0
         composer_data:
           services:
@@ -876,23 +952,6 @@ components:
           type: string
       title: inline_response_200_2
       type: object
-    Tox_tox:
-      properties:
-        testenv:
-          example: cover
-          items:
-            type: string
-          title: testenv
-          type: array
-        tox_file:
-          default: tox.ini
-          example: tox.ini
-          title: tox_file
-          type: string
-      required:
-      - testenv
-      title: Tox_tox
-      type: object
     JePL_config_config:
       example:
         project_repos:
@@ -900,14 +959,24 @@ components:
             repo: https://github.com/jenkins-docs/simple-java-maven-app
             branch: master
         credentials:
-        - password_var: GIT_PASS
-          username_var: GIT_USER
+        - password_var: KEYSTORE_PASSWORD
+          passphrase_var: KEYFILE_PASSPHRASE
+          username_var: KEYFILE_USERNAME
+          keystore_var: KEYSTORE_TMP_PATH
+          keyfile_var: KEYFILE_TMP_PATH
+          variable: MY_TOKEN
+          alias_var: KEYSTORE_ALIAS_NAME
           id: my-dockerhub-token
-          type: username_password
-        - password_var: GIT_PASS
-          username_var: GIT_USER
+          type: file
+        - password_var: KEYSTORE_PASSWORD
+          passphrase_var: KEYFILE_PASSPHRASE
+          username_var: KEYFILE_USERNAME
+          keystore_var: KEYSTORE_TMP_PATH
+          keyfile_var: KEYFILE_TMP_PATH
+          variable: MY_TOKEN
+          alias_var: KEYSTORE_ALIAS_NAME
           id: my-dockerhub-token
-          type: username_password
+          type: file
       properties:
         project_repos:
           additionalProperties:
@@ -928,7 +997,7 @@ components:
           type: object
         credentials:
           items:
-            $ref: '#/components/schemas/Creds_user_pass'
+            $ref: '#/components/schemas/Creds_simplified'
           title: credentials
           type: array
       title: JePL_config_config
