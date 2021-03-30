@@ -422,10 +422,17 @@ components:
       - username_var
       title: Creds_user_pass
       type: object
-    Tox:
+    Commands:
       properties:
-        tox:
-          $ref: '#/components/schemas/Tox_tox'
+        commands:
+          default: []
+          example:
+          - mvn checkstyle:check
+          items:
+            type: string
+          title: commands
+          type: array
+      title: Commands
       type: object
     CriterionBuild:
       additionalProperties:
@@ -434,8 +441,7 @@ components:
             repos:
               additionalProperties:
                 additionalProperties:
-                  anyOf:
-                  - $ref: '#/components/schemas/Tox'
+                  $ref: '#/components/schemas/Commands'
                 properties:
                   container:
                     type: string
@@ -497,8 +503,7 @@ components:
                 repos:
                   additionalProperties:
                     additionalProperties:
-                      anyOf:
-                      - $ref: '#/components/schemas/Tox'
+                      $ref: '#/components/schemas/Commands'
                     properties:
                       container:
                         type: string
@@ -875,23 +880,6 @@ components:
           title: pull_request_url
           type: string
       title: inline_response_200_2
-      type: object
-    Tox_tox:
-      properties:
-        testenv:
-          example: cover
-          items:
-            type: string
-          title: testenv
-          type: array
-        tox_file:
-          default: tox.ini
-          example: tox.ini
-          title: tox_file
-          type: string
-      required:
-      - testenv
-      title: Tox_tox
       type: object
     JePL_config_config:
       example:
