@@ -448,21 +448,19 @@ components:
       type: object
     CriterionBuild:
       additionalProperties:
-        additionalProperties:
-          properties:
-            repos:
-              additionalProperties:
-                additionalProperties: false
-                properties:
-                  container:
-                    type: string
-                  commands:
-                    $ref: '#/components/schemas/Commands_simplified'
-                  tox:
-                    $ref: '#/components/schemas/Tox_simplified'
-                type: object
+        properties:
+          repos:
+            additionalProperties:
+              additionalProperties: false
+              properties:
+                container:
+                  type: string
+                commands:
+                  $ref: '#/components/schemas/Commands_simplified'
+                tox:
+                  $ref: '#/components/schemas/Tox_simplified'
               type: object
-          type: object
+            type: object
         type: object
       example:
         qc_style:
@@ -513,21 +511,19 @@ components:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
-            additionalProperties:
-              properties:
-                repos:
-                  additionalProperties:
-                    additionalProperties: false
-                    properties:
-                      container:
-                        type: string
-                      commands:
-                        $ref: '#/components/schemas/Commands_simplified'
-                      tox:
-                        $ref: '#/components/schemas/Tox_simplified'
-                    type: object
+            properties:
+              repos:
+                additionalProperties:
+                  additionalProperties: false
+                  properties:
+                    container:
+                      type: string
+                    commands:
+                      $ref: '#/components/schemas/Commands_simplified'
+                    tox:
+                      $ref: '#/components/schemas/Tox_simplified'
                   type: object
-              type: object
+                type: object
             type: object
           example:
             qc_style:
