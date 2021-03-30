@@ -1,7 +1,6 @@
 # coding: utf-8
 
 # import models into model package
-from openapi_server.models.commands import Commands
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200

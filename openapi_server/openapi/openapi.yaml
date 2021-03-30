@@ -422,29 +422,25 @@ components:
       - username_var
       title: Creds_user_pass
       type: object
-    Commands:
-      properties:
-        commands:
-          default: []
-          example:
-          - mvn checkstyle:check
-          items:
-            type: string
-          title: commands
-          type: array
-      title: Commands
-      type: object
+    Commands_simplified:
+      default: []
+      example:
+      - mvn checkstyle:check
+      items:
+        type: string
+      type: array
     CriterionBuild:
       additionalProperties:
         additionalProperties:
           properties:
             repos:
               additionalProperties:
-                additionalProperties:
-                  $ref: '#/components/schemas/Commands'
+                additionalProperties: false
                 properties:
                   container:
                     type: string
+                  commands:
+                    $ref: '#/components/schemas/Commands_simplified'
                 type: object
               type: object
           type: object
@@ -502,11 +498,12 @@ components:
               properties:
                 repos:
                   additionalProperties:
-                    additionalProperties:
-                      $ref: '#/components/schemas/Commands'
+                    additionalProperties: false
                     properties:
                       container:
                         type: string
+                      commands:
+                        $ref: '#/components/schemas/Commands_simplified'
                     type: object
                   type: object
               type: object
