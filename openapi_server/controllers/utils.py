@@ -70,9 +70,9 @@ def validate_request(f):
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
-    # Extract & parse special treatment properties
-    ## JPL_DOCKER* envvars
+    # Docker Compose specific
     for srv_name, srv_data in composer_json['services'].items():
+        ## Set JPL_DOCKER* envvars
         if 'registry' in srv_data['image'].keys():
             registry_data = srv_data['image'].pop('registry')
             if not 'environment' in config_json.keys():
@@ -87,8 +87,8 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
             # so defaulting to the last match
             if registry_data['url']:
                 config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
-    ## Set 'image' property as string (required by DC)
-    srv_data['image'] = srv_data['image']['name']
+        ## Set 'image' property as string (required by Docker Compose)
+        srv_data['image'] = srv_data['image']['name']
 
     config_yml, composer_yml = JePLUtils.get_sqa_files(
         config_json,
