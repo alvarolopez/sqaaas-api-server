@@ -89,6 +89,9 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
                 config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
         ## Set 'image' property as string (required by Docker Compose)
         srv_data['image'] = srv_data['image']['name']
+        ## Set 'working_dir' to the same path as the first volume target
+        ## NOTE Setting working_dir only makes sense when only one volume is expected!
+        srv_data['working_dir'] = srv_data['volumes'][0]['target']
 
     config_yml, composer_yml = JePLUtils.get_sqa_files(
         config_json,
