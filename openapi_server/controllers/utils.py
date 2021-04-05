@@ -79,7 +79,7 @@ def get_pipeline_data(request_body):
     composer_json = request_body['composer_data']
     jenkinsfile_data = request_body['jenkinsfile_data']
 
-    return (config_yml, composer_yml, jenkinsfile)
+    return (config_json, composer_json, jenkinsfile_data)
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
