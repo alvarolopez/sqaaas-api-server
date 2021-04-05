@@ -69,6 +69,19 @@ def validate_request(f):
     return decorated_function
 
 
+def get_pipeline_data(request_body):
+    """Get pipeline data.
+
+    Obtains the pipeline data from the API request.
+    """
+    # NOTE For the time being, we just support one config.yml
+    config_json = request_body['config_data'][0]
+    composer_json = request_body['composer_data']
+    jenkinsfile_data = request_body['jenkinsfile_data']
+
+    return (config_yml, composer_yml, jenkinsfile)
+
+
 def get_jepl_files(config_json, composer_json, jenkinsfile):
     # Docker Compose specific
     for srv_name, srv_data in composer_json['services'].items():
