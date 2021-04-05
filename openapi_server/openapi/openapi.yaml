@@ -115,6 +115,43 @@ paths:
           description: Pipeline not found
       summary: Find pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      operationId: update_pipeline_by_id
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline'
+        required: true
+        x-body-name: body
+      responses:
+        "204":
+          description: Pipeline successfully updated
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
+      summary: Update pipeline by ID
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
   /pipeline/{pipeline_id}/composer:
     get:
       description: |
