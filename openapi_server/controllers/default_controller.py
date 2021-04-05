@@ -7,6 +7,7 @@ from zipfile import ZipFile, ZipInfo
 from typing import List, Dict
 from aiohttp import web
 from urllib.parse import urlparse
+from deepdiff import DeepDiff
 
 from openapi_server import config
 from openapi_server.models.pipeline import Pipeline
@@ -75,6 +76,49 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
+
+
+@ctls_utils.validate_request
+async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.Response:
+    """Update pipeline by ID
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param body:
+    :type body: dict | bytes
+
+    """
+    _db = db.load_content()
+    pipeline_repo = _db[pipeline_id]['pipeline_repo']
+    pipeline_data = _db[pipeline_id]['data']
+    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+
+    config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
+
+    diff_exists = False
+    for elem in [
+        (pipeline_data['config_data'], config_json),
+        (pipeline_data['composer_data'], composer_json),
+        (pipeline_data['jenkinsfile'], jenkinsfile_data),
+    ]:
+        ddiff = DeepDiff(*elem)
+        if ddiff:
+            diff_exists = True
+            logging.debug(ddiff)
+
+    if diff_exists:
+        logging.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
+        _db[pipeline_id] = {
+            'pipeline_repo': pipeline_repo,
+            'data': {
+                'config_data': config_json,
+                'composer_data': composer_json,
+                'jenkinsfile': jenkinsfile_data
+            }
+        }
+        db.store_content(_db)
+
+    return web.Response(status=204)
 
 
 @ctls_utils.validate_request
