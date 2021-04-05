@@ -54,10 +54,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     pipeline_id = str(uuid.uuid4())
     # body = Pipeline.from_dict(body)
 
-    # FIXME For the time being, we just support one config.yml
-    config_json = body['config_data'][0]
-    composer_json = body['composer_data']
-    jenkinsfile_data = body['jenkinsfile_data']
+    config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
 
     # FIXME sqaaas_repo must be provided by the user
     pipeline_name = body['name']
