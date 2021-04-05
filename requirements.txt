@@ -10,3 +10,4 @@ aiohttp_jinja2 == 1.2.0
 PyGithub
 Jinja2
 python-jenkins
+deepdiff
