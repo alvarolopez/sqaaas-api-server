@@ -18,7 +18,8 @@ REQUIRES = [
     "swagger-ui-bundle==0.0.6",
     "aiohttp_jinja2==1.2.0",
     "PyGithub>=1.53",
-    "python-jenkins>=1.7.0"
+    "python-jenkins>=1.7.0",
+    "deepdiff>=5.2.3"
 ]
 
 setup(
