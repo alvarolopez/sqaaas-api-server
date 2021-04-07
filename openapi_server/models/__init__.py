@@ -17,3 +17,4 @@ from openapi_server.models.je_pl_jenkinsfile_when import JePLJenkinsfileWhen
 from openapi_server.models.pipeline import Pipeline
 from openapi_server.models.tox_simplified import ToxSimplified
 from openapi_server.models.upstream_error import UpstreamError
+from openapi_server.models.when_branch import WhenBranch
