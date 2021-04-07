@@ -624,6 +624,17 @@ components:
     ServiceDockerCompose:
       additionalProperties:
         properties:
+          build:
+            properties:
+              context:
+                type: string
+              dockerfile:
+                type: string
+              args:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
           image:
             properties:
               name:
@@ -661,6 +672,11 @@ components:
         type: object
       example:
         checkstyle:
+          build:
+            context: ./dir
+            dockerfile: Dockerfile-alternate
+            args:
+              buildno: 1
           image:
             name: checkstyle/maven-builder-image
             registry:
@@ -679,6 +695,11 @@ components:
       example:
         services:
           checkstyle:
+            build:
+              context: ./dir
+              dockerfile: Dockerfile-alternate
+              args:
+                buildno: 1
             image:
               name: checkstyle/maven-builder-image
               registry:
@@ -700,6 +721,17 @@ components:
         services:
           additionalProperties:
             properties:
+              build:
+                properties:
+                  context:
+                    type: string
+                  dockerfile:
+                    type: string
+                  args:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
               image:
                 properties:
                   name:
@@ -737,6 +769,11 @@ components:
             type: object
           example:
             checkstyle:
+              build:
+                context: ./dir
+                dockerfile: Dockerfile-alternate
+                args:
+                  buildno: 1
               image:
                 name: checkstyle/maven-builder-image
                 registry:
@@ -860,6 +897,11 @@ components:
         composer_data:
           services:
             checkstyle:
+              build:
+                context: ./dir
+                dockerfile: Dockerfile-alternate
+                args:
+                  buildno: 1
               image:
                 name: checkstyle/maven-builder-image
                 registry:
