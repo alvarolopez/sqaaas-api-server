@@ -82,7 +82,7 @@ def get_pipeline_data(request_body):
     return (config_json, composer_json, jenkinsfile_data)
 
 
-def get_jepl_files(config_json, composer_json, jenkinsfile):
+def process_extra_data(config_json, composer_json):
     # Docker Compose specific
     for srv_name, srv_data in composer_json['services'].items():
         ## Set JPL_DOCKER* envvars
@@ -105,6 +105,16 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
         ## Set 'working_dir' to the same path as the first volume target
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
+
+    return (config_json, composer_json)
+
+
+def get_jepl_files(config_json, composer_json, jenkinsfile):
+    # Extract & process those data that are not directly translated into
+    # the composer and JePL config
+    config_json, composer_json = process_extra_data(
+        config_json,
+        composer_json)
 
     config_yml, composer_yml = JePLUtils.get_sqa_files(
         config_json,
