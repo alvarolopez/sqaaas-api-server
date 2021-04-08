@@ -109,21 +109,25 @@ def process_extra_data(config_json, composer_json):
     # Multiple stages (split config.yml, Jenkins when clause)
     config_json_list = []
     stage_data_list = []
+    config_json_no_when = config_json.copy()
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         if 'when' in criterion_data.keys():
-            config_json_copy = config_json.copy()
-            config_json_copy['sqa_criteria'] = {criterion_name: criterion_data}
+            config_json_when = config_json.copy()
+            config_json_when['sqa_criteria'] = {criterion_name: criterion_data}
             random_fname = '.'.join([
             	'config',
                 namegenerator.gen(),
                 'json'
             ])
-            config_json_list.append((random_fname, config_json_copy))
+            config_json_list.append((random_fname, config_json_when))
 
             when_data = criterion_data.pop('when')
             stage_data_list.append((random_fname, when_data))
+    	else:
+            config_json_no_when['sqa_criteria'].pop(criterion_name)
+    config_json_list.extend(config_json_no_when)
 
-    return (config_json, composer_json)
+    return (config_json_list, composer_json)
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
