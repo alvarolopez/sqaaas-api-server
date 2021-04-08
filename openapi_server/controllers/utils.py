@@ -105,6 +105,16 @@ def process_extra_data(config_json, composer_json):
         ## Set 'working_dir' to the same path as the first volume target
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
+    # Jenkins 'when' clause
+    config_json_list = []
+    for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        if 'when' in criterion_data.keys():
+            when_data = criterion_data.pop('when')
+            config_json_copy = config_json.copy()
+            config_json_copy['sqa_criteria'] = {criterion_name: criterion_data}
+            config_json_list.append(config_json_copy)
+            # Address Jenkinsfile 'when' modifications ..
+            #
 
     return (config_json, composer_json)
 
