@@ -6,8 +6,19 @@ pipeline {
     agent any
 
     stages {
-        {% for config_data in config_data_list %}
+        {%- for config_data in config_data_list %}
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |first |e }}') {
+            {%- if config_data.data_when %}
+            when {
+                {%- for k,v in config_data.data_when.items() %}
+                {%- if k == 'branch' %}
+                branch pattern: '{{ v.pattern }}', comparator: '{{ v.comparator }}'
+                {%- elif k == 'building_tag' and v %}
+                buildingTag()
+                {%- endif %}
+                {%- endfor %}
+            }
+            {%- endif %}
             steps {
                 script {
                     projectConfig = pipelineConfig(
@@ -23,6 +34,6 @@ pipeline {
                 }
             }
         }
-        {% endfor %}
+        {%- endfor %}
     }
 }
