@@ -382,8 +382,7 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
 
     config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
         pipeline_data['config_data'],
-        pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile']
+        pipeline_data['composer_data']
     )
 
     binary_stream = io.BytesIO()

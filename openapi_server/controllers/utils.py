@@ -151,7 +151,7 @@ def process_extra_data(config_json, composer_json):
     return (config_data_list, composer_data)
 
 
-def get_jepl_files(config_json, composer_json, jenkinsfile):
+def get_jepl_files(config_json, composer_json):
     # Extract & process those data that are not directly translated into
     # the composer and JePL config
     config_data_list, composer_data = process_extra_data(
@@ -171,7 +171,7 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
     composer_data = JePLUtils.append_file_name(
 	'composer', [composer_data])[0]
 
-    jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile)
+    jenkinsfile = JePLUtils.get_jenkinsfile(config_data_list)
 
     return (config_data_list, composer_data, jenkinsfile)
 
@@ -179,8 +179,7 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
 def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile, branch='sqaaas'):
     yaml_data_list, jenkinsfile = get_jepl_files(
         config_json,
-        composer_json,
-        jenkinsfile)
+        composer_json)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo)
     gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo, branch=branch)
     logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo)

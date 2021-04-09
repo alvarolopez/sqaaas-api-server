@@ -35,14 +35,15 @@ class JePLUtils(object):
         return new_file_data_list
 
     @staticmethod
-    def get_jenkinsfile(jenkinsfile_data):
-        """Returns the Jenkinsfile from the incoming JSON payload.
+    def get_jenkinsfile(config_data_list):
+        """Returns a String with the Jenkinsfile rendered from the given
+        JSON payload.
 
-        :param jenkinsfile_data: JSON payload with the Jenkinsfile content.
+        :param config_data_list: List of config data Dicts
         """
         env = Environment(
             loader=PackageLoader('openapi_server', 'templates')
         )
         template = env.get_template('Jenkinsfile')
 
-        return template.render()
+        return template.render(config_data_list=config_data_list)
