@@ -28,7 +28,7 @@ class JePLUtils(object):
                 random_str = namegenerator.gen()
                 chunk_list.insert(1, random_str)
             new_data = copy.deepcopy(data)
-            new_data.extend({'file_name': '.'.join([chunk_list])})
+            new_data.update({'file_name': '.'.join([chunk_list])})
             new_file_data_list.append(new_data)
             count += 1
 
