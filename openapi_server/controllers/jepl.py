@@ -15,8 +15,8 @@ class JePLUtils(object):
         :param file_data_list: List of JSON payload data to be associated with the generated file name.
         """
         file_type_chunks = {
-            'config': ['config', 'yml'],
-            'composer': ['docker-compose', 'yml'],
+            'config': ['.sqa/config', 'yml'],
+            'composer': ['.sqa/docker-compose', 'yml'],
             'jenkinsfile': ['Jenkinsfile']
         }
 
