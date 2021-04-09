@@ -1,8 +1,8 @@
 import functools
 import logging
-import namegenerator
 import re
 import uuid
+import yaml
 
 from aiohttp import web
 
@@ -70,6 +70,14 @@ def validate_request(f):
     return decorated_function
 
 
+def json_to_yaml(json_data):
+    """Returns the YAML translation of the incoming JSON payload.
+
+    :param json_data: JSON payload.
+    """
+    return yaml.dump(json_data)
+
+
 def get_pipeline_data(request_body):
     """Get pipeline data.
 
@@ -84,7 +92,20 @@ def get_pipeline_data(request_body):
 
 
 def process_extra_data(config_json, composer_json):
-    # Docker Compose specific
+    """Manage those properties, present in the API spec, that cannot
+    be directly translated into a workable 'config.yml' or composer
+    (i.e. 'docker-compose.yml).
+
+    This method returns a (config_json_list, composer_json) Tuple (both in
+    JSON format), where:
+    - 'config_json_list' is a List of Dicts {'data_json': <data>,
+                                             'data_when': <data>}
+    - 'composer_json' is a Dict
+
+    :param config_json: JePL's config as received through the API request (JSON payload)
+    :param composer_json: Composer content as received throught the API request (JSON payload).
+    """
+    # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
         ## Set JPL_DOCKER* envvars
         if 'registry' in srv_data['image'].keys():
@@ -106,47 +127,55 @@ def process_extra_data(config_json, composer_json):
         ## Set 'working_dir' to the same path as the first volume target
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
-    # Multiple stages (split config.yml, Jenkins when clause)
-    config_json_list = []
-    stage_data_list = []
+    composer_data = {'data_json': composer_json}
+    # CONFIG (Multiple stages, Jenkins when clause)
+    config_data_list = []
     config_json_no_when = config_json.copy()
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         if 'when' in criterion_data.keys():
             config_json_when = config_json.copy()
             config_json_when['sqa_criteria'] = {criterion_name: criterion_data}
-            random_fname = '.'.join([
-            	'config',
-                namegenerator.gen(),
-                'json'
-            ])
-            config_json_list.append((random_fname, config_json_when))
-
             when_data = criterion_data.pop('when')
-            stage_data_list.append((random_fname, when_data))
-    	else:
+            config_data_list.append({
+		'data_json': config_json_when,
+                'data_when': when_data
+	    })
             config_json_no_when['sqa_criteria'].pop(criterion_name)
-    config_json_list.extend(config_json_no_when)
+    config_data_list.extend({
+	'data_json': config_json_no_when,
+        'data_when': None
+    })
 
-    return (config_json_list, composer_json)
+    return (config_data_list, composer_data)
 
 
 def get_jepl_files(config_json, composer_json, jenkinsfile):
     # Extract & process those data that are not directly translated into
     # the composer and JePL config
-    config_json, composer_json = process_extra_data(
+    config_data_list, composer_data = process_extra_data(
         config_json,
         composer_json)
 
-    config_yml, composer_yml = JePLUtils.get_sqa_files(
-        config_json,
-        composer_json)
+    # Convert JSON to YAML
+    for elem in config_data_list:
+        elem['data_yml'] = json_to_yaml(elem['data_json'])
+    composer_data['data_yml'] = json_to_yaml(composer_data['data_json'])
+
+    # Set file names to JePL data
+    # Note the composer data is forced to be a list since the API spec
+    # currently defines it as an object, not as a list
+    config_data_list = JePLUtils.append_file_name(
+	'config', config_data_list)
+    composer_data = JePLUtils.append_file_name(
+	'composer', [composer_data])[0]
+
     jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile)
 
-    return (config_yml, composer_yml, jenkinsfile)
+    return (config_data_list, composer_data, jenkinsfile)
 
 
 def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile, branch='sqaaas'):
-    config_yml, composer_yml, jenkinsfile = get_jepl_files(
+    yaml_data_list, jenkinsfile = get_jepl_files(
         config_json,
         composer_json,
         jenkinsfile)
