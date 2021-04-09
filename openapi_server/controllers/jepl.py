@@ -23,7 +23,7 @@ class JePLUtils(object):
         new_file_data_list = []
         count = 0
         for data in file_data_list:
-            chunk_list = file_type_chunks[file_type]
+            chunk_list = copy.deepcopy(file_type_chunks[file_type])
             if count > 0:
                 random_str = namegenerator.gen()
                 chunk_list.insert(1, random_str)
