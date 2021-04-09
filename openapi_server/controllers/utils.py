@@ -1,3 +1,4 @@
+import copy
 import functools
 import logging
 import re
@@ -130,10 +131,10 @@ def process_extra_data(config_json, composer_json):
     composer_data = {'data_json': composer_json}
     # CONFIG (Multiple stages, Jenkins when clause)
     config_data_list = []
-    config_json_no_when = config_json.copy()
+    config_json_no_when = copy.deepcopy(config_json)
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         if 'when' in criterion_data.keys():
-            config_json_when = config_json.copy()
+            config_json_when = copy.deepcopy(config_json)
             config_json_when['sqa_criteria'] = {criterion_name: criterion_data}
             when_data = criterion_data.pop('when')
             config_data_list.append({
