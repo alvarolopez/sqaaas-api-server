@@ -142,10 +142,11 @@ def process_extra_data(config_json, composer_json):
                 'data_when': when_data
 	    })
             config_json_no_when['sqa_criteria'].pop(criterion_name)
-    config_data_list.extend({
-	'data_json': config_json_no_when,
-        'data_when': None
-    })
+    if config_json_no_when['sqa_criteria']:
+        config_data_list.append({
+            'data_json': config_json_no_when,
+            'data_when': None
+        })
 
     return (config_data_list, composer_data)
 
