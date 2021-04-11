@@ -285,8 +285,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         gh_utils,
         pipeline_repo,
         pipeline_data['config_data'],
-        pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile'])
+        pipeline_data['composer_data'])
     repo_data = gh_utils.get_repository(pipeline_repo)
 
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
@@ -354,7 +353,6 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         fork_repo,
         pipeline_data['config_data'],
         pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile'],
         branch=fork_default_branch)
     # step 3: create PR
     pr = gh_utils.create_pull_request(

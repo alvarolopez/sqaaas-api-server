@@ -176,14 +176,35 @@ def get_jepl_files(config_json, composer_json):
     return (config_data_list, composer_data, jenkinsfile)
 
 
-def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile, branch='sqaaas'):
-    yaml_data_list, jenkinsfile = get_jepl_files(
+def push_jepl_files(gh_utils, repo, config_json, composer_json, branch='sqaaas'):
+    config_data_list, composer_data, jenkinsfile = get_jepl_files(
         config_json,
         composer_json)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo)
-    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo, branch=branch)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo)
-    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo, branch=branch)
-    logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % repo)
-    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo, branch=branch)
+    for config_data in config_data_list:
+        logger.debug('Pushing JePL config file to GitHub repository <%s>: %s' % (
+            repo, config_data['file_name']))
+        gh_utils.push_file(
+            config_data['file_name'],
+            config_data['data_yml'],
+            'Update %s' % config_data['file_name'],
+            repo,
+            branch=branch
+        )
+    logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
+        repo, composer_data['file_name']))
+    gh_utils.push_file(
+        composer_data['file_name'],
+        composer_data['data_yml'],
+        'Update %s' % composer_data['file_name'],
+        repo,
+        branch=branch
+    )
+    logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
+    gh_utils.push_file(
+        'Jenkinsfile',
+        jenkinsfile,
+        'Update Jenkinsfile',
+        repo,
+        branch=branch
+    )
     logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
