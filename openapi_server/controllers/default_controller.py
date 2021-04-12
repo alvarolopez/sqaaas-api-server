@@ -62,14 +62,17 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
+    config_data_list, composer_data, jenkinsfile = ctls_utils.get_jepl_files(
+        config_json, composer_json
+    )
 
     _db = db.load_content()
     _db[pipeline_id] = {
         'pipeline_repo': pipeline_repo,
         'data': {
-            'config_data': config_json,
-            'composer_data': composer_json,
-            'jenkinsfile': jenkinsfile_data
+            'config': config_data_list,
+            'composer': composer_data,
+            'jenkinsfile': jenkinsfile
         }
     }
     db.store_content(_db)
@@ -385,16 +388,21 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     _db = db.load_content()
     pipeline_data = _db[pipeline_id]['data']
 
-    config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
-        pipeline_data['config_data'],
-        pipeline_data['composer_data']
-    )
+    config_yml_list = [
+        (data['file_name'], data['data_yml'])
+            for data in pipeline_data['config']
+    ]
+    composer_yml = [(
+        pipeline_data['composer']['file_name'],
+        pipeline_data['composer']['data_yml']
+    )]
+    jenkinsfile = [(
+        'Jenkinsfile', pipeline_data['jenkinsfile']
+    )]
 
     binary_stream = io.BytesIO()
     with ZipFile(binary_stream, 'w') as zfile:
-        for t in [('.sqa/config.yml', config_yml),
-                  ('.sqa/docker-compose.yml', composer_yml),
-                  ('Jenkinsfile', jenkinsfile)]:
+        for t in config_yml_list + composer_yml + jenkinsfile:
             zinfo = ZipInfo(t[0])
             zfile.writestr(zinfo, t[1].encode('UTF-8'))
 
