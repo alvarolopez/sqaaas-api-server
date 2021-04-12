@@ -131,11 +131,14 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     """
     _db = db.load_content()
     pipeline_repo = _db[pipeline_id]['pipeline_repo']
-    jk_job_name = _db[pipeline_id]['jenkins']['job_name']
     if gh_utils.get_repository(pipeline_repo):
         gh_utils.delete_repo(pipeline_repo)
-    if jk_utils.exist_job(jk_job_name):
-        jk_utils.scan_organization()
+    if 'jenkins' in _db[pipeline_id].keys():
+        jk_job_name = _db[pipeline_id]['jenkins']['job_name']
+        if jk_utils.exist_job(jk_job_name):
+            jk_utils.scan_organization()
+    else:
+        logger.debug('Jenkins job not found. Pipeline might not have been yet executed')
     _db.pop(pipeline_id)
     logger.info('Pipeline <%s> removed from DB' % pipeline_id)
 
@@ -225,6 +228,10 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     """
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
     _db = db.load_content()
+
+    if 'jenkins' not in _db[pipeline_id].keys():
+        logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
+        return web.Response(status=422)
 
     jenkins_info = _db[pipeline_id]['jenkins']
     jk_job_name = jenkins_info['job_name']
