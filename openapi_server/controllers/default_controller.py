@@ -97,29 +97,32 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
+    config_data_list, composer_data, jenkinsfile = ctls_utils.get_jepl_files(
+        config_json, composer_json
+    )
 
-    diff_exists = False
-    for elem in [
-        (pipeline_data['config_data'], config_json),
-        (pipeline_data['composer_data'], composer_json),
-        (pipeline_data['jenkinsfile'], jenkinsfile_data),
-    ]:
-        ddiff = DeepDiff(*elem)
-        if ddiff:
-            diff_exists = True
-            logging.debug(ddiff)
-
-    if diff_exists:
-        logging.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
-        _db[pipeline_id] = {
-            'pipeline_repo': pipeline_repo,
-            'data': {
-                'config_data': config_json,
-                'composer_data': composer_json,
-                'jenkinsfile': jenkinsfile_data
-            }
+    # diff_exists = False
+    # for elem in [
+    #     (pipeline_data['config']['data_json'], config_json),
+    #     (pipeline_data['composer']['data_json'], composer_json),
+    #     (pipeline_data['jenkinsfile']['data_json'], jenkinsfile_data),
+    # ]:
+    #     ddiff = DeepDiff(*elem)
+    #     if ddiff:
+    #         diff_exists = True
+    #         logging.debug(ddiff)
+    #
+    #if diff_exists:
+    logger.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
+    _db[pipeline_id] = {
+        'pipeline_repo': pipeline_repo,
+        'data': {
+            'config': config_data_list,
+            'composer': composer_data,
+            'jenkinsfile': jenkinsfile
         }
-        db.store_content(_db)
+    }
+    db.store_content(_db)
 
     return web.Response(status=204)
 
