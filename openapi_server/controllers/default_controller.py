@@ -79,38 +79,31 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
     :type body: dict | bytes
 
     """
-    _db = db.load_content()
-    pipeline_repo = _db[pipeline_id]['pipeline_repo']
-    pipeline_data = _db[pipeline_id]['data']
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+    pipeline_repo = pipeline_data['pipeline_repo']
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-    config_data_list, composer_data, jenkinsfile = ctls_utils.get_jepl_files(
-        config_json, composer_json
-    )
+    config_json_last, composer_json_last, jenkinsfile_data_last = ctls_utils.get_pipeline_data(pipeline_data_raw)
 
-    # diff_exists = False
-    # for elem in [
-    #     (pipeline_data['config']['data_json'], config_json),
-    #     (pipeline_data['composer']['data_json'], composer_json),
-    #     (pipeline_data['jenkinsfile']['data_json'], jenkinsfile_data),
-    # ]:
-    #     ddiff = DeepDiff(*elem)
-    #     if ddiff:
-    #         diff_exists = True
-    #         logging.debug(ddiff)
-    #
-    #if diff_exists:
-    logger.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
-    _db[pipeline_id] = {
-        'pipeline_repo': pipeline_repo,
-        'data': {
-            'config': config_data_list,
-            'composer': composer_data,
-            'jenkinsfile': jenkinsfile
-        }
-    }
-    db.store_content(_db)
+    diff_exists = False
+    for elem in [
+        (config_json_last, config_json),
+        (composer_json_last, composer_json),
+        (jenkinsfile_data_last, jenkinsfile_data),
+    ]:
+        ddiff = DeepDiff(*elem)
+        if ddiff:
+            diff_exists = True
+            logging.debug(ddiff)
+
+    if diff_exists:
+        logger.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
+        db.add_entry(
+            pipeline_id,
+            pipeline_repo,
+            body
+        )
 
     return web.Response(status=204)
 
