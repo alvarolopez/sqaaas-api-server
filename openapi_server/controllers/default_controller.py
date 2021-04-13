@@ -158,7 +158,20 @@ async def get_pipelines(request: web.Request) -> web.Response:
 
     """
     _db = db.load_content()
-    return web.json_response(_db, status=200)
+
+    pipelines = dict([(
+        pipeline_id,
+        {
+            'config': [
+                config_data['data_json']
+                    for config_data in pipeline_data['config']
+            ],
+            'composer': pipeline_data['composer']['data_json'],
+            'jenkinsfile': pipeline_data['jenkinsfile']
+        }
+    ) for pipeline_id, pipeline_data in _db.items()])
+
+    return web.json_response(pipelines, status=200)
 
 
 @ctls_utils.validate_request
