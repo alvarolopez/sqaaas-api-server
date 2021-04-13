@@ -91,3 +91,14 @@ def get_entry(pipeline_id):
     logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
 
     return db[pipeline_id]
+
+
+def del_entry(pipeline_id):
+    """Deletes the given pipeline ID entry from the DB.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    """
+    db = load_content()
+    db.pop(pipeline_id)
+    store_content(db)
+    logger.debug('Pipeline <%s> removed from DB' % pipeline_id)

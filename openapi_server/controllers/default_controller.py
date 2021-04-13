@@ -116,18 +116,19 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_repo = _db[pipeline_id]['pipeline_repo']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
+
     if gh_utils.get_repository(pipeline_repo):
         gh_utils.delete_repo(pipeline_repo)
-    if 'jenkins' in _db[pipeline_id].keys():
-        jk_job_name = _db[pipeline_id]['jenkins']['job_name']
+    if 'jenkins' in pipeline_data.keys():
+        jk_job_name = pipeline_data['jenkins']['job_name']
         if jk_utils.exist_job(jk_job_name):
             jk_utils.scan_organization()
     else:
         logger.debug('Jenkins job not found. Pipeline might not have been yet executed')
-    _db.pop(pipeline_id)
-    logger.info('Pipeline <%s> removed from DB' % pipeline_id)
+
+    db.del_entry(pipeline_id)
 
     return web.Response(status=204)
 
