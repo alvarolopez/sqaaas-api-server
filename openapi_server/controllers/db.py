@@ -78,3 +78,14 @@ def add_entry(pipeline_id, pipeline_repo, body):
         'raw_request': raw_request
     }
     store_content(db)
+
+
+def get_entry(pipeline_id):
+    """Returns the given pipeline ID entry from the DB.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    """
+    db = load_content()
+    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+
+    return db[pipeline_id]
