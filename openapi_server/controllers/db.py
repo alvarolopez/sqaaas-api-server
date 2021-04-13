@@ -56,6 +56,8 @@ def add_entry(pipeline_id, pipeline_repo, body):
                 |-- 'file_name'
             |-- 'jenkinsfile': [String] Jenkins-compliant pipeline.
         |-- 'raw_request': [Dict] API spec representation (from JSON request).
+        |-- 'jenkins': [Dict] Jenkins-related data about the pipeline execution.
+            |-- 'job_name'
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param pipeline_repo: URL of the remote repository for the Jenkins integration.
