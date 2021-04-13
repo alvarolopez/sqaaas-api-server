@@ -139,21 +139,13 @@ async def get_pipelines(request: web.Request) -> web.Response:
     Returns the list of IDs for the defined pipelines.
 
     """
-    _db = db.load_content()
+    pipeline_list = []
+    for pipeline_id, pipeline_data in db.get_entry().items():
+        d = {'id': pipeline_id}
+        d.update(pipeline_data['raw_request'])
+        pipeline_list.append(d)
 
-    pipelines = dict([(
-        pipeline_id,
-        {
-            'config': [
-                config_data['data_json']
-                    for config_data in pipeline_data['config']
-            ],
-            'composer': pipeline_data['composer']['data_json'],
-            'jenkinsfile': pipeline_data['jenkinsfile']
-        }
-    ) for pipeline_id, pipeline_data in _db.items()])
-
-    return web.json_response(pipelines, status=200)
+    return web.json_response(pipeline_list, status=200)
 
 
 @ctls_utils.validate_request

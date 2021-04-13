@@ -82,15 +82,23 @@ def add_entry(pipeline_id, pipeline_repo, body):
     store_content(db)
 
 
-def get_entry(pipeline_id):
-    """Returns the given pipeline ID entry from the DB.
+def get_entry(pipeline_id=None):
+    """If pipeline_id is given returns a Dict with the data from the
+    given ID, otherwise it returns a Dict with all the existing
+    entries from the DB indexed by the ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     """
     db = load_content()
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+    if pipeline_id:
+        logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+        r = db[pipeline_id]
+    else:
+        logger.debug('Loading ALL existing pipelines from DB (including IDs)')
+        r = dict([(pipeline_id, pipeline_data)
+                for pipeline_id, pipeline_data in db.items()])
 
-    return db[pipeline_id]
+    return r
 
 
 def del_entry(pipeline_id):
