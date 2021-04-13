@@ -1,3 +1,4 @@
+import copy
 import io
 import logging
 import time
@@ -54,6 +55,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     """
     pipeline_id = str(uuid.uuid4())
     # body = Pipeline.from_dict(body)
+    raw_request = copy.deepcopy(body)
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
 
@@ -73,9 +75,11 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
             'config': config_data_list,
             'composer': composer_data,
             'jenkinsfile': jenkinsfile
-        }
+        },
+        'raw_request': raw_request
     }
     db.store_content(_db)
+    db.print_content()
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
