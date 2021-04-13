@@ -54,32 +54,16 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
 
     """
     pipeline_id = str(uuid.uuid4())
-    # body = Pipeline.from_dict(body)
-    raw_request = copy.deepcopy(body)
-
-    config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-
-    # FIXME sqaaas_repo must be provided by the user
     pipeline_name = body['name']
     pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
-    config_data_list, composer_data, jenkinsfile = ctls_utils.get_jepl_files(
-        config_json, composer_json
-    )
 
-    _db = db.load_content()
-    _db[pipeline_id] = {
-        'pipeline_repo': pipeline_repo,
-        'data': {
-            'config': config_data_list,
-            'composer': composer_data,
-            'jenkinsfile': jenkinsfile
-        },
-        'raw_request': raw_request
-    }
-    db.store_content(_db)
-    db.print_content()
+    db.add_entry(
+        pipeline_id,
+        pipeline_repo,
+        body
+    )
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
