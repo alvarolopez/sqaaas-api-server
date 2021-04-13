@@ -156,8 +156,11 @@ async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    r = _db[pipeline_id]
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = {'id': pipeline_id}
+    r.update(pipeline_data_raw)
     return web.json_response(r, status=200)
 
 
