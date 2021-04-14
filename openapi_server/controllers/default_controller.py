@@ -225,14 +225,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
-    _db = db.load_content()
+    pipeline_data = db.get_entry(pipeline_id)
 
-    if 'jenkins' not in _db[pipeline_id].keys():
+    if 'jenkins' not in pipeline_data.keys():
         logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
         return web.Response(status=422)
 
-    jenkins_info = _db[pipeline_id]['jenkins']
+    jenkins_info = pipeline_data['jenkins']
     jk_job_name = jenkins_info['job_name']
     build_url = jenkins_info['build_info']['url']
     build_no = jenkins_info['build_info']['number']
