@@ -181,6 +181,33 @@ paths:
           description: Pipeline not found
       summary: Gets composer configuration used by the pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/composer/jepl:
+    get:
+      description: |
+        Returns the content of JePL's composer file.
+      operationId: get_pipeline_composer_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets JePL composer configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/compressed_files:
     get:
       description: |
@@ -238,6 +265,35 @@ paths:
           description: Pipeline not found
       summary: Gets pipeline's main configuration.
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config/jepl:
+    get:
+      description: |
+        Returns the content of JePL's config file.
+      operationId: get_pipeline_config_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/inline_response_200'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets JePL config configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/jenkinsfile:
     get:
       description: |
@@ -266,6 +322,33 @@ paths:
         "404":
           description: Pipeline not found
       summary: Gets Jenkins pipeline definition used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/jenkinsfile/jepl:
+    get:
+      description: |
+        Returns the content of Jenkinsfile file for the given pipeline.
+      operationId: get_pipeline_jenkinsfile_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets Jenkins configuration for the given pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/pull_request:
     post:
@@ -301,7 +384,7 @@ paths:
               example:
                 pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
+                $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -340,7 +423,7 @@ paths:
               example:
                 build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
               schema:
-                $ref: '#/components/schemas/inline_response_200'
+                $ref: '#/components/schemas/inline_response_200_3'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -376,12 +459,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_1'
+                $ref: '#/components/schemas/inline_response_200_4'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
         "502":
           content:
             application/json:
@@ -511,11 +596,9 @@ components:
       title: Tox_simplified
       type: object
     When_branch:
-      example:
-        branch:
-          pattern: release-\\d+
       properties:
         pattern:
+          title: pattern
           type: string
         comparator:
           default: GLOB
@@ -523,6 +606,7 @@ components:
           - EQUALS
           - GLOB
           - REGEXP
+          title: comparator
           type: string
       required:
       - pattern
@@ -561,6 +645,8 @@ components:
               container: checkstyle
               commands:
               - mvn checkstyle:check
+          branch:
+            pattern: release-\\d+
       title: sqa_criteria
       type: object
     Environment:
@@ -583,6 +669,8 @@ components:
                 container: checkstyle
                 commands:
                 - mvn checkstyle:check
+            branch:
+              pattern: release-\\d+
         config:
           project_repos:
             simple-java-maven-app:
@@ -642,6 +730,8 @@ components:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
           title: sqa_criteria
           type: object
         environment:
@@ -870,6 +960,8 @@ components:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
           config:
             project_repos:
               simple-java-maven-app:
@@ -905,6 +997,8 @@ components:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
           config:
             project_repos:
               simple-java-maven-app:
@@ -1021,15 +1115,162 @@ components:
       type: object
     inline_response_200:
       example:
+        file_name: '{"file_name":"config.yml"}'
+        content:
+          qc_style:
+            repos:
+              simple-java-maven-app:
+                container: checkstyle
+                commands:
+                - mvn checkstyle:check
+            branch:
+              pattern: release-\\d+
+      properties:
+        file_name:
+          example: '{"file_name":"config.yml"}'
+          title: file_name
+          type: string
+        content:
+          additionalProperties:
+            properties:
+              repos:
+                additionalProperties:
+                  additionalProperties: false
+                  properties:
+                    container:
+                      type: string
+                    commands:
+                      $ref: '#/components/schemas/Commands_simplified'
+                    tox:
+                      $ref: '#/components/schemas/Tox_simplified'
+                  type: object
+                type: object
+              when:
+                additionalProperties: false
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/When_branch'
+                  building_tag:
+                    $ref: '#/components/schemas/When_building_tag'
+                type: object
+            type: object
+          example:
+            qc_style:
+              repos:
+                simple-java-maven-app:
+                  container: checkstyle
+                  commands:
+                  - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
+          title: sqa_criteria
+          type: object
+      title: inline_response_200
+      type: object
+    inline_response_200_1:
+      example:
+        file_name: '{"file_name":"docker-compose.yml"}'
+        content:
+          services:
+            checkstyle:
+              build:
+                context: ./dir
+                dockerfile: Dockerfile-alternate
+                args:
+                  buildno: 1
+              image:
+                name: checkstyle/maven-builder-image
+                registry:
+                  push: true
+                  url: https://hub.docker.com/
+                  credential_id: my-dockerhub-cred
+              hostname: checkstyle-host
+              volumes:
+              - source: ./
+                target: ./simple-java-app
+                type: bind
+              command: sleep 600000
+          version: "3.7"
+      properties:
+        file_name:
+          example: '{"file_name":"docker-compose.yml"}'
+          title: file_name
+          type: string
+        content:
+          $ref: '#/components/schemas/JePL_composer'
+      title: inline_response_200_1
+      type: object
+    inline_response_200_2:
+      example:
+        file_name: Jenkinsfile
+        content: |-
+          @Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0']) _
+
+          def projectConfig
+
+          pipeline {
+              agent any
+
+              stages {
+                  stage('SQA baseline criterion: qc_style') {
+                      when {
+                          branch pattern: 'sqaaas', comparator: ''
+                      }
+                      steps {
+                          script {
+                              projectConfig = pipelineConfig(
+                                  configFile: '.sqa/config.yml',
+                                  scmConfigs: [ localBranch: true ]
+                              )
+                              buildStages(projectConfig)
+                          }
+                      }
+                      post {
+                          cleanup {
+                              cleanWs()
+                          }
+                      }
+                  }
+                  stage('SQA baseline criterion: qc_doc') {
+                      when {
+                          branch pattern: 'build', comparator: ''
+                      }
+                      steps {
+                          script {
+                              projectConfig = pipelineConfig(
+                                  configFile: '.sqa/config.snappy-peach-chicken.yml',
+                                  scmConfigs: [ localBranch: true ]
+                              )
+                              buildStages(projectConfig)
+                          }
+                      }
+                      post {
+                          cleanup {
+                              cleanWs()
+                          }
+                      }
+                  }
+              }
+          }
+      properties:
+        file_name:
+          example: '{"file_name":"Jenkinsfile"}'
+          type: string
+        content:
+          type: string
+      title: inline_response_200_2
+      type: object
+    inline_response_200_3:
+      example:
         build_url: https://openapi-generator.tech
       properties:
         build_url:
           format: uri
           title: build_url
           type: string
-      title: inline_response_200
+      title: inline_response_200_3
       type: object
-    inline_response_200_1:
+    inline_response_200_4:
       example:
         build_status: success
         build_url: https://openapi-generator.tech
@@ -1048,7 +1289,7 @@ components:
           - waiting_scan_org
           title: build_status
           type: string
-      title: inline_response_200_1
+      title: inline_response_200_4
       type: object
     inline_object:
       properties:
@@ -1057,7 +1298,7 @@ components:
           format: uri
           type: string
       type: object
-    inline_response_200_2:
+    inline_response_200_5:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
@@ -1065,7 +1306,7 @@ components:
           format: uri
           title: pull_request_url
           type: string
-      title: inline_response_200_2
+      title: inline_response_200_5
       type: object
     JePL_config_config:
       example:

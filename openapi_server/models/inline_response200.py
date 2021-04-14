@@ -14,20 +14,24 @@ class InlineResponse200(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None):
+    def __init__(self, file_name: str=None, content: Dict[str, object]=None):
         """InlineResponse200 - a model defined in OpenAPI
 
-        :param build_url: The build_url of this InlineResponse200.
+        :param file_name: The file_name of this InlineResponse200.
+        :param content: The content of this InlineResponse200.
         """
         self.openapi_types = {
-            'build_url': str
+            'file_name': str,
+            'content': Dict[str, object]
         }
 
         self.attribute_map = {
-            'build_url': 'build_url'
+            'file_name': 'file_name',
+            'content': 'content'
         }
 
-        self._build_url = build_url
+        self._file_name = file_name
+        self._content = content
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse200':
@@ -39,22 +43,43 @@ class InlineResponse200(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def build_url(self):
-        """Gets the build_url of this InlineResponse200.
+    def file_name(self):
+        """Gets the file_name of this InlineResponse200.
 
 
-        :return: The build_url of this InlineResponse200.
+        :return: The file_name of this InlineResponse200.
         :rtype: str
         """
-        return self._build_url
+        return self._file_name
 
-    @build_url.setter
-    def build_url(self, build_url):
-        """Sets the build_url of this InlineResponse200.
+    @file_name.setter
+    def file_name(self, file_name):
+        """Sets the file_name of this InlineResponse200.
 
 
-        :param build_url: The build_url of this InlineResponse200.
-        :type build_url: str
+        :param file_name: The file_name of this InlineResponse200.
+        :type file_name: str
         """
 
-        self._build_url = build_url
+        self._file_name = file_name
+
+    @property
+    def content(self):
+        """Gets the content of this InlineResponse200.
+
+
+        :return: The content of this InlineResponse200.
+        :rtype: Dict[str, object]
+        """
+        return self._content
+
+    @content.setter
+    def content(self, content):
+        """Sets the content of this InlineResponse200.
+
+
+        :param content: The content of this InlineResponse200.
+        :type content: Dict[str, object]
+        """
+
+        self._content = content
