@@ -174,9 +174,10 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
-    r = pipeline_data['composer_data']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = pipeline_data_raw['composer_data']
     return web.json_response(r, status=200)
 
 
@@ -190,9 +191,10 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
-    r = pipeline_data['config_data']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = pipeline_data_raw['config_data']
     return web.json_response(r, status=200)
 
 
@@ -206,9 +208,10 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
-    r = pipeline_data['jenkinsfile']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = pipeline_data_raw['jenkinsfile_data']
     return web.json_response(r, status=200)
 
 
