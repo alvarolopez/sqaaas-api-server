@@ -176,6 +176,27 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
 
 
 @ctls_utils.validate_request
+async def get_pipeline_composer_jepl(request: web.Request, pipeline_id) -> web.Response:
+    """Gets JePL composer configuration for the given pipeline.
+
+    Returns the content of JePL&#39;s composer file.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    composer_data = pipeline_data['data']['composer']
+    r = {
+        'file_name': composer_data['file_name'],
+        'content': composer_data['data_json']
+    }
+
+    return web.json_response(r, status=200)
+
+
+@ctls_utils.validate_request
 async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response:
     """Gets pipeline&#39;s main configuration.
 
@@ -193,6 +214,29 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
 
 
 @ctls_utils.validate_request
+async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Response:
+    """Gets JePL config configuration for the given pipeline.
+
+    Returns the content of JePL&#39;s config file.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    config_data_list = pipeline_data['data']['config']
+    r = [{
+            'file_name': config_data['file_name'],
+            'content': config_data['data_json']
+        }
+            for config_data in config_data_list
+    ]
+
+    return web.json_response(r, status=200)
+
+
+@ctls_utils.validate_request
 async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
     """Gets Jenkins pipeline definition used by the pipeline.
 
@@ -206,6 +250,27 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
     pipeline_data_raw = pipeline_data['raw_request']
 
     r = pipeline_data_raw['jenkinsfile_data']
+    return web.json_response(r, status=200)
+
+
+@ctls_utils.validate_request
+async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> web.Response:
+    """Gets Jenkins configuration for the given pipeline.
+
+    Returns the content of Jenkinsfile file for the given pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
+
+    r = {
+        'file_name': 'Jenkinsfile',
+        'content': jenkinsfile
+    }
+
     return web.json_response(r, status=200)
 
 

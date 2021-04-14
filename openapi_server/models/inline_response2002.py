@@ -14,20 +14,24 @@ class InlineResponse2002(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, pull_request_url: str=None):
+    def __init__(self, file_name: str=None, content: str=None):
         """InlineResponse2002 - a model defined in OpenAPI
 
-        :param pull_request_url: The pull_request_url of this InlineResponse2002.
+        :param file_name: The file_name of this InlineResponse2002.
+        :param content: The content of this InlineResponse2002.
         """
         self.openapi_types = {
-            'pull_request_url': str
+            'file_name': str,
+            'content': str
         }
 
         self.attribute_map = {
-            'pull_request_url': 'pull_request_url'
+            'file_name': 'file_name',
+            'content': 'content'
         }
 
-        self._pull_request_url = pull_request_url
+        self._file_name = file_name
+        self._content = content
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse2002':
@@ -39,22 +43,43 @@ class InlineResponse2002(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def pull_request_url(self):
-        """Gets the pull_request_url of this InlineResponse2002.
+    def file_name(self):
+        """Gets the file_name of this InlineResponse2002.
 
 
-        :return: The pull_request_url of this InlineResponse2002.
+        :return: The file_name of this InlineResponse2002.
         :rtype: str
         """
-        return self._pull_request_url
+        return self._file_name
 
-    @pull_request_url.setter
-    def pull_request_url(self, pull_request_url):
-        """Sets the pull_request_url of this InlineResponse2002.
+    @file_name.setter
+    def file_name(self, file_name):
+        """Sets the file_name of this InlineResponse2002.
 
 
-        :param pull_request_url: The pull_request_url of this InlineResponse2002.
-        :type pull_request_url: str
+        :param file_name: The file_name of this InlineResponse2002.
+        :type file_name: str
         """
 
-        self._pull_request_url = pull_request_url
+        self._file_name = file_name
+
+    @property
+    def content(self):
+        """Gets the content of this InlineResponse2002.
+
+
+        :return: The content of this InlineResponse2002.
+        :rtype: str
+        """
+        return self._content
+
+    @content.setter
+    def content(self, content):
+        """Sets the content of this InlineResponse2002.
+
+
+        :param content: The content of this InlineResponse2002.
+        :type content: str
+        """
+
+        self._content = content

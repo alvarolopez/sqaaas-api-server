@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server import util
 
 
@@ -14,24 +15,24 @@ class InlineResponse2001(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None, build_status: str=None):
+    def __init__(self, file_name: str=None, content: JePLComposer=None):
         """InlineResponse2001 - a model defined in OpenAPI
 
-        :param build_url: The build_url of this InlineResponse2001.
-        :param build_status: The build_status of this InlineResponse2001.
+        :param file_name: The file_name of this InlineResponse2001.
+        :param content: The content of this InlineResponse2001.
         """
         self.openapi_types = {
-            'build_url': str,
-            'build_status': str
+            'file_name': str,
+            'content': JePLComposer
         }
 
         self.attribute_map = {
-            'build_url': 'build_url',
-            'build_status': 'build_status'
+            'file_name': 'file_name',
+            'content': 'content'
         }
 
-        self._build_url = build_url
-        self._build_status = build_status
+        self._file_name = file_name
+        self._content = content
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse2001':
@@ -43,49 +44,43 @@ class InlineResponse2001(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def build_url(self):
-        """Gets the build_url of this InlineResponse2001.
+    def file_name(self):
+        """Gets the file_name of this InlineResponse2001.
 
 
-        :return: The build_url of this InlineResponse2001.
+        :return: The file_name of this InlineResponse2001.
         :rtype: str
         """
-        return self._build_url
+        return self._file_name
 
-    @build_url.setter
-    def build_url(self, build_url):
-        """Sets the build_url of this InlineResponse2001.
+    @file_name.setter
+    def file_name(self, file_name):
+        """Sets the file_name of this InlineResponse2001.
 
 
-        :param build_url: The build_url of this InlineResponse2001.
-        :type build_url: str
+        :param file_name: The file_name of this InlineResponse2001.
+        :type file_name: str
         """
 
-        self._build_url = build_url
+        self._file_name = file_name
 
     @property
-    def build_status(self):
-        """Gets the build_status of this InlineResponse2001.
+    def content(self):
+        """Gets the content of this InlineResponse2001.
 
 
-        :return: The build_status of this InlineResponse2001.
-        :rtype: str
+        :return: The content of this InlineResponse2001.
+        :rtype: JePLComposer
         """
-        return self._build_status
+        return self._content
 
-    @build_status.setter
-    def build_status(self, build_status):
-        """Sets the build_status of this InlineResponse2001.
+    @content.setter
+    def content(self, content):
+        """Sets the content of this InlineResponse2001.
 
 
-        :param build_status: The build_status of this InlineResponse2001.
-        :type build_status: str
+        :param content: The content of this InlineResponse2001.
+        :type content: JePLComposer
         """
-        allowed_values = ["success", "failure", "aborted", "not_built", "unstable", "waiting_scan_org"]  # noqa: E501
-        if build_status not in allowed_values:
-            raise ValueError(
-                "Invalid value for `build_status` ({0}), must be one of {1}"
-                .format(build_status, allowed_values)
-            )
 
-        self._build_status = build_status
+        self._content = content
