@@ -6,11 +6,23 @@ pipeline {
     agent any
 
     stages {
-        stage('SQA baseline dynamic stages') {
+        {%- for config_data in config_data_list %}
+        stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
+            {%- if config_data.data_when %}
+            when {
+                {%- for k,v in config_data.data_when.items() %}
+                {%- if k == 'branch' %}
+                branch pattern: '{{ v.pattern }}', comparator: '{{ v.comparator }}'
+                {%- elif k == 'building_tag' and v %}
+                buildingTag()
+                {%- endif %}
+                {%- endfor %}
+            }
+            {%- endif %}
             steps {
                 script {
                     projectConfig = pipelineConfig(
-                        configFile: './.sqa/config.yml',
+                        configFile: '{{ config_data.file_name }}',
                         scmConfigs: [ localBranch: true ]
                     )
                     buildStages(projectConfig)
@@ -22,5 +34,6 @@ pipeline {
                 }
             }
         }
+        {%- endfor %}
     }
 }

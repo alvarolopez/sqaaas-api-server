@@ -11,3 +11,4 @@ PyGithub
 Jinja2
 python-jenkins
 deepdiff
+namegenerator

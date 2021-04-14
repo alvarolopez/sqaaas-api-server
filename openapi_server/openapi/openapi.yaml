@@ -510,6 +510,26 @@ components:
       - testenv
       title: Tox_simplified
       type: object
+    When_branch:
+      example:
+        branch:
+          pattern: release-\\d+
+      properties:
+        pattern:
+          type: string
+        comparator:
+          default: GLOB
+          enum:
+          - EQUALS
+          - GLOB
+          - REGEXP
+          type: string
+      required:
+      - pattern
+      title: When_branch
+      type: object
+    When_building_tag:
+      type: boolean
     CriterionBuild:
       additionalProperties:
         properties:
@@ -524,6 +544,14 @@ components:
                 tox:
                   $ref: '#/components/schemas/Tox_simplified'
               type: object
+            type: object
+          when:
+            additionalProperties: false
+            properties:
+              branch:
+                $ref: '#/components/schemas/When_branch'
+              building_tag:
+                $ref: '#/components/schemas/When_building_tag'
             type: object
         type: object
       example:
@@ -597,6 +625,14 @@ components:
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
                   type: object
+                type: object
+              when:
+                additionalProperties: false
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/When_branch'
+                  building_tag:
+                    $ref: '#/components/schemas/When_building_tag'
                 type: object
             type: object
           example:

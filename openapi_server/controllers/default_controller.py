@@ -1,20 +1,15 @@
 import io
 import logging
-import time
 import uuid
 from zipfile import ZipFile, ZipInfo
 
-from typing import List, Dict
 from aiohttp import web
 from urllib.parse import urlparse
 from deepdiff import DeepDiff
 
 from openapi_server import config
-from openapi_server.models.pipeline import Pipeline
-from openapi_server import util
 from openapi_server.controllers import db
 from openapi_server.controllers.github import GitHubUtils
-from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
@@ -53,26 +48,16 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
 
     """
     pipeline_id = str(uuid.uuid4())
-    # body = Pipeline.from_dict(body)
-
-    config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-
-    # FIXME sqaaas_repo must be provided by the user
     pipeline_name = body['name']
     pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
 
-    _db = db.load_content()
-    _db[pipeline_id] = {
-        'pipeline_repo': pipeline_repo,
-        'data': {
-            'config_data': config_json,
-            'composer_data': composer_json,
-            'jenkinsfile': jenkinsfile_data
-        }
-    }
-    db.store_content(_db)
+    db.add_entry(
+        pipeline_id,
+        pipeline_repo,
+        body
+    )
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
@@ -88,18 +73,18 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
     :type body: dict | bytes
 
     """
-    _db = db.load_content()
-    pipeline_repo = _db[pipeline_id]['pipeline_repo']
-    pipeline_data = _db[pipeline_id]['data']
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+    pipeline_repo = pipeline_data['pipeline_repo']
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
+    config_json_last, composer_json_last, jenkinsfile_data_last = ctls_utils.get_pipeline_data(pipeline_data_raw)
 
     diff_exists = False
     for elem in [
-        (pipeline_data['config_data'], config_json),
-        (pipeline_data['composer_data'], composer_json),
-        (pipeline_data['jenkinsfile'], jenkinsfile_data),
+        (config_json_last, config_json),
+        (composer_json_last, composer_json),
+        (jenkinsfile_data_last, jenkinsfile_data),
     ]:
         ddiff = DeepDiff(*elem)
         if ddiff:
@@ -107,16 +92,12 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
             logging.debug(ddiff)
 
     if diff_exists:
-        logging.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
-        _db[pipeline_id] = {
-            'pipeline_repo': pipeline_repo,
-            'data': {
-                'config_data': config_json,
-                'composer_data': composer_json,
-                'jenkinsfile': jenkinsfile_data
-            }
-        }
-        db.store_content(_db)
+        logger.debug('DB-updating modified pipeline on user request: %s' % pipeline_id)
+        db.add_entry(
+            pipeline_id,
+            pipeline_repo,
+            body
+        )
 
     return web.Response(status=204)
 
@@ -129,15 +110,19 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_repo = _db[pipeline_id]['pipeline_repo']
-    jk_job_name = _db[pipeline_id]['jenkins']['job_name']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
+
     if gh_utils.get_repository(pipeline_repo):
         gh_utils.delete_repo(pipeline_repo)
-    if jk_utils.exist_job(jk_job_name):
-        jk_utils.scan_organization()
-    _db.pop(pipeline_id)
-    logger.info('Pipeline <%s> removed from DB' % pipeline_id)
+    if 'jenkins' in pipeline_data.keys():
+        jk_job_name = pipeline_data['jenkins']['job_name']
+        if jk_utils.exist_job(jk_job_name):
+            jk_utils.scan_organization()
+    else:
+        logger.debug('Jenkins job not found. Pipeline might not have been yet executed')
+
+    db.del_entry(pipeline_id)
 
     return web.Response(status=204)
 
@@ -148,8 +133,13 @@ async def get_pipelines(request: web.Request) -> web.Response:
     Returns the list of IDs for the defined pipelines.
 
     """
-    _db = db.load_content()
-    return web.json_response(_db, status=200)
+    pipeline_list = []
+    for pipeline_id, pipeline_data in db.get_entry().items():
+        d = {'id': pipeline_id}
+        d.update(pipeline_data['raw_request'])
+        pipeline_list.append(d)
+
+    return web.json_response(pipeline_list, status=200)
 
 
 @ctls_utils.validate_request
@@ -160,8 +150,11 @@ async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    r = _db[pipeline_id]
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = {'id': pipeline_id}
+    r.update(pipeline_data_raw)
     return web.json_response(r, status=200)
 
 
@@ -175,9 +168,10 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
-    r = pipeline_data['composer_data']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = pipeline_data_raw['composer_data']
     return web.json_response(r, status=200)
 
 
@@ -191,9 +185,10 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
-    r = pipeline_data['config_data']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = pipeline_data_raw['config_data']
     return web.json_response(r, status=200)
 
 
@@ -207,9 +202,10 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
-    r = pipeline_data['jenkinsfile']
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
+
+    r = pipeline_data_raw['jenkinsfile_data']
     return web.json_response(r, status=200)
 
 
@@ -223,10 +219,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
-    _db = db.load_content()
+    pipeline_data = db.get_entry(pipeline_id)
 
-    jenkins_info = _db[pipeline_id]['jenkins']
+    if 'jenkins' not in pipeline_data.keys():
+        logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
+        return web.Response(status=422)
+
+    jenkins_info = pipeline_data['jenkins']
     jk_job_name = jenkins_info['job_name']
     build_url = jenkins_info['build_info']['url']
     build_no = jenkins_info['build_info']['number']
@@ -271,10 +270,12 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_repo = _db[pipeline_id]['pipeline_repo']
-    pipeline_data = _db[pipeline_id]['data']
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
+
+    config_data_list = pipeline_data['data']['config']
+    composer_data = pipeline_data['data']['composer']
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
 
     repo_data = gh_utils.get_repository(pipeline_repo)
     if repo_data:
@@ -284,9 +285,10 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     ctls_utils.push_jepl_files(
         gh_utils,
         pipeline_repo,
-        pipeline_data['config_data'],
-        pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile'])
+        config_data_list,
+        composer_data,
+        jenkinsfile
+    )
     repo_data = gh_utils.get_repository(pipeline_repo)
 
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
@@ -295,34 +297,31 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         _pipeline_repo_name,
         repo_data['default_branch']
     ])
-    _db[pipeline_id]['jenkins'] = {
-        'job_name': jk_job_name,
-        'build_info': {
-            'number': None,
-            'url': None,
-        },
-        'scan_org_wait': False
-    }
 
     _status = 200
+    build_no = None
+    build_url = None
+    scan_org_wait = False
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
         last_build_data = jk_utils.build_job(jk_job_name)
         build_no = last_build_data['number']
         build_url = last_build_data['url']
         logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
-        _db[pipeline_id]['jenkins']['build_info'] = {
-            'number': build_no,
-            'url': build_url
-        }
     else:
         jk_utils.scan_organization()
-        _db[pipeline_id]['jenkins']['scan_org_wait'] = True
+        scan_org_wait = True
         _status = 204
 
-    db.store_content(_db)
+    db.update_jenkins(
+        pipeline_id,
+        jk_job_name,
+        build_no,
+        build_url,
+        scan_org_wait
+    )
 
-    r = {'build_url': _db[pipeline_id]['jenkins']['build_info']['url']}
+    r = {'build_url': build_url}
     return web.json_response(r, status=_status)
 
 
@@ -347,14 +346,16 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     fork_repo, fork_default_branch = gh_utils.create_fork(upstream_repo)
     logger.debug('Using fork default branch: %s' % fork_default_branch)
     # step 2: push JePL files to fork
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
+    pipeline_data = db.get_entry(pipeline_id)
+    config_data_list = pipeline_data['data']['config']
+    composer_data = pipeline_data['data']['composer']
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
     ctls_utils.push_jepl_files(
         gh_utils,
         fork_repo,
-        pipeline_data['config_data'],
-        pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile'],
+        config_data_list,
+        composer_data,
+        jenkinsfile,
         branch=fork_default_branch)
     # step 3: create PR
     pr = gh_utils.create_pull_request(
@@ -377,20 +378,27 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
+    pipeline_data = db.get_entry(pipeline_id)
 
-    config_yml, composer_yml, jenkinsfile = ctls_utils.get_jepl_files(
-        pipeline_data['config_data'],
-        pipeline_data['composer_data'],
-        pipeline_data['jenkinsfile']
-    )
+    config_data_list = pipeline_data['data']['config']
+    composer_data = pipeline_data['data']['composer']
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
+
+    config_yml_list = [
+        (data['file_name'], data['data_yml'])
+            for data in config_data_list
+    ]
+    composer_yml = [(
+        composer_data['file_name'],
+        composer_data['data_yml']
+    )]
+    jenkinsfile = [(
+        'Jenkinsfile', jenkinsfile
+    )]
 
     binary_stream = io.BytesIO()
     with ZipFile(binary_stream, 'w') as zfile:
-        for t in [('.sqa/config.yml', config_yml),
-                  ('.sqa/docker-compose.yml', composer_yml),
-                  ('Jenkinsfile', jenkinsfile)]:
+        for t in config_yml_list + composer_yml + jenkinsfile:
             zinfo = ZipInfo(t[0])
             zfile.writestr(zinfo, t[1].encode('UTF-8'))
 

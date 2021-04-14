@@ -1,7 +1,9 @@
+import copy
 import functools
 import logging
 import re
 import uuid
+import yaml
 
 from aiohttp import web
 
@@ -69,6 +71,14 @@ def validate_request(f):
     return decorated_function
 
 
+def json_to_yaml(json_data):
+    """Returns the YAML translation of the incoming JSON payload.
+
+    :param json_data: JSON payload.
+    """
+    return yaml.dump(json_data)
+
+
 def get_pipeline_data(request_body):
     """Get pipeline data.
 
@@ -82,8 +92,21 @@ def get_pipeline_data(request_body):
     return (config_json, composer_json, jenkinsfile_data)
 
 
-def get_jepl_files(config_json, composer_json, jenkinsfile):
-    # Docker Compose specific
+def process_extra_data(config_json, composer_json):
+    """Manage those properties, present in the API spec, that cannot
+    be directly translated into a workable 'config.yml' or composer
+    (i.e. 'docker-compose.yml).
+
+    This method returns a (config_json_list, composer_json) Tuple (both in
+    JSON format), where:
+    - 'config_json_list' is a List of Dicts {'data_json': <data>,
+                                             'data_when': <data>}
+    - 'composer_json' is a Dict
+
+    :param config_json: JePL's config as received through the API request (JSON payload)
+    :param composer_json: Composer content as received throught the API request (JSON payload).
+    """
+    # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
         ## Set JPL_DOCKER* envvars
         if 'registry' in srv_data['image'].keys():
@@ -105,24 +128,89 @@ def get_jepl_files(config_json, composer_json, jenkinsfile):
         ## Set 'working_dir' to the same path as the first volume target
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
+    composer_data = {'data_json': composer_json}
+    # CONFIG (Multiple stages, Jenkins when clause)
+    config_data_list = []
+    config_json_no_when = copy.deepcopy(config_json)
+    for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        if 'when' in criterion_data.keys():
+            config_json_when = copy.deepcopy(config_json)
+            config_json_when['sqa_criteria'] = {criterion_name: criterion_data}
+            when_data = criterion_data.pop('when')
+            config_data_list.append({
+		'data_json': config_json_when,
+                'data_when': when_data
+	    })
+            config_json_no_when['sqa_criteria'].pop(criterion_name)
+    if config_json_no_when['sqa_criteria']:
+        config_data_list.append({
+            'data_json': config_json_no_when,
+            'data_when': None
+        })
 
-    config_yml, composer_yml = JePLUtils.get_sqa_files(
+    return (config_data_list, composer_data)
+
+
+def get_jepl_files(config_json, composer_json):
+    # Extract & process those data that are not directly translated into
+    # the composer and JePL config
+    config_data_list, composer_data = process_extra_data(
         config_json,
         composer_json)
-    jenkinsfile = JePLUtils.get_jenkinsfile(jenkinsfile)
 
-    return (config_yml, composer_yml, jenkinsfile)
+    # Convert JSON to YAML
+    for elem in config_data_list:
+        elem['data_yml'] = json_to_yaml(elem['data_json'])
+    composer_data['data_yml'] = json_to_yaml(composer_data['data_json'])
+
+    # Set file names to JePL data
+    # Note the composer data is forced to be a list since the API spec
+    # currently defines it as an object, not as a list
+    config_data_list = JePLUtils.append_file_name(
+	'config', config_data_list)
+    composer_data = JePLUtils.append_file_name(
+	'composer', [composer_data])[0]
+
+    jenkinsfile = JePLUtils.get_jenkinsfile(config_data_list)
+
+    return (config_data_list, composer_data, jenkinsfile)
 
 
-def push_jepl_files(gh_utils, repo, config_json, composer_json, jenkinsfile, branch='sqaaas'):
-    config_yml, composer_yml, jenkinsfile = get_jepl_files(
-        config_json,
-        composer_json,
-        jenkinsfile)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/config.yml' % repo)
-    gh_utils.push_file('.sqa/config.yml', config_yml, 'Update config.yml', repo, branch=branch)
-    logger.debug('Pushing file to GitHub repository <%s>: .sqa/docker-compose.yml' % repo)
-    gh_utils.push_file('.sqa/docker-compose.yml', composer_yml, 'Update docker-compose.yml', repo, branch=branch)
-    logger.debug('Pushing file to GitHub repository <%s>: Jenkinsfile' % repo)
-    gh_utils.push_file('Jenkinsfile', jenkinsfile, 'Update Jenkinsfile', repo, branch=branch)
+def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile, branch='sqaaas'):
+    """Calls the git push for each JePL file being generated for the given pipeline.
+
+    :param gh_utils: object to run GitHubUtils.push_file() method.
+    :param repo: URL of the remote repository
+    :param config_data_list: List of pipeline's JePL config data.
+    :param composer_data: Dict containing pipeline's JePL composer data.
+    :param jenkinsfile: String containing the Jenkins configuration.
+    :param branch: Name of the branch in the remote repository.
+    """
+    for config_data in config_data_list:
+        logger.debug('Pushing JePL config file to GitHub repository <%s>: %s' % (
+            repo, config_data['file_name']))
+        gh_utils.push_file(
+            config_data['file_name'],
+            config_data['data_yml'],
+            'Update %s' % config_data['file_name'],
+            repo,
+            branch=branch
+        )
+    logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
+        repo, composer_data['file_name']))
+    gh_utils.push_file(
+        composer_data['file_name'],
+        composer_data['data_yml'],
+        'Update %s' % composer_data['file_name'],
+        repo,
+        branch=branch
+    )
+    logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
+    gh_utils.push_file(
+        'Jenkinsfile',
+        jenkinsfile,
+        'Update Jenkinsfile',
+        repo,
+        branch=branch
+    )
     logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
