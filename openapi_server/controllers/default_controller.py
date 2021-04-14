@@ -276,10 +276,12 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_repo = _db[pipeline_id]['pipeline_repo']
-    pipeline_data = _db[pipeline_id]['data']
-    logger.debug('Loading pipeline <%s> from DB' % pipeline_id)
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
+
+    config_data_list = pipeline_data['data']['config']
+    composer_data = pipeline_data['data']['composer']
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
 
     repo_data = gh_utils.get_repository(pipeline_repo)
     if repo_data:
@@ -289,8 +291,10 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     ctls_utils.push_jepl_files(
         gh_utils,
         pipeline_repo,
-        pipeline_data['config_data'],
-        pipeline_data['composer_data'])
+        config_data_list,
+        composer_data,
+        jenkinsfile
+    )
     repo_data = gh_utils.get_repository(pipeline_repo)
 
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
@@ -299,34 +303,31 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         _pipeline_repo_name,
         repo_data['default_branch']
     ])
-    _db[pipeline_id]['jenkins'] = {
-        'job_name': jk_job_name,
-        'build_info': {
-            'number': None,
-            'url': None,
-        },
-        'scan_org_wait': False
-    }
 
     _status = 200
+    build_no = None
+    build_url = None
+    scan_org_wait = False
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
         last_build_data = jk_utils.build_job(jk_job_name)
         build_no = last_build_data['number']
         build_url = last_build_data['url']
         logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
-        _db[pipeline_id]['jenkins']['build_info'] = {
-            'number': build_no,
-            'url': build_url
-        }
     else:
         jk_utils.scan_organization()
-        _db[pipeline_id]['jenkins']['scan_org_wait'] = True
+        scan_org_wait = True
         _status = 204
 
-    db.store_content(_db)
+    db.update_jenkins(
+        pipeline_id,
+        jk_job_name,
+        build_no,
+        build_url,
+        scan_org_wait
+    )
 
-    r = {'build_url': _db[pipeline_id]['jenkins']['build_info']['url']}
+    r = {'build_url': build_url}
     return web.json_response(r, status=_status)
 
 

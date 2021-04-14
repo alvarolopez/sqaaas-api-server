@@ -176,10 +176,16 @@ def get_jepl_files(config_json, composer_json):
     return (config_data_list, composer_data, jenkinsfile)
 
 
-def push_jepl_files(gh_utils, repo, config_json, composer_json, branch='sqaaas'):
-    config_data_list, composer_data, jenkinsfile = get_jepl_files(
-        config_json,
-        composer_json)
+def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile, branch='sqaaas'):
+    """Calls the git push for each JePL file being generated for the given pipeline.
+
+    :param gh_utils: object to run GitHubUtils.push_file() method.
+    :param repo: URL of the remote repository
+    :param config_data_list: List of pipeline's JePL config data.
+    :param composer_data: Dict containing pipeline's JePL composer data.
+    :param jenkinsfile: String containing the Jenkins configuration.
+    :param branch: Name of the branch in the remote repository.
+    """
     for config_data in config_data_list:
         logger.debug('Pushing JePL config file to GitHub repository <%s>: %s' % (
             repo, config_data['file_name']))

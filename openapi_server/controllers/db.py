@@ -110,3 +110,25 @@ def del_entry(pipeline_id):
     db.pop(pipeline_id)
     store_content(db)
     logger.debug('Pipeline <%s> removed from DB' % pipeline_id)
+
+
+def update_jenkins(pipeline_id, jk_job_name, build_no=None, build_url=None, scan_org_wait=False):
+    """Updates the Jenkins data in the DB for the given pipeline ID.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    :param jk_job_name: Name of the pipeline job in Jenkins.
+    :param build_no: Jenkins' job build number.
+    :param build_url: Jenkins' job build URL.
+    :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
+    """
+    db = load_content()
+    db[pipeline_id]['jenkins']
+        'job_name': jk_job_name,
+        'build_info': {
+            'number': build_no,
+            'url': build_url,
+        },
+        'scan_org_wait': scan_org_wait
+    }
+    store_content(db)
+    logger.debug('Jenkins data updated for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['jenkins']))
