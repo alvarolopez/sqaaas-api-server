@@ -386,16 +386,20 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     """
     pipeline_data = db.get_entry(pipeline_id)
 
+    config_data_list = pipeline_data['data']['config']
+    composer_data = pipeline_data['data']['composer']
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
+
     config_yml_list = [
         (data['file_name'], data['data_yml'])
-            for data in pipeline_data['config']
+            for data in config_data_list
     ]
     composer_yml = [(
-        pipeline_data['composer']['file_name'],
-        pipeline_data['composer']['data_yml']
+        composer_data['file_name'],
+        composer_data['data_yml']
     )]
     jenkinsfile = [(
-        'Jenkinsfile', pipeline_data['jenkinsfile']
+        'Jenkinsfile', jenkinsfile
     )]
 
     binary_stream = io.BytesIO()
