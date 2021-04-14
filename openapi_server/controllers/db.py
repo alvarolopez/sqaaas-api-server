@@ -122,7 +122,7 @@ def update_jenkins(pipeline_id, jk_job_name, build_no=None, build_url=None, scan
     :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
     """
     db = load_content()
-    db[pipeline_id]['jenkins']
+    db[pipeline_id]['jenkins'] = {
         'job_name': jk_job_name,
         'build_info': {
             'number': build_no,
