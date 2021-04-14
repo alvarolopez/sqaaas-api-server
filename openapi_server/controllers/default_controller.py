@@ -1,21 +1,15 @@
-import copy
 import io
 import logging
-import time
 import uuid
 from zipfile import ZipFile, ZipInfo
 
-from typing import List, Dict
 from aiohttp import web
 from urllib.parse import urlparse
 from deepdiff import DeepDiff
 
 from openapi_server import config
-from openapi_server.models.pipeline import Pipeline
-from openapi_server import util
 from openapi_server.controllers import db
 from openapi_server.controllers.github import GitHubUtils
-from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
