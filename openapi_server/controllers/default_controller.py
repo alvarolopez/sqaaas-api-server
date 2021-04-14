@@ -384,8 +384,7 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     :type pipeline_id: str
 
     """
-    _db = db.load_content()
-    pipeline_data = _db[pipeline_id]['data']
+    pipeline_data = db.get_entry(pipeline_id)
 
     config_yml_list = [
         (data['file_name'], data['data_yml'])
