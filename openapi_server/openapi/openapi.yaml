@@ -572,18 +572,22 @@ components:
       title: Creds_simplified
       type: object
     Commands_simplified:
-      default: []
       example:
       - mvn checkstyle:check
       items:
+        minLength: 1
         type: string
+      minItems: 1
       type: array
     Tox_simplified:
       properties:
         testenv:
-          example: cover
+          example:
+          - cover
           items:
+            minLength: 1
             type: string
+          minItems: 1
           title: testenv
           type: array
         tox_file:
@@ -598,6 +602,7 @@ components:
     When_branch:
       properties:
         pattern:
+          minLength: 1
           title: pattern
           type: string
         comparator:
@@ -616,6 +621,7 @@ components:
       type: boolean
     CriterionBuild:
       additionalProperties:
+        minProperties: 1
         properties:
           repos:
             additionalProperties:
@@ -695,12 +701,13 @@ components:
             alias_var: KEYSTORE_ALIAS_NAME
             id: my-dockerhub-token
             type: file
-        timeout: 0
+        timeout: 1
       properties:
         config:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
+            minProperties: 1
             properties:
               repos:
                 additionalProperties:
@@ -743,6 +750,7 @@ components:
           title: environment
           type: object
         timeout:
+          minimum: 1
           title: timeout
           type: integer
       title: JePL_config
@@ -986,7 +994,7 @@ components:
               alias_var: KEYSTORE_ALIAS_NAME
               id: my-dockerhub-token
               type: file
-          timeout: 0
+          timeout: 1
         - environment:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
@@ -1023,7 +1031,7 @@ components:
               alias_var: KEYSTORE_ALIAS_NAME
               id: my-dockerhub-token
               type: file
-          timeout: 0
+          timeout: 1
         composer_data:
           services:
             checkstyle:
@@ -1132,6 +1140,7 @@ components:
           type: string
         content:
           additionalProperties:
+            minProperties: 1
             properties:
               repos:
                 additionalProperties:

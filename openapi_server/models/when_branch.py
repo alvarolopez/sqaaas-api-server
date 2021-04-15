@@ -62,6 +62,8 @@ class WhenBranch(Model):
         """
         if pattern is None:
             raise ValueError("Invalid value for `pattern`, must not be `None`")
+        if pattern is not None and len(pattern) < 1:
+            raise ValueError("Invalid value for `pattern`, length must be greater than or equal to `1`")
 
         self._pattern = pattern
 

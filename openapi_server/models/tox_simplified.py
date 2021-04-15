@@ -62,6 +62,8 @@ class ToxSimplified(Model):
         """
         if testenv is None:
             raise ValueError("Invalid value for `testenv`, must not be `None`")
+        if testenv is not None and len(testenv) < 1:
+            raise ValueError("Invalid value for `testenv`, number of items must be greater than or equal to `1`")
 
         self._testenv = testenv
 

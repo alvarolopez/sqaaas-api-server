@@ -132,5 +132,7 @@ class JePLConfig(Model):
         :param timeout: The timeout of this JePLConfig.
         :type timeout: int
         """
+        if timeout is not None and timeout < 1:
+            raise ValueError("Invalid value for `timeout`, must be a value greater than or equal to `1`")
 
         self._timeout = timeout
