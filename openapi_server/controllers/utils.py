@@ -1,5 +1,6 @@
 import copy
 import functools
+import itertools
 import logging
 import re
 import uuid
@@ -25,6 +26,42 @@ def upstream_502_response(r):
         reason='Unsuccessful request to upstream service API')
 
 
+def validate_request_data(f):
+    @functools.wraps(f)
+    async def decorated_function(*args, **kwargs):
+        body = kwargs['body']
+        config_data_list = body['config_data']
+        composer_data = body['composer_data']
+        # Check 1) If JPL_DOCKERPUSH Then ('JPL_DOCKERUSER', 'JPL_DOCKERPASS') in config:credentials
+        do_docker_push = False
+        for srv_name, srv_data in composer_data['services'].items():
+            try:
+                if srv_data['image']['registry']['push']:
+                    do_docker_push = True
+            except KeyError as e:
+                continue
+        if do_docker_push:
+            credentials_list = [
+                config_data['config']['credentials']
+                    for config_data in config_data_list
+                        if 'credentials' in config_data['config'].keys()
+            ]
+            credentials_list = list(itertools.chain.from_iterable(credentials_list))
+            docker_credentials = [
+                credential
+                    for credential in credentials_list
+                        if not set(['JPL_DOCKERUSER', 'JPL_DOCKERPASS']).difference(set(credential.values()))
+            ]
+            if not docker_credentials:
+                _reason = 'Request to push Docker images, but no credentials (JPL_DOCKERUSER, JPL_DOCKERPASS) defined!'
+                logger.warning(_reason)
+                return web.Response(status=400, reason=_reason)
+
+        ret = await f(*args, **kwargs)
+        return ret
+    return decorated_function
+
+
 def validate_request(f):
     @functools.wraps(f)
     async def decorated_function(*args, **kwargs):
@@ -42,6 +79,7 @@ def validate_request(f):
             _reason = 'Invalid pipeline ID supplied!: %s' % _pipeline_id
             logger.warning(_reason)
             return web.Response(status=400, reason=_reason)
+
         try:
             logger.debug('Running decorated method <%s>' % f.__name__)
             ret = await f(*args, **kwargs)
