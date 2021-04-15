@@ -38,7 +38,7 @@ logger.debug('Loading Jenkins token from local filesystem')
 jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
 
 
-@ctls_utils.validate_request_data
+@ctls_utils.extended_data_validation
 async def add_pipeline(request: web.Request, body) -> web.Response:
     """Creates a pipeline.
 
@@ -64,6 +64,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     return web.json_response(r, status=201)
 
 
+@ctls_utils.extended_data_validation
 @ctls_utils.validate_request
 async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.Response:
     """Update pipeline by ID
