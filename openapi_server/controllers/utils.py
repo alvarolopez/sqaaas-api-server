@@ -167,12 +167,29 @@ def process_extra_data(config_json, composer_json):
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
     composer_data = {'data_json': composer_json}
-    # CONFIG (Multiple stages, Jenkins when clause)
+    # CONFIG (Multiple stages/Jenkins when clause, Array-to-Object transformation for repos)
     config_data_list = []
+    config_json_copy = copy.deepcopy(config_json)
     config_json_no_when = copy.deepcopy(config_json)
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        if 'repos' in criterion_data.keys():
+            repos_old = criterion_data.pop('repos')
+            repos_new = {}
+            for repo in repos_old:
+                try:
+                    repo_name = repo.pop('repo_name')
+                    repos_new[repo_name] = repo
+                except KeyError:
+                    # Use 'this_repo' as the placeholder for current repo & version
+                    repos_new['this_repo'] = repo
+            config_json_copy['sqa_criteria'][criterion_name] = {
+                'repos': repos_new
+            }
+            config_json_copy['sqa_criteria'][criterion_name] = {
+                'repos': repos_new
+            }
         if 'when' in criterion_data.keys():
-            config_json_when = copy.deepcopy(config_json)
+            config_json_when = copy.deepcopy(config_json_copy)
             config_json_when['sqa_criteria'] = {criterion_name: criterion_data}
             when_data = criterion_data.pop('when')
             config_data_list.append({
