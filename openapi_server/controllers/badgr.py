@@ -19,6 +19,7 @@ class BadgrUtils(object):
             access_user,
             access_pass
         )
+        self.entity = entity
         self.logger = logging.getLogger('sqaaas_api.badgr')
 
     def get_token(self, access_user, access_pass):
