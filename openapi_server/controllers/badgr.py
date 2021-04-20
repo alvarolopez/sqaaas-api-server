@@ -21,18 +21,18 @@ class BadgrUtils(object):
         )
         self.logger = logging.getLogger('sqaaas_api.badgr')
 
-    def get_token(self, user, pass):
+    def get_token(self, access_user, access_pass):
         """Obtains a Bearer-type token according to the provided credentials.
 
-        :param user: User ID
-        :param pass: User password
+        :param access_user: User ID
+        :param access_pass: User password
         """
         path = 'o/token'
         r = requests.post(
             urljoin(self.endpoint, path),
             data = {
-                'username': self.access_user,
-                'password': self.access_pass
+                'username': access_user,
+                'password': access_pass
             }
         )
         r.raise_for_status()
