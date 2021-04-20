@@ -1,6 +1,8 @@
 # coding: utf-8
 
 # import models into model package
+from openapi_server.models.badge import Badge
+from openapi_server.models.badge_recipient import BadgeRecipient
 from openapi_server.models.creds_simplified import CredsSimplified
 from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200

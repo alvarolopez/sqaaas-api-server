@@ -479,3 +479,15 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     await response.write(zip_data)
 
     return response
+
+
+async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
+    """Issues a quality badge.
+
+    Uses Badgr API to issue a badge after successful pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)
