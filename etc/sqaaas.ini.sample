@@ -5,11 +5,11 @@
 ## - Backend used for the repository management. Options: 'github'
 ##   A section with this name MUST be defined below
 repository_backend = github
-## - Path to the JSON file used as DB
 
-## ------------------- ##
-## Optional parameters ##
-## ------------------- ##
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to the JSON file used as DB
 # db_file = /sqaaas/sqaaas.json
 
 
@@ -24,10 +24,10 @@ user = paco
 ## - Name in Jenkins of the base repository organization
 github_organization_name = my_org
 
-## ------------------- ##
-## Optional parameters ##
-## ------------------- ##
-## - Path to file containing the previous user's token
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the Jenkins user's token
 # token = /etc/sqaaas/.jk_token
 
 
@@ -35,11 +35,13 @@ github_organization_name = my_org
 ## -------------------- ##
 ## Mandatory parameters ##
 ## -------------------- ##
+## - Name of the GitHub organization to use for managing repos containing pipelines
 organization = my_github_org
 
-## ------------------- ##
-## Optional parameters ##
-## ------------------- ##
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the GitHub token to carry out requests to GitHub API
 # token = /etc/sqaaas/.gh_token
 
 
@@ -55,5 +57,5 @@ user = pepe
 ## ------------------------------------------ ##
 ## Optional parameters (incl. default values) ##
 ## ------------------------------------------ ##
-## - Path to file containing the user's password
+## - Path to file containing the given Badgr user's password
 # token = /etc/sqaaas/.bdgr_token
