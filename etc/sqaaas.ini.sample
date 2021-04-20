@@ -18,7 +18,7 @@ repository_backend = github
 ## Mandatory parameters ##
 ## -------------------- ##
 ## - Jenkins URL endpoint
-url = https://example.org/
+url = https://jenkins.example.org/
 ## - Jenkins user with admin permissions
 user = paco
 ## - Name in Jenkins of the base repository organization
@@ -41,3 +41,19 @@ organization = my_github_org
 ## Optional parameters ##
 ## ------------------- ##
 # token = /etc/sqaaas/.gh_token
+
+
+[badgr]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+## - Badgr URL endpoint
+url = https://badgr.example.org/
+## - Badgr user with Issuer permissions
+user = pepe
+
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the user's password
+# token = /etc/sqaaas/.bdgr_token
