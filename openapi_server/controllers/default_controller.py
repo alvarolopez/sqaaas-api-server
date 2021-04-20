@@ -1,4 +1,5 @@
 import io
+import itertools
 import logging
 import uuid
 from zipfile import ZipFile, ZipInfo
@@ -504,4 +505,54 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     :type pipeline_id: str
 
     """
-    return web.Response(status=200)
+    pipeline_data = db.get_entry(pipeline_id)
+
+    # Get 'ci_build_url' & 'commit_url'
+    try:
+        jenkins_info = pipeline_data['jenkins']
+        build_url = jenkins_info['build_info']['url']
+        # FIXME Get commit_url from pipeline_data['jenkins']
+        commit_url = None
+    except KeyError:
+        logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
+        return web.Response(status=422)
+
+    # Get 'sw_criteria' & 'srv_criteria'
+    SW_CODE_PREFIX = 'qc_'
+    SRV_CODE_PREFIX = 'SvcQC'
+    config_data_list = pipeline_data['data']['config']
+    criteria = [
+        config_data['data_json']['sqa_criteria'].keys()
+            for config_data in config_data_list
+    ]
+    criteria = list(itertools.chain.from_iterable(criteria))
+    sw_criteria = [
+        criterion
+            for criterion in criteria
+                if criterion.startswith(SW_CODE_PREFIX)
+    ]
+    srv_criteria = [
+        criterion
+            for criterion in criteria
+                if criterion.startswith(SRV_CODE_PREFIX)
+    ]
+
+    # issue_badge() method call
+    badge_json = badgr_utils.issue_badge(
+        commit_url=commit_url,
+        ci_build_url=build_url,
+        sw_criteria=sw_criteria,
+        srv_criteria=srv_criteria
+    )
+
+    r = {
+        'openBadgeID': None,
+        'createdAt': None,
+        'createdBy': None,
+        'badgeClass': None,
+        'issuer': None,
+        'image': None,
+        'recipient': {},
+        'issuedOn': None
+    }
+    return web.json_response(r, status=200)
