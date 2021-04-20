@@ -56,7 +56,7 @@ class BadgrUtils(object):
         narrative = {
             'Software': '\n'.join([
                 '- [%s](%s)\n' % (criterion, '')
-                    for criterion in sw_criteria])
+                    for criterion in sw_criteria]),
             'Service': '\n'.join([
                 '- [%s](%s)\n' % (criterion, '')
                     for criterion in srv_criteria])
