@@ -9,6 +9,7 @@ from deepdiff import DeepDiff
 
 from openapi_server import config
 from openapi_server.controllers import db
+from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers import utils as ctls_utils
