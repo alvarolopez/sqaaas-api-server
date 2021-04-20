@@ -58,6 +58,8 @@ paths:
               operationId: get_pipeline_by_id
               parameters:
                 pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -77,7 +79,7 @@ paths:
         "204":
           description: Pipeline successfully deleted
         "400":
-          description: Invalid pipeline ID supplied
+          description: Request failed validation
         "404":
           description: Pipeline not found
         "502":
@@ -624,9 +626,11 @@ components:
         minProperties: 1
         properties:
           repos:
-            additionalProperties:
+            items:
               additionalProperties: false
               properties:
+                repo_name:
+                  type: string
                 container:
                   type: string
                 commands:
@@ -634,7 +638,7 @@ components:
                 tox:
                   $ref: '#/components/schemas/Tox_simplified'
               type: object
-            type: object
+            type: array
           when:
             additionalProperties: false
             properties:
@@ -710,9 +714,11 @@ components:
             minProperties: 1
             properties:
               repos:
-                additionalProperties:
+                items:
                   additionalProperties: false
                   properties:
+                    repo_name:
+                      type: string
                     container:
                       type: string
                     commands:
@@ -720,7 +726,7 @@ components:
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
                   type: object
-                type: object
+                type: array
               when:
                 additionalProperties: false
                 properties:
@@ -1143,9 +1149,11 @@ components:
             minProperties: 1
             properties:
               repos:
-                additionalProperties:
+                items:
                   additionalProperties: false
                   properties:
+                    repo_name:
+                      type: string
                     container:
                       type: string
                     commands:
@@ -1153,7 +1161,7 @@ components:
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
                   type: object
-                type: object
+                type: array
               when:
                 additionalProperties: false
                 properties:
