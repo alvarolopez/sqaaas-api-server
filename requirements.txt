@@ -12,3 +12,4 @@ Jinja2
 python-jenkins
 deepdiff
 namegenerator
+python-gitlab
