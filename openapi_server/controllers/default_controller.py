@@ -400,6 +400,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     db.update_jenkins(
         pipeline_id,
         jk_job_name,
+        commit.html_url,
         build_no,
         build_url,
         scan_org_wait
@@ -508,6 +509,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
 
     """
     pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
 
     # Get 'ci_build_url' & 'commit_url'
     try:
@@ -515,7 +517,8 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         build_url = jenkins_info['build_info']['url']
         logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
         # FIXME Get commit_url from pipeline_data['jenkins']
-        commit_url = None
+        commit_id = jenkins_info['build_info']['commit']
+        commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
         logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
     except KeyError:
         logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')

@@ -127,3 +127,13 @@ class GitHubUtils(object):
         self.logger.debug('Deleting repository: %s' % repo_name)
         repo.delete()
         self.logger.debug('Repository <%s> successfully deleted' % repo_name)
+
+    def get_commit_url(self, repo_name, commit_id):
+        """Get commit URL from the given ID.
+
+        :param repo_name: GitHub's repo name (including organization/user)
+        :param commit_id: SHA-based ID for the commit
+        """
+        repo = self.client.get_repo(repo_name)
+        self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
+        return repo.get_commit(commit_id)
