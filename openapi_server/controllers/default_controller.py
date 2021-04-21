@@ -513,8 +513,10 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     try:
         jenkins_info = pipeline_data['jenkins']
         build_url = jenkins_info['build_info']['url']
+        logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
         # FIXME Get commit_url from pipeline_data['jenkins']
         commit_url = None
+        logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
     except KeyError:
         logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
         return web.Response(status=422)
@@ -522,6 +524,8 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     # Get 'sw_criteria' & 'srv_criteria'
     SW_CODE_PREFIX = 'qc_'
     SRV_CODE_PREFIX = 'SvcQC'
+    logger.debug('Filtering Software criteria codes by <%s> prefix' % SW_CODE_PREFIX)
+    logger.debug('Filtering Service criteria codes by <%s> prefix' % SRV_CODE_PREFIX)
     config_data_list = pipeline_data['data']['config']
     criteria = [
         config_data['data_json']['sqa_criteria'].keys()
@@ -538,8 +542,11 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
             for criterion in criteria
                 if criterion.startswith(SRV_CODE_PREFIX)
     ]
+    logger.debug('Obtained Software criteria: %s' % sw_criteria)
+    logger.debug('Obtained Service criteria: %s' % srv_criteria)
 
     # issue_badge() method call
+    logger.info('Issuing badge for pipeline <%s>' % pipeline_id)
     badge_json = badgr_utils.issue_badge(
         commit_url=commit_url,
         ci_build_url=build_url,

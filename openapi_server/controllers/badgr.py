@@ -31,6 +31,7 @@ class BadgrUtils(object):
         :param access_pass: User password
         """
         path = 'o/token'
+        self.logger.debug('Getting user token from Badgr API: \'GET %s\'' % path)
         r = requests.post(
             urljoin(self.endpoint, path),
             data = {
@@ -48,12 +49,15 @@ class BadgrUtils(object):
         headers = {
             'Authorization': 'Bearer %s' % self.access_token
         }
+        self.logger.debug('Getting issuers from Badgr API: \'GET %s\'' % path)
         r = requests.get(
             urljoin(self.endpoint, path),
             headers=headers
         )
         if r.ok:
-            return r.json()['result']
+            r_json = r.json()
+            self.logger.debug('Result from \'GET %s\': %s' % (path, r_json))
+            return r_json['result']
 
     def get_badgeclasses(self, issuer_id):
         """Gets all the BadgeClasses associated with the given Issuer.
@@ -64,12 +68,15 @@ class BadgrUtils(object):
         headers = {
             'Authorization': 'Bearer %s' % self.access_token
         }
+        self.logger.debug('Getting BadgeClasses for Issuer <%s> from Badgr API: \'GET %s\'' % (issuer_id, path))
         r = requests.get(
             urljoin(self.endpoint, path),
             headers=headers
         )
         if r.ok:
-            return r.json()['result']
+            r_json = r.json()
+            self.logger.debug('Result from \'GET %s\': %s' % (path, r_json))
+            return r_json['result']
 
     def _get_matching_entity_id(self, entity_name, entity_type, **kwargs):
         """Get the ID of the specified entity type that matches the given name.
@@ -119,6 +126,11 @@ class BadgrUtils(object):
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
         badgeclass_id = self.get_badgeclass_entity()
+        self.logger.info('BadgeClass entityId found for Issuer <%s> and BadgeClass <%s>: %s' % (
+            self.issuer_name,
+            self.badgeclass_name,
+            badgeclass_id
+        ))
         path = 'v2/badgeclasses/%s/assertions' % badgeclass_id
         headers = {
             'Authorization': 'Bearer %s' % self.access_token,
@@ -153,6 +165,9 @@ class BadgrUtils(object):
               }
             ]
         }
+        self.logger.debug('Assertion data: %s' % assertion_data)
+
+        self.logger.debug('Posting to get an Assertion of BadgeClass <%s> from Badgr API: \'POST %s\'' % (self.badgeclass_name, path))
         r = requests.post(
             urljoin(self.endpoint, path),
             headers=headers,
@@ -160,4 +175,5 @@ class BadgrUtils(object):
         )
         r.raise_for_status()
         r_json = r.json()
+        self.logger.debug('Result from \'POST %s\': %s' % (path, r_json))
         return r_json
