@@ -176,4 +176,8 @@ class BadgrUtils(object):
         r.raise_for_status()
         r_json = r.json()
         self.logger.debug('Result from \'POST %s\': %s' % (path, r_json))
-        return r_json
+        if len(r_json) > 1:
+            self.logger.warn('More than one badge being issued')
+
+        # Return the first result
+        return r_json['result'][0]
