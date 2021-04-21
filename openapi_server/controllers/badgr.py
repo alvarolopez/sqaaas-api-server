@@ -41,7 +41,7 @@ class BadgrUtils(object):
         )
         r.raise_for_status()
         r_json = r.json()
-        self.access_token = r_json['access_token']
+        return r_json['access_token']
 
     def get_issuers(self):
         """Gets all the Issuers associated with the current user."""
