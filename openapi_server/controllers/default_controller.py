@@ -366,13 +366,14 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
     else:
         gh_utils.create_org_repository(pipeline_repo)
-    commit = ctls_utils.push_jepl_files(
+    commit_id = ctls_utils.push_jepl_files(
         gh_utils,
         pipeline_repo,
         config_data_list,
         composer_data,
         jenkinsfile
     )
+    commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
     repo_data = gh_utils.get_repository(pipeline_repo)
 
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
@@ -400,7 +401,8 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     db.update_jenkins(
         pipeline_id,
         jk_job_name,
-        commit.html_url,
+        commit_id,
+        commit_url,
         build_no,
         build_url,
         scan_org_wait
@@ -517,8 +519,8 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         build_url = jenkins_info['build_info']['url']
         logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
         # FIXME Get commit_url from pipeline_data['jenkins']
-        commit_id = jenkins_info['build_info']['commit']
-        commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
+        commit_id = jenkins_info['build_info']['commit_id']
+        commit_url = jenkins_info['build_info']['commit_url']
         logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
     except KeyError:
         logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')

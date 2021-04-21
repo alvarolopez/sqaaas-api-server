@@ -118,6 +118,7 @@ def update_jenkins(pipeline_id, jk_job_name, commit_id, build_no=None, build_url
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param jk_job_name: Name of the pipeline job in Jenkins.
     :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
+    :param commit_url: Commit URL of the git repository platform.
     :param build_no: Jenkins' job build number.
     :param build_url: Jenkins' job build URL.
     :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
@@ -126,7 +127,8 @@ def update_jenkins(pipeline_id, jk_job_name, commit_id, build_no=None, build_url
     db[pipeline_id]['jenkins'] = {
         'job_name': jk_job_name,
         'build_info': {
-            'commit': commit_id,
+            'commit_id': commit_id,
+            'commit_url': commit_url,
             'number': build_no,
             'url': build_url,
         },
