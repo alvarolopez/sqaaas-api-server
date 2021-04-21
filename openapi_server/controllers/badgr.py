@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 
@@ -145,7 +146,7 @@ class BadgrUtils(object):
                 '- [%s](%s)\n' % (criterion, '')
                     for criterion in srv_criteria])
         }
-        assertion_data = {
+        assertion_data = json.dumps({
             'recipient': {
               'identity': commit_url,
               'hashed': True,
@@ -164,7 +165,7 @@ class BadgrUtils(object):
                 ])
               }
             ]
-        }
+        })
         self.logger.debug('Assertion data: %s' % assertion_data)
 
         self.logger.debug('Posting to get an Assertion of BadgeClass <%s> from Badgr API: \'POST %s\'' % (self.badgeclass_name, path))
