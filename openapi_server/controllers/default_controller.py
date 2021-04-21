@@ -1,4 +1,5 @@
 import io
+import itertools
 import logging
 import uuid
 from zipfile import ZipFile, ZipInfo
@@ -9,6 +10,7 @@ from deepdiff import DeepDiff
 
 from openapi_server import config
 from openapi_server.controllers import db
+from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers import utils as ctls_utils
@@ -25,17 +27,32 @@ JENKINS_URL = config.get_ci('url')
 JENKINS_USER = config.get_ci('user')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 
+TOKEN_BADGR_FILE = config.get_badge(
+    'token', fallback='/etc/sqaaas/.badgr_token')
+BADGR_URL = config.get_badge('url')
+BADGR_USER = config.get_badge('user')
+BADGR_ISSUER = config.get_badge('issuer')
+BADGR_BADGECLASS = config.get_badge('badgeclass')
+
 logger = logging.getLogger('sqaaas_api.controller')
 
+# Instance of code repo backend object
 with open(TOKEN_GH_FILE,'r') as f:
     token = f.read().strip()
 logger.debug('Loading GitHub token from local filesystem')
 gh_utils = GitHubUtils(token)
 
+# Instance of CI system object
 with open(TOKEN_JK_FILE,'r') as f:
     jk_token = f.read().strip()
 logger.debug('Loading Jenkins token from local filesystem')
 jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+
+# Instance of Badge issuing service object
+with open(TOKEN_BADGR_FILE,'r') as f:
+    badgr_token = f.read().strip()
+logger.debug('Loading Badgr password from local filesystem')
+badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
 
 
 @ctls_utils.extended_data_validation
@@ -479,3 +496,64 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     await response.write(zip_data)
 
     return response
+
+
+async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
+    """Issues a quality badge.
+
+    Uses Badgr API to issue a badge after successful pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    # Get 'ci_build_url' & 'commit_url'
+    try:
+        jenkins_info = pipeline_data['jenkins']
+        build_url = jenkins_info['build_info']['url']
+        logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
+        # FIXME Get commit_url from pipeline_data['jenkins']
+        commit_url = None
+        logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
+    except KeyError:
+        logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
+        return web.Response(status=422)
+
+    # Get 'sw_criteria' & 'srv_criteria'
+    SW_CODE_PREFIX = 'qc_'
+    SRV_CODE_PREFIX = 'SvcQC'
+    logger.debug('Filtering Software criteria codes by <%s> prefix' % SW_CODE_PREFIX)
+    logger.debug('Filtering Service criteria codes by <%s> prefix' % SRV_CODE_PREFIX)
+    config_data_list = pipeline_data['data']['config']
+    criteria = [
+        config_data['data_json']['sqa_criteria'].keys()
+            for config_data in config_data_list
+    ]
+    criteria = list(itertools.chain.from_iterable(criteria))
+    sw_criteria = [
+        criterion
+            for criterion in criteria
+                if criterion.startswith(SW_CODE_PREFIX)
+    ]
+    srv_criteria = [
+        criterion
+            for criterion in criteria
+                if criterion.startswith(SRV_CODE_PREFIX)
+    ]
+    logger.debug('Obtained Software criteria: %s' % sw_criteria)
+    logger.debug('Obtained Service criteria: %s' % srv_criteria)
+
+    # issue_badge() method call
+    logger.info('Issuing badge for pipeline <%s>' % pipeline_id)
+    r = badgr_utils.issue_badge(
+        commit_url=commit_url,
+        ci_build_url=build_url,
+        sw_criteria=sw_criteria,
+        srv_criteria=srv_criteria
+    )
+    if r:
+        logger.info('Badge successfully issued: %s' % r['openBadgeId'])
+
+    return web.json_response(r, status=200)

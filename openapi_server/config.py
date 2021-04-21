@@ -6,6 +6,7 @@ from configparser import ConfigParser
 
 logger = logging.getLogger('sqaaas_api.config')
 
+BADGE_SECTION = 'badgr'
 CI_SECTION = 'jenkins'
 
 
@@ -31,3 +32,7 @@ def get_repo(key, fallback=None):
 
 def get_ci(key, fallback=None):
     return CONF.get(CI_SECTION, key, fallback=fallback)
+
+
+def get_badge(key, fallback=None):
+    return CONF.get(BADGE_SECTION, key, fallback=fallback)

@@ -154,6 +154,42 @@ paths:
       summary: Update pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
+  /pipeline/{pipeline_id}/badge:
+    post:
+      description: |
+        Uses Badgr API to issue a badge after successful pipeline execution.
+      operationId: issue_badge
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Badge'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
+      summary: Issues a quality badge.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/composer:
     get:
       description: |
@@ -1117,6 +1153,43 @@ components:
       - upstream_status
       title: UpstreamError
       type: object
+    Badge:
+      example:
+        openBadgeId: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+        createdAt: 2021-04-07T10:34:02.960Z
+        createdBy: e3h49VVbQRKQphuAAmxpgQ
+        badgeclass: sBS3EsJQRAC0ENTmvETtQw
+        issuer: aS1lWKgIR4u8bGjPZUzAyg
+        image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+        recipient:
+          identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+          hashed: true
+          type: url
+          plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+        issuedOn: 2021-04-07T10:07:00.000Z
+      properties:
+        openBadgeID:
+          format: uri
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        createdBy:
+          type: string
+        badgeClass:
+          type: string
+        issuer:
+          type: string
+        image:
+          format: uri
+          type: string
+        recipient:
+          $ref: '#/components/schemas/Badge_recipient'
+        issuedOn:
+          format: date-time
+          type: string
+      title: Badge
+      type: object
     inline_response_201:
       example:
         id: id
@@ -1437,4 +1510,25 @@ components:
         pipeline_config:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       title: JePL_jenkinsfile_stages
+      type: object
+    Badge_recipient:
+      properties:
+        identity:
+          title: identity
+          type: string
+        hashed:
+          title: hashed
+          type: boolean
+        type:
+          enum:
+          - email
+          - openBadgeId
+          - telephone
+          - url
+          title: type
+          type: string
+        plaintextIdentity:
+          title: plaintextIdentity
+          type: string
+      title: Badge_recipient
       type: object
