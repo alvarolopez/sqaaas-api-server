@@ -553,5 +553,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         sw_criteria=sw_criteria,
         srv_criteria=srv_criteria
     )
+    if r:
+        logger.info('Badge successfully issued: %s' % r['openBadgeId'])
 
     return web.json_response(r, status=200)

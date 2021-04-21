@@ -175,10 +175,10 @@ class BadgrUtils(object):
             data=assertion_data
         )
         r_json = r.json()
+        self.logger.debug('Result from \'POST %s\': %s' % (path, r_json))
 
         if r.ok:
-            self.logger.debug('Result from \'POST %s\': %s' % (path, r_json))
-            if len(r_json) > 1:
+            if len(r_json['result']) > 1:
                 self.logger.warn('More than one badge being issued')
 
             # Return the first result
