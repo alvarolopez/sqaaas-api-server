@@ -64,9 +64,9 @@ class JenkinsUtils(object):
 
         return queue_data['executable']
 
-    def get_build_info(self, full_job_name, build_no):
+    def get_build_info(self, full_job_name, build_no, depth=0):
         self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))
-        return self.server.get_build_info(full_job_name, build_no)['result']
+        return self.server.get_build_info(full_job_name, build_no, depth=depth)['result']
 
     def delete_job(self, full_job_name):
         self.logger.debug('Deleting Jenkins job: %s' % full_job_name)
