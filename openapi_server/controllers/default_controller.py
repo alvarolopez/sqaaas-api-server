@@ -366,7 +366,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
         logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
     else:
         gh_utils.create_org_repository(pipeline_repo)
-    ctls_utils.push_jepl_files(
+    commit = ctls_utils.push_jepl_files(
         gh_utils,
         pipeline_repo,
         config_data_list,
