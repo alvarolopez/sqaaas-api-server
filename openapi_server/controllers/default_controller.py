@@ -547,21 +547,11 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
 
     # issue_badge() method call
     logger.info('Issuing badge for pipeline <%s>' % pipeline_id)
-    badge_json = badgr_utils.issue_badge(
+    r = badgr_utils.issue_badge(
         commit_url=commit_url,
         ci_build_url=build_url,
         sw_criteria=sw_criteria,
         srv_criteria=srv_criteria
     )
 
-    r = {
-        'openBadgeID': None,
-        'createdAt': None,
-        'createdBy': None,
-        'badgeClass': None,
-        'issuer': None,
-        'image': None,
-        'recipient': {},
-        'issuedOn': None
-    }
     return web.json_response(r, status=200)
