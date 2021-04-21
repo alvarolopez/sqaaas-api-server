@@ -331,7 +331,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
             build_status = 'WAITING_SCAN_ORG'
 
     if build_no:
-        build_status = jk_utils.get_build_status(
+        build_status = jk_utils.get_build_info(
             jk_job_name,
             build_no
         )
