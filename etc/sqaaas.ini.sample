@@ -53,8 +53,10 @@ organization = my_github_org
 url = https://badgr.example.org/
 ## - Badgr user with Issuer permissions
 user = pepe
-## - Badgr's BadgeClass entity ID
-entity = my_badgeclass_entity_id
+## - Badgr's Issuer name
+issuer = my_issuer_name
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = my_badgeclass_name
 
 ## ------------------------------------------ ##
 ## Optional parameters (incl. default values) ##

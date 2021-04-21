@@ -31,7 +31,8 @@ TOKEN_BADGR_FILE = config.get_badge(
     'token', fallback='/etc/sqaaas/.badgr_token')
 BADGR_URL = config.get_badge('url')
 BADGR_USER = config.get_badge('user')
-BADGR_ENTITY = config.get_badge('entity')
+BADGR_ISSUER = config.get_badge('issuer')
+BADGR_BADGECLASS = config.get_badge('badgeclass')
 
 logger = logging.getLogger('sqaaas_api.controller')
 
@@ -51,7 +52,7 @@ jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
 with open(TOKEN_BADGR_FILE,'r') as f:
     badgr_token = f.read().strip()
 logger.debug('Loading Badgr password from local filesystem')
-badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ENTITY)
+badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
 
 
 @ctls_utils.extended_data_validation
