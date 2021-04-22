@@ -112,7 +112,7 @@ def del_entry(pipeline_id):
     logger.debug('Pipeline <%s> removed from DB' % pipeline_id)
 
 
-def update_jenkins(pipeline_id, jk_job_name, commit_id, build_no=None, build_url=None, scan_org_wait=False):
+def update_jenkins(pipeline_id, jk_job_name, commit_id, commit_url, build_no=None, build_url=None, scan_org_wait=False):
     """Updates the Jenkins data in the DB for the given pipeline ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
