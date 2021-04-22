@@ -5,6 +5,17 @@ import requests
 from urllib.parse import urljoin
 
 
+SW_CRITERIA_MAP = {
+    'qc_style': 'https://indigo-dc.github.io/sqa-baseline/#code-style-qc.sty',
+    'qc_unit': 'https://indigo-dc.github.io/sqa-baseline/#unit-testing-qc.uni',
+    'qc_functional': 'https://indigo-dc.github.io/sqa-baseline/#functional-testing-qc.fun',
+    'qc_doc': 'https://indigo-dc.github.io/sqa-baseline/#documentation-qc.doc',
+    'qc_security': 'https://indigo-dc.github.io/sqa-baseline/#security-qc.sec'
+}
+SRV_CRITERIA_MAP = {
+}
+
+
 class BadgrUtils(object):
     """Class for handling requests to Badgr API."""
     def __init__(self, endpoint, access_user, access_pass, issuer_name, badgeclass_name):
@@ -118,9 +129,10 @@ class BadgrUtils(object):
         )
         return badgeclass_id
 
-    def issue_badge(self, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
+    def issue_badge(self, commit_id, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
         """Issues a badge (Badgr's assertion).
 
+        :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
         :param commit_url: Absolute URL pointing to the commit that triggered the pipeline
         :param ci_build_url: Absolute URL pointing to the build results of the pipeline
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
@@ -140,10 +152,10 @@ class BadgrUtils(object):
         # Assertion data
         narrative = {
             'Software': '\n'.join([
-                '- [%s](%s)\n' % (criterion, '')
+                '- [%s](%s)\n' % (criterion, SW_CRITERIA_MAP[criterion])
                     for criterion in sw_criteria]),
             'Service': '\n'.join([
-                '- [%s](%s)\n' % (criterion, '')
+                '- [%s](%s)\n' % (criterion, SRV_CRITERIA_MAP[criterion])
                     for criterion in srv_criteria])
         }
         assertion_data = json.dumps({
@@ -153,16 +165,14 @@ class BadgrUtils(object):
               'type': 'url'
             },
             'narrative': '\n\n'.join([
-                '\n'.join(['Successful validation of %s QA criteria:' % criteria_type, criteria_msg])
+                '\n'.join(['Source code change (SHA: [%s](%s)) have passed successfully the ' % (commit_id, commit_url),
+                           'validation of the following %s QA criteria:' % criteria_type, criteria_msg])
                     for criteria_type, criteria_msg in narrative.items() if criteria_msg
             ]),
             'evidence': [
               {
                 'url': ci_build_url,
-                'narrative': '\n'.join([
-                    '- Version validated (commit): %s' % commit_url,
-                    '- Build URL in the CI system: %s' % ci_build_url,
-                ])
+                'narrative': 'Build page from Jenkins CI'
               }
             ]
         })

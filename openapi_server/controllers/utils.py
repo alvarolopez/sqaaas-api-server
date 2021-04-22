@@ -261,7 +261,9 @@ def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile
         branch=branch
     )
     logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
-    gh_utils.push_file(
+    # FIXME Getting only the last commit as the representation for the whole
+    # set of JePL files. This HAS to be changed so that a unique commit is done
+    last_commit = gh_utils.push_file(
         'Jenkinsfile',
         jenkinsfile,
         'Update Jenkinsfile',
@@ -269,3 +271,5 @@ def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile
         branch=branch
     )
     logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
+
+    return last_commit

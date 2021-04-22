@@ -33,14 +33,26 @@ class GitHubUtils(object):
             return False
 
     def push_file(self, file_name, file_data, commit_msg, repo_name, branch='sqaaas'):
+        """Pushes a file into GitHub repository.
+
+        Returns the commit ID (SHA format).
+
+        :param file_name: Name of the affected file
+        :param file_data: Contents of the file
+        :param commit_msg: Message to use in the commit
+        :param repo_name: Name of the repo where the file will be pushed
+        :param branch: Branch to push to
+        """
         repo = self.client.get_repo(repo_name)
         contents = self.get_repo_content(repo_name, file_name, branch)
+        r = {}
         if contents:
             self.logger.debug('File <%s> already exists in the repository, updating..' % file_name)
-            repo.update_file(contents.path, commit_msg, file_data, contents.sha, branch=branch)
+            r = repo.update_file(contents.path, commit_msg, file_data, contents.sha, branch=branch)
         else:
             self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
-            repo.create_file(file_name, commit_msg, file_data, branch=branch)
+            r = repo.create_file(file_name, commit_msg, file_data, branch=branch)
+        return r['commit'].sha
 
     def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
         repo = self.client.get_repo(upstream_repo_name)
@@ -125,3 +137,13 @@ class GitHubUtils(object):
         self.logger.debug('Deleting repository: %s' % repo_name)
         repo.delete()
         self.logger.debug('Repository <%s> successfully deleted' % repo_name)
+
+    def get_commit_url(self, repo_name, commit_id):
+        """Returns the commit URL (HTML format) that corresponds to the given commit ID.
+
+        :param repo_name: GitHub's repo name (including organization/user)
+        :param commit_id: SHA-based ID for the commit
+        """
+        repo = self.client.get_repo(repo_name)
+        self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
+        return repo.get_commit(commit_id).html_url
