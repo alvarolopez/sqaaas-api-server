@@ -5,6 +5,17 @@ import requests
 from urllib.parse import urljoin
 
 
+SW_CRITERIA_MAP = {
+    'qc_style': 'https://indigo-dc.github.io/sqa-baseline/#code-style-qc.sty',
+    'qc_unit': 'https://indigo-dc.github.io/sqa-baseline/#unit-testing-qc.uni',
+    'qc_func': 'https://indigo-dc.github.io/sqa-baseline/#functional-testing-qc.fun',
+    'qc_doc': 'https://indigo-dc.github.io/sqa-baseline/#documentation-qc.doc',
+    'qc_sec': 'https://indigo-dc.github.io/sqa-baseline/#security-qc.sec'
+}
+SRV_CRITERIA_MAP = {
+}
+
+
 class BadgrUtils(object):
     """Class for handling requests to Badgr API."""
     def __init__(self, endpoint, access_user, access_pass, issuer_name, badgeclass_name):
@@ -141,10 +152,10 @@ class BadgrUtils(object):
         # Assertion data
         narrative = {
             'Software': '\n'.join([
-                '- [%s](%s)\n' % (criterion, '')
+                '- [%s](%s)\n' % (criterion, SW_CRITERIA_MAP[criterion])
                     for criterion in sw_criteria]),
             'Service': '\n'.join([
-                '- [%s](%s)\n' % (criterion, '')
+                '- [%s](%s)\n' % (criterion, SRV_CRITERIA_MAP[criterion])
                     for criterion in srv_criteria])
         }
         assertion_data = json.dumps({
