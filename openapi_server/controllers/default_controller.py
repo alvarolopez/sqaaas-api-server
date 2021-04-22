@@ -525,6 +525,11 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
 
+    build_status = pipeline_data['jenkins']['build_info']['status']
+    if not build_status in ['SUCCESS', 'UNSTABLE']:
+        logger.error('Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status))
+        return web.Response(status=422)
+
     # Get 'ci_build_url' & 'commit_url'
     try:
         jenkins_info = pipeline_data['jenkins']
