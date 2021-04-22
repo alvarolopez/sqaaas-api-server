@@ -8,9 +8,9 @@ from urllib.parse import urljoin
 SW_CRITERIA_MAP = {
     'qc_style': 'https://indigo-dc.github.io/sqa-baseline/#code-style-qc.sty',
     'qc_unit': 'https://indigo-dc.github.io/sqa-baseline/#unit-testing-qc.uni',
-    'qc_func': 'https://indigo-dc.github.io/sqa-baseline/#functional-testing-qc.fun',
+    'qc_functional': 'https://indigo-dc.github.io/sqa-baseline/#functional-testing-qc.fun',
     'qc_doc': 'https://indigo-dc.github.io/sqa-baseline/#documentation-qc.doc',
-    'qc_sec': 'https://indigo-dc.github.io/sqa-baseline/#security-qc.sec'
+    'qc_security': 'https://indigo-dc.github.io/sqa-baseline/#security-qc.sec'
 }
 SRV_CRITERIA_MAP = {
 }
