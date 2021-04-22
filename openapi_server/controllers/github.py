@@ -42,7 +42,7 @@ class GitHubUtils(object):
         else:
             self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
             r = repo.create_file(file_name, commit_msg, file_data, branch=branch)
-        return r['commit']
+        return r['commit'].sha
 
     def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
         repo = self.client.get_repo(upstream_repo_name)
