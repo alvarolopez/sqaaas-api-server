@@ -118,9 +118,10 @@ class BadgrUtils(object):
         )
         return badgeclass_id
 
-    def issue_badge(self, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
+    def issue_badge(self, commit_id, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
         """Issues a badge (Badgr's assertion).
 
+        :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
         :param commit_url: Absolute URL pointing to the commit that triggered the pipeline
         :param ci_build_url: Absolute URL pointing to the build results of the pipeline
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
@@ -153,16 +154,14 @@ class BadgrUtils(object):
               'type': 'url'
             },
             'narrative': '\n\n'.join([
-                '\n'.join(['Successful validation of %s QA criteria:' % criteria_type, criteria_msg])
+                '\n'.join(['Source code change (SHA: [%s](%s)) have passed successfully the ' % (commit_id, commit_url),
+                           'validation of the following %s QA criteria:' % criteria_type, criteria_msg])
                     for criteria_type, criteria_msg in narrative.items() if criteria_msg
             ]),
             'evidence': [
               {
                 'url': ci_build_url,
-                'narrative': '\n'.join([
-                    '- Version validated (commit): %s' % commit_url,
-                    '- Build URL in the CI system: %s' % ci_build_url,
-                ])
+                'narrative': 'Build page from Jenkins CI'
               }
             ]
         })
