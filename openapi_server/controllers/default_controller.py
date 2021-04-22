@@ -518,7 +518,6 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         jenkins_info = pipeline_data['jenkins']
         build_url = jenkins_info['build_info']['url']
         logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
-        # FIXME Get commit_url from pipeline_data['jenkins']
         commit_id = jenkins_info['build_info']['commit_id']
         commit_url = jenkins_info['build_info']['commit_url']
         logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
