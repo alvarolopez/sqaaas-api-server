@@ -178,6 +178,8 @@ def process_extra_data(config_json, composer_json):
             for repo in repos_old:
                 try:
                     repo_name = repo.pop('repo_name')
+                    if not repo_name:
+                        raise KeyError
                     repos_new[repo_name] = repo
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
