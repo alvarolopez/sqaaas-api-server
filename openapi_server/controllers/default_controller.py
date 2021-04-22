@@ -337,6 +337,18 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         )
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
+    # Add build status to DB
+    db.update_jenkins(
+        pipeline_id,
+        jk_job_name,
+        commit_id=jenkins_info['build_info']['commit_id'],
+        commit_url=jenkins_info['build_info']['commit_url'],
+        build_no=build_no,
+        build_url=build_url,
+        scan_org_wait=jenkins_info['scan_org_wait'],
+        build_status=build_status
+    )
+
     r = {
         'build_url': build_url,
         'build_status': build_status
