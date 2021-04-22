@@ -33,6 +33,16 @@ class GitHubUtils(object):
             return False
 
     def push_file(self, file_name, file_data, commit_msg, repo_name, branch='sqaaas'):
+        """Pushes a file into GitHub repository.
+
+        Returns the commit ID (SHA format).
+
+        :param file_name: Name of the affected file
+        :param file_data: Contents of the file
+        :param commit_msg: Message to use in the commit
+        :param repo_name: Name of the repo where the file will be pushed
+        :param branch: Branch to push to
+        """
         repo = self.client.get_repo(repo_name)
         contents = self.get_repo_content(repo_name, file_name, branch)
         r = {}
