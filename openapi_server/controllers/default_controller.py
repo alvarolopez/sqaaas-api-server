@@ -592,3 +592,29 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     )
 
     return web.json_response(r, status=200)
+
+
+async def get_badge(request: web.Request, pipeline_id) -> web.Response:
+    """Gets badge data associated with the given pipeline
+
+    Returns an array of badge data associated with the pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param last: Obtain the last badge being issued
+    :type last: bool
+    :param commit_sha: Obtain the badge associated with the commit SHA
+    :type commit_sha: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    try:
+        r = pipeline_data['jenkins']['build_info']['badgr']
+    except KeyError:
+        logger.error('Badge not issued for pipeline <%s>' % pipeline_id)
+        return web.Response(status=422)
+
+    logger.info('Badge gathered successfully: %s' % r['openBadgeId'])
+
+    return web.json_response(r, status=200)

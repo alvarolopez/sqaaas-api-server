@@ -155,6 +155,36 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
   /pipeline/{pipeline_id}/badge:
+    get:
+      description: |
+        Returns the badge data associated with the pipeline.
+      operationId: get_badge
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Badge'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Badge not issued
+      summary: Gets badge data associated with the given pipeline
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     post:
       description: |
         Uses Badgr API to issue a badge after successful pipeline execution.
@@ -179,6 +209,8 @@ paths:
           description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
+        "422":
+          description: Pipeline has not been successfully executed
         "502":
           content:
             application/json:
@@ -454,6 +486,23 @@ paths:
         schema:
           type: string
         style: simple
+      - description: URL of the upstream repository to fetch the code from
+        explode: true
+        in: query
+        name: repo_url
+        required: false
+        schema:
+          format: uri
+          type: string
+        style: form
+      - description: Branch name of the upstream repository to fetch the code from
+        explode: true
+        in: query
+        name: repo_branch
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
