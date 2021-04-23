@@ -578,4 +578,17 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     if r:
         logger.info('Badge successfully issued: %s' % r['openBadgeId'])
 
+    # Add badge data to DB
+    db.update_jenkins(
+        pipeline_id,
+        jk_job_name,
+        commit_id=jenkins_info['build_info']['commit_id'],
+        commit_url=jenkins_info['build_info']['commit_url'],
+        build_no=build_no,
+        build_url=build_url,
+        scan_org_wait=jenkins_info['scan_org_wait'],
+        build_status=build_status,
+        badge_data=r
+    )
+
     return web.json_response(r, status=200)
