@@ -513,6 +513,7 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
+@ctls_utils.validate_request
 async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     """Issues a quality badge.
 
