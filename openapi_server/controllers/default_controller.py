@@ -1,10 +1,14 @@
+import calendar
+from datetime import datetime
 import io
 import itertools
 import logging
+import urllib
 import uuid
 from zipfile import ZipFile, ZipInfo
 
 from aiohttp import web
+from jinja2 import Environment, PackageLoader
 from urllib.parse import urlparse
 from deepdiff import DeepDiff
 
@@ -526,22 +530,22 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
 
-    build_status = pipeline_data['jenkins']['build_info']['status']
-    if not build_status in ['SUCCESS', 'UNSTABLE']:
-        logger.error('Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status))
-        return web.Response(status=422)
-
     # Get 'ci_build_url' & 'commit_url'
     try:
         jenkins_info = pipeline_data['jenkins']
-        build_url = jenkins_info['build_info']['url']
-        logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
-        commit_id = jenkins_info['build_info']['commit_id']
-        commit_url = jenkins_info['build_info']['commit_url']
-        logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
+        build_info = jenkins_info['build_info']
+        build_status = build_info['status']
+        if not build_status in ['SUCCESS', 'UNSTABLE']:
+            logger.error('Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status))
+            return web.Response(status=422)
     except KeyError:
         logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
         return web.Response(status=422)
+    build_url = build_info['url']
+    logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
+    commit_id = build_info['commit_id']
+    commit_url = build_info['commit_url']
+    logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
 
     # Get 'sw_criteria' & 'srv_criteria'
     SW_CODE_PREFIX = 'qc_'
@@ -582,9 +586,9 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     # Add badge data to DB
     db.update_jenkins(
         pipeline_id,
-        jk_job_name,
-        commit_id=jenkins_info['build_info']['commit_id'],
-        commit_url=jenkins_info['build_info']['commit_url'],
+        jenkins_info['job_name'],
+        commit_id=commit_id,
+        commit_url=commit_url,
         build_no=build_no,
         build_url=build_url,
         scan_org_wait=jenkins_info['scan_org_wait'],
@@ -595,27 +599,56 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=200)
 
 
-async def get_badge(request: web.Request, pipeline_id) -> web.Response:
+@ctls_utils.validate_request
+async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Response:
     """Gets badge data associated with the given pipeline
 
-    Returns an array of badge data associated with the pipeline.
+    Returns the badge data associated with the pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param last: Obtain the last badge being issued
-    :type last: bool
-    :param commit_sha: Obtain the badge associated with the commit SHA
-    :type commit_sha: str
+    :param share: Returns the badge in the specific format
+    :type share: str
 
     """
     pipeline_data = db.get_entry(pipeline_id)
 
     try:
-        r = pipeline_data['jenkins']['build_info']['badgr']
+        build_info = pipeline_data['jenkins']['build_info']
+        commit_url = build_info['commit_url']
+        badge_data = build_info['badge']
+        if not badge_data:
+            raise KeyError
     except KeyError:
         logger.error('Badge not issued for pipeline <%s>' % pipeline_id)
         return web.Response(status=422)
 
-    logger.info('Badge gathered successfully: %s' % r['openBadgeId'])
+    logger.info('Badge <%s> found' % badge_data['openBadgeId'])
 
-    return web.json_response(r, status=200)
+    if share == 'html':
+        env = Environment(
+            loader=PackageLoader('openapi_server', 'templates')
+        )
+        template = env.get_template('embed_badge.html')
+
+        dt = datetime.strptime(
+            badge_data['createdAt'],
+            '%Y-%m-%dT%H:%M:%S.%fZ'
+        )
+        html_rendered = template.render({
+            'openBadgeId': badge_data['openBadgeId'],
+            'commit_url': commit_url,
+            'image': badge_data['image'],
+            'badgr_badgeclass': BADGR_BADGECLASS,
+            'award_month': calendar.month_name[dt.month],
+            'award_day': dt.day,
+            'award_year': dt.year,
+        })
+
+        return web.Response(
+            text=html_rendered,
+            content_type='text/html',
+            status=200
+        )
+
+    return web.json_response(badge_data, status=200)

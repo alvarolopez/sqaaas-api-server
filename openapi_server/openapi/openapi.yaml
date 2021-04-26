@@ -168,6 +168,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Returns the shared version of the badge in a specific format
+        explode: true
+        in: query
+        name: share
+        required: false
+        schema:
+          enum:
+          - html
+          type: string
+        style: form
       responses:
         "200":
           content:

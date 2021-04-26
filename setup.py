@@ -35,6 +35,7 @@ setup(
         'LICENSE',
         'openapi/openapi.yaml',
         'templates/Jenkinsfile',
+        'templates/embed_badge.html',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={
