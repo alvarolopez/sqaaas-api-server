@@ -112,7 +112,16 @@ def del_entry(pipeline_id):
     logger.debug('Pipeline <%s> removed from DB' % pipeline_id)
 
 
-def update_jenkins(pipeline_id, jk_job_name, commit_id, commit_url, build_no=None, build_url=None, scan_org_wait=False, build_status='NOT_EXECUTED'):
+def update_jenkins(
+        pipeline_id,
+        jk_job_name,
+        commit_id,
+        commit_url,
+        build_no=None,
+        build_url=None,
+        scan_org_wait=False,
+        build_status='NOT_EXECUTED',
+        badge_data=None):
     """Updates the Jenkins data in the DB for the given pipeline ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
@@ -123,6 +132,7 @@ def update_jenkins(pipeline_id, jk_job_name, commit_id, commit_url, build_no=Non
     :param build_url: Jenkins' job build URL.
     :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
     :param build_status: String representing the build status.
+    :param badge_data: JSON as returned by Badgr when creating an assertion through the API.
     """
     db = load_content()
     db[pipeline_id]['jenkins'] = {
@@ -133,6 +143,7 @@ def update_jenkins(pipeline_id, jk_job_name, commit_id, commit_url, build_no=Non
             'number': build_no,
             'url': build_url,
             'status': build_status,
+            'badge': badge_data
         },
         'scan_org_wait': scan_org_wait
     }
