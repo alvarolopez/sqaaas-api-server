@@ -1,6 +1,7 @@
 ## Implementation notes on prototype/1.1
 
 SQAaaS API server's prototype 1.1 aims at covering the full set of features offered by JePL-2.1.0, and thus, it extends the MVP (released early 2021) to cover:
+- New path `GET /pipeline/<pipeline_id>/badge` for getting badge data. There is an optional query paramenter `share=html` that returns the HTML code that allows the badge to be embedded in websites.
 - New path `POST /pipeline/<pipeline_id>/badge` for issuing badges leveraging Badgr API.
 - Support for multi-stage `Jenkinsfile` by implementing the Jenkins' `when` property for [`branch`, `buildingTag`].
 - Support for pushing Docker images: current only if the `build` property is defined (since JePL is using `docker-compose push`).
