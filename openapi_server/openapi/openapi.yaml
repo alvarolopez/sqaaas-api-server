@@ -611,18 +611,12 @@ components:
           branch: master
       title: Repository
       type: object
-    Creds_simplified:
-      additionalProperties: false
+    Creds_user_pass:
       example:
-        password_var: KEYSTORE_PASSWORD
-        passphrase_var: KEYFILE_PASSPHRASE
-        username_var: KEYFILE_USERNAME
-        keystore_var: KEYSTORE_TMP_PATH
-        keyfile_var: KEYFILE_TMP_PATH
-        variable: MY_TOKEN
-        alias_var: KEYSTORE_ALIAS_NAME
+        password_var: GIT_PASS
+        username_var: GIT_USER
         id: my-dockerhub-token
-        type: file
+        type: username_password
       properties:
         id:
           example: my-dockerhub-token
@@ -630,43 +624,22 @@ components:
           type: string
         type:
           enum:
-          - file
-          - zip
           - username_password
-          - ssh_user_private_key
           title: type
           type: string
-        keystore_var:
-          example: KEYSTORE_TMP_PATH
-          title: keystore_var
-          type: string
-        alias_var:
-          example: KEYSTORE_ALIAS_NAME
-          title: alias_var
+        username_var:
+          example: GIT_USER
+          title: username_var
           type: string
         password_var:
-          example: KEYSTORE_PASSWORD
+          example: GIT_PASS
           title: password_var
-          type: string
-        variable:
-          example: MY_TOKEN
-          title: variable
-          type: string
-        keyfile_var:
-          example: KEYFILE_TMP_PATH
-          title: keyfile_var
-          type: string
-        passphrase_var:
-          example: KEYFILE_PASSPHRASE
-          title: passphrase_var
-          type: string
-        username_var:
-          example: KEYFILE_USERNAME
-          title: username_var
           type: string
       required:
       - id
-      title: Creds_simplified
+      - password_var
+      - username_var
+      title: Creds_user_pass
       type: object
     Commands_simplified:
       example:
@@ -782,24 +755,14 @@ components:
               repo: https://github.com/jenkins-docs/simple-java-maven-app
               branch: master
           credentials:
-          - password_var: KEYSTORE_PASSWORD
-            passphrase_var: KEYFILE_PASSPHRASE
-            username_var: KEYFILE_USERNAME
-            keystore_var: KEYSTORE_TMP_PATH
-            keyfile_var: KEYFILE_TMP_PATH
-            variable: MY_TOKEN
-            alias_var: KEYSTORE_ALIAS_NAME
+          - password_var: GIT_PASS
+            username_var: GIT_USER
             id: my-dockerhub-token
-            type: file
-          - password_var: KEYSTORE_PASSWORD
-            passphrase_var: KEYFILE_PASSPHRASE
-            username_var: KEYFILE_USERNAME
-            keystore_var: KEYSTORE_TMP_PATH
-            keyfile_var: KEYFILE_TMP_PATH
-            variable: MY_TOKEN
-            alias_var: KEYSTORE_ALIAS_NAME
+            type: username_password
+          - password_var: GIT_PASS
+            username_var: GIT_USER
             id: my-dockerhub-token
-            type: file
+            type: username_password
         timeout: 1
       properties:
         config:
@@ -1077,24 +1040,14 @@ components:
                 repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+              type: username_password
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
+              type: username_password
           timeout: 1
         - environment:
             JPL_IGNOREFAILURES: defined
@@ -1114,24 +1067,14 @@ components:
                 repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+              type: username_password
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
+              type: username_password
           timeout: 1
         composer_data:
           services:
@@ -1464,24 +1407,14 @@ components:
             repo: https://github.com/jenkins-docs/simple-java-maven-app
             branch: master
         credentials:
-        - password_var: KEYSTORE_PASSWORD
-          passphrase_var: KEYFILE_PASSPHRASE
-          username_var: KEYFILE_USERNAME
-          keystore_var: KEYSTORE_TMP_PATH
-          keyfile_var: KEYFILE_TMP_PATH
-          variable: MY_TOKEN
-          alias_var: KEYSTORE_ALIAS_NAME
+        - password_var: GIT_PASS
+          username_var: GIT_USER
           id: my-dockerhub-token
-          type: file
-        - password_var: KEYSTORE_PASSWORD
-          passphrase_var: KEYFILE_PASSPHRASE
-          username_var: KEYFILE_USERNAME
-          keystore_var: KEYSTORE_TMP_PATH
-          keyfile_var: KEYFILE_TMP_PATH
-          variable: MY_TOKEN
-          alias_var: KEYSTORE_ALIAS_NAME
+          type: username_password
+        - password_var: GIT_PASS
+          username_var: GIT_USER
           id: my-dockerhub-token
-          type: file
+          type: username_password
       properties:
         project_repos:
           additionalProperties:
@@ -1502,7 +1435,7 @@ components:
           type: object
         credentials:
           items:
-            $ref: '#/components/schemas/Creds_simplified'
+            $ref: '#/components/schemas/Creds_user_pass'
           title: credentials
           type: array
       title: JePL_config_config
