@@ -310,8 +310,9 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     pipeline_data = db.get_entry(pipeline_id)
 
     if 'jenkins' not in pipeline_data.keys():
-        logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
-        return web.Response(status=422)
+        _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
+        logger.error(_reason)
+        return web.Response(status=422, reason=_reason)
 
     jenkins_info = pipeline_data['jenkins']
     jk_job_name = jenkins_info['job_name']
@@ -536,11 +537,13 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         build_info = jenkins_info['build_info']
         build_status = build_info['status']
         if not build_status in ['SUCCESS', 'UNSTABLE']:
-            logger.error('Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status))
-            return web.Response(status=422)
+            _reason = 'Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status)
+            logger.error(_reason)
+            return web.Response(status=422, reason=_reason)
     except KeyError:
-        logger.error('Could not retrieve Jenkins job information: Pipeline has not yet ran')
-        return web.Response(status=422)
+        _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
+        logger.error(_reason)
+        return web.Response(status=422, reason=_reason)
     build_url = build_info['url']
     logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
     commit_id = build_info['commit_id']
@@ -620,8 +623,9 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
         if not badge_data:
             raise KeyError
     except KeyError:
-        logger.error('Badge not issued for pipeline <%s>' % pipeline_id)
-        return web.Response(status=422)
+        _reason = 'Badge not issued for pipeline <%s>' % pipeline_id
+        logger.error(_reason)
+        return web.Response(status=422, reason=_reason)
 
     logger.info('Badge <%s> found' % badge_data['openBadgeId'])
 
