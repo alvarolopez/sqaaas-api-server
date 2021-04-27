@@ -32,30 +32,17 @@ def extended_data_validation(f):
         body = kwargs['body']
         config_data_list = body['config_data']
         composer_data = body['composer_data']
-        # Check 1) If JPL_DOCKERPUSH Then ('JPL_DOCKERUSER', 'JPL_DOCKERPASS') in config:credentials
+        # Check if registry>push, then registry>credential_id
         do_docker_push = False
         for srv_name, srv_data in composer_data['services'].items():
             try:
-                if srv_data['image']['registry']['push']:
-                    do_docker_push = True
-            except KeyError as e:
-                continue
-        if do_docker_push:
-            credentials_list = [
-                config_data['config']['credentials']
-                    for config_data in config_data_list
-                        if 'credentials' in config_data['config'].keys()
-            ]
-            credentials_list = list(itertools.chain.from_iterable(credentials_list))
-            docker_credentials = [
-                credential
-                    for credential in credentials_list
-                        if not set(['JPL_DOCKERUSER', 'JPL_DOCKERPASS']).difference(set(credential.values()))
-            ]
-            if not docker_credentials:
-                _reason = 'Request to push Docker images, but no credentials (JPL_DOCKERUSER, JPL_DOCKERPASS) defined!'
+                registry_data = srv_data['image']['registry']
+                if registry_data['push'] and not registry_data['credential_id']:
+                _reason = 'Request to push Docker images, but no credentials provided!'
                 logger.warning(_reason)
                 return web.Response(status=400, reason=_reason)
+            except KeyError as e:
+                continue
 
         ret = await f(*args, **kwargs)
         return ret
