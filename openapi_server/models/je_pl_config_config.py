@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.creds_simplified import CredsSimplified
+from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server import util
 
 
@@ -15,7 +15,7 @@ class JePLConfigConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, project_repos: Dict[str, object]=None, credentials: List[CredsSimplified]=None):
+    def __init__(self, project_repos: Dict[str, object]=None, credentials: List[CredsUserPass]=None):
         """JePLConfigConfig - a model defined in OpenAPI
 
         :param project_repos: The project_repos of this JePLConfigConfig.
@@ -23,7 +23,7 @@ class JePLConfigConfig(Model):
         """
         self.openapi_types = {
             'project_repos': Dict[str, object],
-            'credentials': List[CredsSimplified]
+            'credentials': List[CredsUserPass]
         }
 
         self.attribute_map = {
@@ -70,7 +70,7 @@ class JePLConfigConfig(Model):
 
 
         :return: The credentials of this JePLConfigConfig.
-        :rtype: List[CredsSimplified]
+        :rtype: List[CredsUserPass]
         """
         return self._credentials
 
@@ -80,7 +80,7 @@ class JePLConfigConfig(Model):
 
 
         :param credentials: The credentials of this JePLConfigConfig.
-        :type credentials: List[CredsSimplified]
+        :type credentials: List[CredsUserPass]
         """
 
         self._credentials = credentials
