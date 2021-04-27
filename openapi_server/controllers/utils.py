@@ -38,9 +38,9 @@ def extended_data_validation(f):
             try:
                 registry_data = srv_data['image']['registry']
                 if registry_data['push'] and not registry_data['credential_id']:
-                _reason = 'Request to push Docker images, but no credentials provided!'
-                logger.warning(_reason)
-                return web.Response(status=400, reason=_reason)
+                    _reason = 'Request to push Docker images, but no credentials provided!'
+                    logger.warning(_reason)
+                    return web.Response(status=400, reason=_reason)
             except KeyError as e:
                 continue
 
