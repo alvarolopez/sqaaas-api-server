@@ -7,6 +7,7 @@ import uuid
 import yaml
 
 from aiohttp import web
+from urllib.parse import urlparse
 
 from openapi_server.controllers import db
 from openapi_server.controllers.jepl import JePLUtils
@@ -154,7 +155,21 @@ def process_extra_data(config_json, composer_json):
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
     composer_data = {'data_json': composer_json}
-    # CONFIG (Multiple stages/Jenkins when clause, Array-to-Object transformation for repos)
+
+    # CONFIG:CONFIG (Set repo name)
+    project_repos_dict = {}
+    if 'project_repos' in config_json['config'].items():
+        for project_repo in config_json['config']['project_repos']:
+            repo_url = project_repo.pop('repo')
+            repo_url_parsed = urlparse(repo_url)
+            repo_name_generated = ''.join([
+                repo_url_parsed.netloc,
+                repo_url_parsed.path,
+            ])
+            project_repo.update({'name': repo_name_generated})
+            project_repo_dict[repo_url] = project_repo
+        config_json['config']['project_repos'] = project_repo_dict
+    # CONFIG:SQA_CRITERIA (Multiple stages/Jenkins when clause, Array-to-Object transformation for repos)
     config_data_list = []
     config_json_copy = copy.deepcopy(config_json)
     config_json_no_when = copy.deepcopy(config_json)
@@ -164,9 +179,10 @@ def process_extra_data(config_json, composer_json):
             repos_new = {}
             for repo in repos_old:
                 try:
-                    repo_name = repo.pop('repo_name')
-                    if not repo_name:
+                    repo_url = repo.pop('repo_url')
+                    if not repo_url:
                         raise KeyError
+                    repo_name = config_json['config']['project_repos'][repo_url]['name']
                     repos_new[repo_name] = repo
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
