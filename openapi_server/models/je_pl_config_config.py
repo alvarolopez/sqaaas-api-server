@@ -6,6 +6,7 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.creds_user_pass import CredsUserPass
+from openapi_server.models.repository import Repository
 from openapi_server import util
 
 
@@ -15,14 +16,14 @@ class JePLConfigConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, project_repos: Dict[str, object]=None, credentials: List[CredsUserPass]=None):
+    def __init__(self, project_repos: List[Repository]=None, credentials: List[CredsUserPass]=None):
         """JePLConfigConfig - a model defined in OpenAPI
 
         :param project_repos: The project_repos of this JePLConfigConfig.
         :param credentials: The credentials of this JePLConfigConfig.
         """
         self.openapi_types = {
-            'project_repos': Dict[str, object],
+            'project_repos': List[Repository],
             'credentials': List[CredsUserPass]
         }
 
@@ -49,7 +50,7 @@ class JePLConfigConfig(Model):
 
 
         :return: The project_repos of this JePLConfigConfig.
-        :rtype: Dict[str, object]
+        :rtype: List[Repository]
         """
         return self._project_repos
 
@@ -59,7 +60,7 @@ class JePLConfigConfig(Model):
 
 
         :param project_repos: The project_repos of this JePLConfigConfig.
-        :type project_repos: Dict[str, object]
+        :type project_repos: List[Repository]
         """
 
         self._project_repos = project_repos

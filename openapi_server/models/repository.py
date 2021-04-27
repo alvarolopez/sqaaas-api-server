@@ -14,27 +14,23 @@ class Repository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_id: str=None, repo_url: str=None, branch: str=None):
+    def __init__(self, repo: str=None, branch: str=None):
         """Repository - a model defined in OpenAPI
 
-        :param repo_id: The repo_id of this Repository.
-        :param repo_url: The repo_url of this Repository.
+        :param repo: The repo of this Repository.
         :param branch: The branch of this Repository.
         """
         self.openapi_types = {
-            'repo_id': str,
-            'repo_url': str,
+            'repo': str,
             'branch': str
         }
 
         self.attribute_map = {
-            'repo_id': 'repo_id',
-            'repo_url': 'repo_url',
+            'repo': 'repo',
             'branch': 'branch'
         }
 
-        self._repo_id = repo_id
-        self._repo_url = repo_url
+        self._repo = repo
         self._branch = branch
 
     @classmethod
@@ -47,46 +43,25 @@ class Repository(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def repo_id(self):
-        """Gets the repo_id of this Repository.
+    def repo(self):
+        """Gets the repo of this Repository.
 
 
-        :return: The repo_id of this Repository.
+        :return: The repo of this Repository.
         :rtype: str
         """
-        return self._repo_id
+        return self._repo
 
-    @repo_id.setter
-    def repo_id(self, repo_id):
-        """Sets the repo_id of this Repository.
+    @repo.setter
+    def repo(self, repo):
+        """Sets the repo of this Repository.
 
 
-        :param repo_id: The repo_id of this Repository.
-        :type repo_id: str
+        :param repo: The repo of this Repository.
+        :type repo: str
         """
 
-        self._repo_id = repo_id
-
-    @property
-    def repo_url(self):
-        """Gets the repo_url of this Repository.
-
-
-        :return: The repo_url of this Repository.
-        :rtype: str
-        """
-        return self._repo_url
-
-    @repo_url.setter
-    def repo_url(self, repo_url):
-        """Sets the repo_url of this Repository.
-
-
-        :param repo_url: The repo_url of this Repository.
-        :type repo_url: str
-        """
-
-        self._repo_url = repo_url
+        self._repo = repo
 
     @property
     def branch(self):
