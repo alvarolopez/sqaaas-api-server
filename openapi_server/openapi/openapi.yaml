@@ -713,6 +713,8 @@ components:
               building_tag:
                 $ref: '#/components/schemas/When_building_tag'
             type: object
+        required:
+        - repos
         type: object
       example:
         qc_style:
@@ -793,6 +795,8 @@ components:
                   building_tag:
                     $ref: '#/components/schemas/When_building_tag'
                 type: object
+            required:
+            - repos
             type: object
           example:
             qc_style:
@@ -1248,6 +1252,8 @@ components:
                   building_tag:
                     $ref: '#/components/schemas/When_building_tag'
                 type: object
+            required:
+            - repos
             type: object
           example:
             qc_style:
