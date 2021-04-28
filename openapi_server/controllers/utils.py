@@ -157,7 +157,8 @@ def process_extra_data(config_json, composer_json):
     composer_data = {'data_json': composer_json}
 
     # CONFIG:CONFIG (Set repo name)
-    project_repos_dict = {}
+    project_repos_final = {}
+    project_repos_mapping = {}
     if 'project_repos' in config_json['config'].items():
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
@@ -166,42 +167,49 @@ def process_extra_data(config_json, composer_json):
                 repo_url_parsed.netloc,
                 repo_url_parsed.path,
             ])
-            project_repo.update({'name': repo_name_generated})
-            project_repo_dict[repo_url] = project_repo
-        config_json['config']['project_repos'] = project_repo_dict
+            project_repos_final[repo_name_generated] = {
+                'repo': repo_url,
+                **project_repo
+            }
+            project_repos_mapping[repo_url] = {
+                'name': repo_name_generated,
+                **project_repo
+            }
+        config_json['config']['project_repos'] = project_repos_final
+
     # CONFIG:SQA_CRITERIA (Multiple stages/Jenkins when clause, Array-to-Object transformation for repos)
     config_data_list = []
-    config_json_copy = copy.deepcopy(config_json)
     config_json_no_when = copy.deepcopy(config_json)
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        criterion_data_copy = copy.deepcopy(criterion_data)
         if 'repos' in criterion_data.keys():
-            repos_old = criterion_data.pop('repos')
+            repos_old = criterion_data_copy.pop('repos')
             repos_new = {}
             for repo in repos_old:
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
                         raise KeyError
-                    repo_name = config_json['config']['project_repos'][repo_url]['name']
+                    repo_name = project_repos_mapping[repo_url]['name']
                     repos_new[repo_name] = repo
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
                     repos_new['this_repo'] = repo
-            config_json_copy['sqa_criteria'][criterion_name] = {
-                'repos': repos_new
-            }
-            config_json_copy['sqa_criteria'][criterion_name] = {
-                'repos': repos_new
-            }
+            criterion_data_copy['repos'] = repos_new
         if 'when' in criterion_data.keys():
-            config_json_when = copy.deepcopy(config_json_copy)
-            config_json_when['sqa_criteria'] = {criterion_name: criterion_data}
-            when_data = criterion_data.pop('when')
+            config_json_when = copy.deepcopy(config_json)
+            config_json_when['sqa_criteria'] = {
+                criterion_name: criterion_data_copy
+            }
+            when_data = criterion_data_copy.pop('when')
             config_data_list.append({
 		'data_json': config_json_when,
                 'data_when': when_data
 	    })
             config_json_no_when['sqa_criteria'].pop(criterion_name)
+        else:
+            config_json_no_when['sqa_criteria'][criterion_name] = criterion_data_copy
+
     if config_json_no_when['sqa_criteria']:
         config_data_list.append({
             'data_json': config_json_no_when,
