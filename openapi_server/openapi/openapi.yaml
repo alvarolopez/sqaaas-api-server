@@ -595,20 +595,17 @@ components:
         in attempting to fulfill the request.
   schemas:
     Repository:
-      additionalProperties:
-        properties:
-          repo:
-            example: https://github.com/jenkins-docs/simple-java-maven-app
-            format: uri
-            type: string
-          branch:
-            example: master
-            type: string
-        type: object
       example:
-        simple-java-maven-app:
-          repo: https://github.com/jenkins-docs/simple-java-maven-app
-          branch: master
+      - repo: https://github.com/jenkins-docs/simple-java-maven-app
+        branch: master
+      properties:
+        repo:
+          example: https://github.com/jenkins-docs/simple-java-maven-app
+          format: uri
+          type: string
+        branch:
+          example: master
+          type: string
       title: Repository
       type: object
     Creds_user_pass:
@@ -697,7 +694,8 @@ components:
             items:
               additionalProperties: false
               properties:
-                repo_name:
+                repo_url:
+                  format: uri
                   type: string
                 container:
                   type: string
@@ -715,6 +713,8 @@ components:
               building_tag:
                 $ref: '#/components/schemas/When_building_tag'
             type: object
+        required:
+        - repos
         type: object
       example:
         qc_style:
@@ -751,8 +751,9 @@ components:
               pattern: release-\\d+
         config:
           project_repos:
-            simple-java-maven-app:
-              repo: https://github.com/jenkins-docs/simple-java-maven-app
+          - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+              branch: master
+          - - repo: https://github.com/jenkins-docs/simple-java-maven-app
               branch: master
           credentials:
           - password_var: GIT_PASS
@@ -775,7 +776,8 @@ components:
                 items:
                   additionalProperties: false
                   properties:
-                    repo_name:
+                    repo_url:
+                      format: uri
                       type: string
                     container:
                       type: string
@@ -793,6 +795,8 @@ components:
                   building_tag:
                     $ref: '#/components/schemas/When_building_tag'
                 type: object
+            required:
+            - repos
             type: object
           example:
             qc_style:
@@ -1036,8 +1040,9 @@ components:
                 pattern: release-\\d+
           config:
             project_repos:
-              simple-java-maven-app:
-                repo: https://github.com/jenkins-docs/simple-java-maven-app
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+                branch: master
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
             - password_var: GIT_PASS
@@ -1063,8 +1068,9 @@ components:
                 pattern: release-\\d+
           config:
             project_repos:
-              simple-java-maven-app:
-                repo: https://github.com/jenkins-docs/simple-java-maven-app
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+                branch: master
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
             - password_var: GIT_PASS
@@ -1227,7 +1233,8 @@ components:
                 items:
                   additionalProperties: false
                   properties:
-                    repo_name:
+                    repo_url:
+                      format: uri
                       type: string
                     container:
                       type: string
@@ -1245,6 +1252,8 @@ components:
                   building_tag:
                     $ref: '#/components/schemas/When_building_tag'
                 type: object
+            required:
+            - repos
             type: object
           example:
             qc_style:
@@ -1403,8 +1412,9 @@ components:
     JePL_config_config:
       example:
         project_repos:
-          simple-java-maven-app:
-            repo: https://github.com/jenkins-docs/simple-java-maven-app
+        - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+            branch: master
+        - - repo: https://github.com/jenkins-docs/simple-java-maven-app
             branch: master
         credentials:
         - password_var: GIT_PASS
@@ -1417,22 +1427,10 @@ components:
           type: username_password
       properties:
         project_repos:
-          additionalProperties:
-            properties:
-              repo:
-                example: https://github.com/jenkins-docs/simple-java-maven-app
-                format: uri
-                type: string
-              branch:
-                example: master
-                type: string
-            type: object
-          example:
-            simple-java-maven-app:
-              repo: https://github.com/jenkins-docs/simple-java-maven-app
-              branch: master
-          title: Repository
-          type: object
+          items:
+            $ref: '#/components/schemas/Repository'
+          title: project_repos
+          type: array
         credentials:
           items:
             $ref: '#/components/schemas/Creds_user_pass'
