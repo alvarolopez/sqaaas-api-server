@@ -592,7 +592,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         jenkins_info['job_name'],
         commit_id=commit_id,
         commit_url=commit_url,
-        build_no=build_no,
+        build_no=build_info['number'],
         build_url=build_url,
         scan_org_wait=jenkins_info['scan_org_wait'],
         build_status=build_status,
