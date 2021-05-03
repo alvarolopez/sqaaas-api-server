@@ -51,6 +51,7 @@ class BadgrUtils(object):
                 'password': access_pass
             }
         )
+        self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
         r.raise_for_status()
         r_json = r.json()
         return r_json['access_token']
@@ -66,9 +67,9 @@ class BadgrUtils(object):
             urljoin(self.endpoint, path),
             headers=headers
         )
+        self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
         if r.ok:
             r_json = r.json()
-            self.logger.debug('Result from \'GET %s\': %s' % (path, r_json))
             return r_json['result']
 
     def get_badgeclasses(self, issuer_id):
@@ -85,9 +86,9 @@ class BadgrUtils(object):
             urljoin(self.endpoint, path),
             headers=headers
         )
+        self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
         if r.ok:
             r_json = r.json()
-            self.logger.debug('Result from \'GET %s\': %s' % (path, r_json))
             return r_json['result']
 
     def _get_matching_entity_id(self, entity_name, entity_type, **kwargs):
