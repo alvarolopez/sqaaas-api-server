@@ -1,6 +1,8 @@
+import functools
 import json
 import logging
 import requests
+import time
 
 from urllib.parse import urljoin
 
@@ -31,31 +33,59 @@ class BadgrUtils(object):
         self.endpoint = endpoint
         self.issuer_name = issuer_name
         self.badgeclass_name = badgeclass_name
-        self.access_token = self.get_token(
-            access_user,
-            access_pass
-        )
+        self.access_user = access_user
+        self.access_pass = access_pass
 
-    def get_token(self, access_user, access_pass):
+        try:
+            access_token, refresh_token, expiry = self.get_token()
+            if not access_token:
+                raise Exception("Could not get access token from Badgr API!")
+        except Exception as e:
+            self.logger.debug(e)
+        else:
+            self.access_token = access_token
+            self.refresh_token = refresh_token
+            # Give a small buffer of 100 seconds
+            self.access_token_expiration = time.time() + expiry - 100
+
+    def get_token(self):
         """Obtains a Bearer-type token according to the provided credentials.
 
-        :param access_user: User ID
-        :param access_pass: User password
+        Return a (access_token, refresh_token, expires_in) tuple.
         """
         path = 'o/token'
         self.logger.debug('Getting user token from Badgr API: \'GET %s\'' % path)
-        r = requests.post(
-            urljoin(self.endpoint, path),
-            data = {
-                'username': access_user,
-                'password': access_pass
-            }
-        )
-        self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
-        r.raise_for_status()
-        r_json = r.json()
-        return r_json['access_token']
+        try:
+            r = requests.post(
+                urljoin(self.endpoint, path),
+                data = {
+                    'username': self.access_user,
+                    'password': self.access_pass
+                }
+            )
+            self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
+            r.raise_for_status()
+            r_json = r.json()
+            return (
+                r_json['access_token'],
+                r_json['refresh_token'],
+                r_json['expires_in']
+            )
+        except Exception as e:
+            self.logger.debug(e)
+            return None
 
+    def refresh_token(f):
+        """Decorator to handle the expiration of the Badgr API token"""
+        @functools.wraps(f)
+        def decorated_function(cls, *args, **kwargs):
+            if time.time() > cls.access_token_expiration:
+                self.logger.debug('Reached token expiration date')
+                cls.get_token()
+            return f(cls, *args, **kwargs)
+        return decorated_function
+
+    @refresh_token
     def get_issuers(self):
         """Gets all the Issuers associated with the current user."""
         path = 'v2/issuers'
@@ -72,6 +102,7 @@ class BadgrUtils(object):
             r_json = r.json()
             return r_json['result']
 
+    @refresh_token
     def get_badgeclasses(self, issuer_id):
         """Gets all the BadgeClasses associated with the given Issuer.
 
@@ -130,6 +161,7 @@ class BadgrUtils(object):
         )
         return badgeclass_id
 
+    @refresh_token
     def issue_badge(self, commit_id, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
         """Issues a badge (Badgr's assertion).
 
