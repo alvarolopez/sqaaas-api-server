@@ -1135,6 +1135,7 @@ components:
           type: string
         name:
           example: sqaaas-api-spec
+          format: '[A-Za-z0-9_.-]'
           title: name
           type: string
         config_data:

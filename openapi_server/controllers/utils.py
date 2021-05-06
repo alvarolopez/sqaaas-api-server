@@ -42,6 +42,11 @@ def extended_data_validation(f):
         body = kwargs['body']
         config_data_list = body['config_data']
         composer_data = body['composer_data']
+        # Validate pipeline name
+        if re.search(r'[^-.\w]', body['name']):
+            _reason = 'Invalid pipeline name (allowed characters: [A-Za-z0-9_.-])'
+            logger.warning(_reason)
+            return web.Response(status=400, reason=_reason)
         # Check if registry>push, then registry>credential_id
         do_docker_push = False
         for srv_name, srv_data in composer_data['services'].items():
