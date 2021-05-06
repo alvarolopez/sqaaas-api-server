@@ -59,6 +59,7 @@ logger.debug('Loading Badgr password from local filesystem')
 badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
 
 
+@ctls_utils.debug_request
 @ctls_utils.extended_data_validation
 async def add_pipeline(request: web.Request, body) -> web.Response:
     """Creates a pipeline.
@@ -85,6 +86,7 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     return web.json_response(r, status=201)
 
 
+@ctls_utils.debug_request
 @ctls_utils.extended_data_validation
 @ctls_utils.validate_request
 async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.Response:
@@ -125,6 +127,7 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
     return web.Response(status=204)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     """Delete pipeline by ID
@@ -150,6 +153,7 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     return web.Response(status=204)
 
 
+@ctls_utils.debug_request
 async def get_pipelines(request: web.Request) -> web.Response:
     """Gets pipeline IDs.
 
@@ -165,6 +169,7 @@ async def get_pipelines(request: web.Request) -> web.Response:
     return web.json_response(pipeline_list, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     """Find pipeline by ID
@@ -181,6 +186,7 @@ async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Response:
     """Gets composer configuration used by the pipeline.
@@ -198,6 +204,7 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_composer_jepl(request: web.Request, pipeline_id) -> web.Response:
     """Gets JePL composer configuration for the given pipeline.
@@ -219,6 +226,7 @@ async def get_pipeline_composer_jepl(request: web.Request, pipeline_id) -> web.R
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response:
     """Gets pipeline&#39;s main configuration.
@@ -236,6 +244,7 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Response:
     """Gets JePL config configuration for the given pipeline.
@@ -259,6 +268,7 @@ async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Res
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
     """Gets Jenkins pipeline definition used by the pipeline.
@@ -276,6 +286,7 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> web.Response:
     """Gets Jenkins configuration for the given pipeline.
@@ -297,6 +308,7 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
     """Get pipeline status.
@@ -361,6 +373,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     """Runs pipeline.
@@ -429,6 +442,7 @@ async def run_pipeline(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=_status)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Response:
     """Creates pull request with JePL files.
@@ -472,6 +486,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_compressed_files(request: web.Request, pipeline_id) -> web.Response:
     """Get JePL files in compressed format.
@@ -518,6 +533,7 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     """Issues a quality badge.
@@ -602,6 +618,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     return web.json_response(r, status=200)
 
 
+@ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Response:
     """Gets badge data associated with the given pipeline

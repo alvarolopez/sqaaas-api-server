@@ -27,6 +27,15 @@ def upstream_502_response(r):
         reason='Unsuccessful request to upstream service API')
 
 
+def debug_request(f):
+    @functools.wraps(f)
+    async def decorated_function(*args, **kwargs):
+        logger.debug('Received request (keyword args): %s' % kwargs)
+        ret = await f(*args, **kwargs)
+        return ret
+    return decorated_function
+
+
 def extended_data_validation(f):
     @functools.wraps(f)
     async def decorated_function(*args, **kwargs):
