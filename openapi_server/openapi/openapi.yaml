@@ -496,6 +496,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether a badge shall be issued if the pipeline
+          succeds
+        explode: true
+        in: query
+        name: issue_badge
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       - description: URL of the upstream repository to fetch the code from
         explode: true
         in: query

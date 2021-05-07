@@ -121,6 +121,7 @@ def update_jenkins(
         build_url=None,
         scan_org_wait=False,
         build_status='NOT_EXECUTED',
+        issue_badge=False,
         badge_data=None):
     """Updates the Jenkins data in the DB for the given pipeline ID.
 
@@ -132,11 +133,13 @@ def update_jenkins(
     :param build_url: Jenkins' job build URL.
     :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
     :param build_status: String representing the build status.
+    :param issue_badge: Flag to indicate whether to issue a badge when the pipeline succeeds.
     :param badge_data: JSON as returned by Badgr when creating an assertion through the API.
     """
     db = load_content()
     db[pipeline_id]['jenkins'] = {
         'job_name': jk_job_name,
+        'issue_badge': issue_badge,
         'build_info': {
             'commit_id': commit_id,
             'commit_url': commit_url,
