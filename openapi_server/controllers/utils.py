@@ -173,7 +173,7 @@ def process_extra_data(config_json, composer_json):
     # CONFIG:CONFIG (Set repo name)
     project_repos_final = {}
     project_repos_mapping = {}
-    if 'project_repos' in config_json['config'].items():
+    if 'project_repos' in config_json['config'].keys():
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
             repo_url_parsed = urlparse(repo_url)
