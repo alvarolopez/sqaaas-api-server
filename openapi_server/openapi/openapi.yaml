@@ -496,6 +496,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether a badge shall be issued if the pipeline
+          succeds
+        explode: true
+        in: query
+        name: issue_badge
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       - description: URL of the upstream repository to fetch the code from
         explode: true
         in: query
@@ -1374,6 +1384,7 @@ components:
       type: object
     inline_response_200_4:
       example:
+        openbadge_id: https://openapi-generator.tech
         build_status: success
         build_url: https://openapi-generator.tech
       properties:
@@ -1390,6 +1401,10 @@ components:
           - unstable
           - waiting_scan_org
           title: build_status
+          type: string
+        openbadge_id:
+          format: uri
+          title: openbadge_id
           type: string
       title: inline_response_200_4
       type: object

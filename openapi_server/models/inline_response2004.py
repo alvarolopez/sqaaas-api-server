@@ -14,24 +14,28 @@ class InlineResponse2004(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None, build_status: str=None):
+    def __init__(self, build_url: str=None, build_status: str=None, openbadge_id: str=None):
         """InlineResponse2004 - a model defined in OpenAPI
 
         :param build_url: The build_url of this InlineResponse2004.
         :param build_status: The build_status of this InlineResponse2004.
+        :param openbadge_id: The openbadge_id of this InlineResponse2004.
         """
         self.openapi_types = {
             'build_url': str,
-            'build_status': str
+            'build_status': str,
+            'openbadge_id': str
         }
 
         self.attribute_map = {
             'build_url': 'build_url',
-            'build_status': 'build_status'
+            'build_status': 'build_status',
+            'openbadge_id': 'openbadge_id'
         }
 
         self._build_url = build_url
         self._build_status = build_status
+        self._openbadge_id = openbadge_id
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse2004':
@@ -89,3 +93,24 @@ class InlineResponse2004(Model):
             )
 
         self._build_status = build_status
+
+    @property
+    def openbadge_id(self):
+        """Gets the openbadge_id of this InlineResponse2004.
+
+
+        :return: The openbadge_id of this InlineResponse2004.
+        :rtype: str
+        """
+        return self._openbadge_id
+
+    @openbadge_id.setter
+    def openbadge_id(self, openbadge_id):
+        """Sets the openbadge_id of this InlineResponse2004.
+
+
+        :param openbadge_id: The openbadge_id of this InlineResponse2004.
+        :type openbadge_id: str
+        """
+
+        self._openbadge_id = openbadge_id
