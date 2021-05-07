@@ -1384,6 +1384,7 @@ components:
       type: object
     inline_response_200_4:
       example:
+        openbadge_id: https://openapi-generator.tech
         build_status: success
         build_url: https://openapi-generator.tech
       properties:
@@ -1400,6 +1401,10 @@ components:
           - unstable
           - waiting_scan_org
           title: build_status
+          type: string
+        openbadge_id:
+          format: uri
+          title: openbadge_id
           type: string
       title: inline_response_200_4
       type: object

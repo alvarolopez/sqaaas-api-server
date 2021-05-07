@@ -454,7 +454,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 
     r = {
         'build_url': build_url,
-        'build_status': build_status
+        'build_status': build_status,
+        'openbadge_id': badge_data.get('openBadgeId', None)
     }
     return web.json_response(r, status=200)
 
