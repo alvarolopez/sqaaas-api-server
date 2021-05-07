@@ -631,7 +631,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         logger.error(_reason)
         return web.Response(status=422, reason=_reason)
 
-    badge_data = _issue_badge(pipeline_id)
+    badge_data = await _issue_badge(pipeline_id)
 
     # Add badge data to DB
     db.update_jenkins(
