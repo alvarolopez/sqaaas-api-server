@@ -122,7 +122,7 @@ def update_jenkins(
         scan_org_wait=False,
         build_status='NOT_EXECUTED',
         issue_badge=False,
-        badge_data=None):
+        badge_data={}):
     """Updates the Jenkins data in the DB for the given pipeline ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
