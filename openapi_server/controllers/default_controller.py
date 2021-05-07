@@ -123,6 +123,8 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
             pipeline_repo,
             body
         )
+    else:
+        logger.debug('Not updating the pipeline: no difference found')
 
     return web.Response(status=204)
 
