@@ -438,6 +438,9 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
         scan_org_wait = True
         _status = 204
 
+    if issue_badge:
+        logger.debug('Badge issuing (<issue_badge> flag) is requested for the current build: %s' % commit_id)
+
     db.update_jenkins(
         pipeline_id,
         jk_job_name,
