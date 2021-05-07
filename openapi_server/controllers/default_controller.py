@@ -310,79 +310,6 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
-    """Get pipeline status.
-
-    Obtains the build URL in Jenkins for the given pipeline.
-
-    :param pipeline_id: ID of the pipeline to get
-    :type pipeline_id: str
-
-    """
-    pipeline_data = db.get_entry(pipeline_id)
-
-    if 'jenkins' not in pipeline_data.keys():
-        _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
-        logger.error(_reason)
-        return web.Response(status=422, reason=_reason)
-
-    jenkins_info = pipeline_data['jenkins']
-    jk_job_name = jenkins_info['job_name']
-    build_url = jenkins_info['build_info']['url']
-    build_no = jenkins_info['build_info']['number']
-
-    if jenkins_info['scan_org_wait']:
-        logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
-        last_build_data = jk_utils.get_job_info(jk_job_name)
-        if last_build_data:
-            build_url = last_build_data['lastBuild']['url']
-            build_no = last_build_data['lastBuild']['number']
-            logger.info('Jenkins job build URL (after Scan Organization finished) obtained: %s' % build_url)
-            jenkins_info['build_info'].update({
-                'url': build_url,
-                'number': build_no,
-            })
-            jenkins_info['scan_org_wait'] = False
-        else:
-            logger.debug('Job still waiting for scan organization to end')
-            build_status = 'WAITING_SCAN_ORG'
-
-    if build_no:
-        build_status = jk_utils.get_build_info(
-            jk_job_name,
-            build_no
-        )
-    logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
-
-    badge_data = None
-    if jenkins_info['issue_badge'] and build_status in ['SUCCESS']:
-        logger.info('Issuing badge as requested when running the pipeline')
-        badge_data = _issue_badge(pipeline_id)
-        jenkins_info['issue_badge'] = True
-
-    # Add build status to DB
-    db.update_jenkins(
-        pipeline_id,
-        jk_job_name,
-        commit_id=jenkins_info['build_info']['commit_id'],
-        commit_url=jenkins_info['build_info']['commit_url'],
-        build_no=build_no,
-        build_url=build_url,
-        scan_org_wait=jenkins_info['scan_org_wait'],
-        build_status=build_status,
-        issue_badge=jenkins_info['issue_badge'],
-        badge_data=badge_data
-    )
-
-    r = {
-        'build_url': build_url,
-        'build_status': build_status
-    }
-    return web.json_response(r, status=200)
-
-
-@ctls_utils.debug_request
-@ctls_utils.validate_request
 async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> web.Response:
     """Runs pipeline.
 
@@ -454,6 +381,82 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
 
     r = {'build_url': build_url}
     return web.json_response(r, status=_status)
+
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
+    """Get pipeline status.
+
+    Obtains the build URL in Jenkins for the given pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    if 'jenkins' not in pipeline_data.keys():
+        _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
+        logger.error(_reason)
+        return web.Response(status=422, reason=_reason)
+
+    jenkins_info = pipeline_data['jenkins']
+    jk_job_name = jenkins_info['job_name']
+    build_url = jenkins_info['build_info']['url']
+    build_no = jenkins_info['build_info']['number']
+
+    if jenkins_info['scan_org_wait']:
+        logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
+        last_build_data = jk_utils.get_job_info(jk_job_name)
+        if last_build_data:
+            build_url = last_build_data['lastBuild']['url']
+            build_no = last_build_data['lastBuild']['number']
+            logger.info('Jenkins job build URL (after Scan Organization finished) obtained: %s' % build_url)
+            jenkins_info['build_info'].update({
+                'url': build_url,
+                'number': build_no,
+            })
+            jenkins_info['scan_org_wait'] = False
+        else:
+            logger.debug('Job still waiting for scan organization to end')
+            build_status = 'WAITING_SCAN_ORG'
+
+    if build_no:
+        build_status = jk_utils.get_build_info(
+            jk_job_name,
+            build_no
+        )
+    logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
+
+    badge_data = jenkins_info['build_info']['badge']
+    if jenkins_info['issue_badge']:
+        if build_status in ['SUCCESS']:
+            logger.info('Issuing badge as requested when running the pipeline')
+            badge_data = await _issue_badge(pipeline_id)
+            jenkins_info['issue_badge'] = False
+        else:
+            logger.warn('Will not issue a badge since build status is <%s>' % build_status)
+
+    # Add build status to DB
+    db.update_jenkins(
+        pipeline_id,
+        jk_job_name,
+        commit_id=jenkins_info['build_info']['commit_id'],
+        commit_url=jenkins_info['build_info']['commit_url'],
+        build_no=build_no,
+        build_url=build_url,
+        scan_org_wait=jenkins_info['scan_org_wait'],
+        build_status=build_status,
+        issue_badge=jenkins_info['issue_badge'],
+        badge_data=badge_data
+    )
+
+    r = {
+        'build_url': build_url,
+        'build_status': build_status
+    }
+    return web.json_response(r, status=200)
 
 
 @ctls_utils.debug_request
