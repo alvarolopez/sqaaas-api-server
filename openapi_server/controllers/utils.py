@@ -165,7 +165,18 @@ def process_extra_data(config_json, composer_json):
                 config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
         ## Set 'image' property as string (required by Docker Compose)
         srv_data['image'] = srv_data['image']['name']
-        ## Set 'working_dir' to the same path as the first volume target
+        ## Set 'volumes' property (incl. default values)
+        try:
+            srv_data['volumes']
+        except KeyError:
+            pass
+        else:
+            srv_data['volumes'] = [{
+                'type': 'bind',
+                'source': './',
+                'target': '/sqaaas-build'
+            }]
+        ## Set 'working_dir' property (for simple use cases)
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
     composer_data = {'data_json': composer_json}
