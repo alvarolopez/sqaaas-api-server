@@ -180,7 +180,7 @@ def process_extra_data(config_json, composer_json):
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
         ## Check for empty values
-        srv_data_filtered = copy.deepcopy(srv_data)
+        props_to_remove = []
         for prop, prop_value in srv_data.items():
             pop_prop = False
             if isinstance(prop_value, dict):
@@ -190,8 +190,8 @@ def process_extra_data(config_json, composer_json):
                 if not prop_value:
                     pop_prop = True
             if pop_prop:
-                srv_data_filtered.pop(prop)
-        srv_data = srv_data_filtered
+                props_to_remove.append(prop)
+        [srv_data.pop(prop) for prop in props_to_remove]
 
     composer_data = {'data_json': composer_json}
 
