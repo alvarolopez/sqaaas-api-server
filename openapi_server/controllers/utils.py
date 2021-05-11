@@ -179,6 +179,20 @@ def process_extra_data(config_json, composer_json):
         ## Set 'working_dir' property (for simple use cases)
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
+        ## Check for empty values
+        srv_data_filtered = copy.deepcopy(srv_data)
+        for prop, prop_value in srv_data.items():
+            pop_prop = False
+            if isinstance(prop_value, dict):
+                if not any(prop_value.values()):
+                    pop_prop = True
+            elif isinstance(prop_value, (list, str)):
+                if not prop_value:
+                    pop_prop = True
+            if pop_prop:
+                srv_data_filtered.pop(prop)
+        srv_data = srv_data_filtered
+
     composer_data = {'data_json': composer_json}
 
     # CONFIG:CONFIG (Set repo name)
