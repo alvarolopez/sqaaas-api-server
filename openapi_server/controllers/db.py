@@ -65,7 +65,7 @@ def add_entry(pipeline_id, pipeline_repo, body):
     """
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-    config_data_list, composer_data, jenkinsfile = ctls_utils.get_jepl_files(
+    config_data_list, composer_data, jenkinsfile, commands_script_list = ctls_utils.get_jepl_files(
         config_json, composer_json
     )
 
@@ -75,7 +75,8 @@ def add_entry(pipeline_id, pipeline_repo, body):
         'data': {
             'config': config_data_list,
             'composer': composer_data,
-            'jenkinsfile': jenkinsfile
+            'jenkinsfile': jenkinsfile,
+            'commands_scripts': commands_script_list
         },
         'raw_request': raw_request
     }

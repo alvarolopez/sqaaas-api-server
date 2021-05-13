@@ -340,7 +340,8 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
         pipeline_repo,
         config_data_list,
         composer_data,
-        jenkinsfile
+        jenkinsfile,
+        pipeline_data['data']['commands_scripts']
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
     repo_data = gh_utils.get_repository(pipeline_repo)
@@ -494,6 +495,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         config_data_list,
         composer_data,
         jenkinsfile,
+        pipeline_data['data']['commands_scripts'],
         branch=fork_default_branch)
     # step 3: create PR
     pr = gh_utils.create_pull_request(
