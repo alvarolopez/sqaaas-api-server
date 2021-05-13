@@ -137,11 +137,11 @@ def process_extra_data(config_json, composer_json):
     be directly translated into a workable 'config.yml' or composer
     (i.e. 'docker-compose.yml).
 
-    This method returns a (config_json_list, composer_json) Tuple (both in
-    JSON format), where:
-    - 'config_json_list' is a List of Dicts {'data_json': <data>,
-                                             'data_when': <data>}
-    - 'composer_json' is a Dict
+    This method returns:
+    - 'config_json_list' is a JSON List of Dicts {'data_json': <data>,
+                                                    'data_when': <data>}
+    - 'composer_json' is a JSON Dict
+    - 'commands_script_list' is a list of strings to generate the command builder scripts
 
     :param config_json: JePL's config as received through the API request (JSON payload)
     :param composer_json: Composer content as received throught the API request (JSON payload).
@@ -218,6 +218,7 @@ def process_extra_data(config_json, composer_json):
 
     # CONFIG:SQA_CRITERIA (Multiple stages/Jenkins when clause, Array-to-Object transformation for repos)
     config_data_list = []
+    commands_script_list = []
     config_json_no_when = copy.deepcopy(config_json)
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         criterion_data_copy = copy.deepcopy(criterion_data)
@@ -229,11 +230,29 @@ def process_extra_data(config_json, composer_json):
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
                         raise KeyError
-                    repo_name = project_repos_mapping[repo_url]['name']
-                    repos_new[repo_name] = repo
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
                     repos_new['this_repo'] = repo
+                else:
+                    repo_name = project_repos_mapping[repo_url]['name']
+                    repos_new[repo_name] = repo
+                    # Create script for 'commands' builder
+                    # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
+                    if 'commands' in repo.keys():
+                        commands_script_data = JePLUtils.get_commands_script(
+                            repo_name,
+                            repo['commands']
+                        )
+                        commands_script_data = JePLUtils.append_file_name(
+                            'commands_script',
+                            [{
+                                'data': commands_script_data
+                            }],
+                            force_random_name=True
+                        )
+                        commands_script_list.extend(commands_script_data)
+                        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
+                        repos_new[repo_name]['commands'] = [script_call]
             criterion_data_copy['repos'] = repos_new
         if 'when' in criterion_data.keys():
             config_json_when = copy.deepcopy(config_json)
@@ -255,13 +274,13 @@ def process_extra_data(config_json, composer_json):
             'data_when': None
         })
 
-    return (config_data_list, composer_data)
+    return (config_data_list, composer_data, commands_script_list)
 
 
 def get_jepl_files(config_json, composer_json):
     # Extract & process those data that are not directly translated into
     # the composer and JePL config
-    config_data_list, composer_data = process_extra_data(
+    config_data_list, composer_data, commands_script_list = process_extra_data(
         config_json,
         composer_json)
 
@@ -277,13 +296,19 @@ def get_jepl_files(config_json, composer_json):
 	'config', config_data_list)
     composer_data = JePLUtils.append_file_name(
 	'composer', [composer_data])[0]
-
     jenkinsfile = JePLUtils.get_jenkinsfile(config_data_list)
 
-    return (config_data_list, composer_data, jenkinsfile)
+    return (config_data_list, composer_data, jenkinsfile, commands_script_list)
 
 
-def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile, branch='sqaaas'):
+def push_jepl_files(
+        gh_utils,
+        repo,
+        config_data_list,
+        composer_data,
+        jenkinsfile,
+        commands_script_list,
+        branch='sqaaas'):
     """Calls the git push for each JePL file being generated for the given pipeline.
 
     :param gh_utils: object to run GitHubUtils.push_file() method.
@@ -291,6 +316,7 @@ def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile
     :param config_data_list: List of pipeline's JePL config data.
     :param composer_data: Dict containing pipeline's JePL composer data.
     :param jenkinsfile: String containing the Jenkins configuration.
+    :param commands_script_list: List of generated scripts for the commands builder.
     :param branch: Name of the branch in the remote repository.
     """
     for config_data in config_data_list:
@@ -322,6 +348,16 @@ def push_jepl_files(gh_utils, repo, config_data_list, composer_data, jenkinsfile
         repo,
         branch=branch
     )
+    for commands_script in commands_script_list:
+        logger.debug('Pushing script for commands builder to GitHub repository <%s>: %s' % (
+            repo, commands_script['file_name']))
+        gh_utils.push_file(
+            commands_script['file_name'],
+            commands_script['data'],
+            'Update %s' % commands_script['file_name'],
+            repo,
+            branch=branch
+        )
     logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
 
     return last_commit
