@@ -48,7 +48,7 @@ class GitHubUtils(object):
         :param file_name: Name of the affected file
         :param file_data: Contents of the file
         :param commit_msg: Message to use in the commit
-        :param repo_name: Name of the repo where the file will be pushed
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         :param branch: Branch to push
         """
         repo = self.client.get_repo(repo_name)
