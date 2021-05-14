@@ -25,7 +25,7 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def get_repo_content(self, repo_name, branch):
+    def get_repo_content(self, repo_name, branch, path='.'):
         """Gets the repository content from the given branch.
 
         Returns a List of ContentFile objects.
@@ -34,7 +34,7 @@ class GitHubUtils(object):
         :param branch: Name of the branch
         """
         repo = self.client.get_repo(repo_name)
-        return repo.get_dir_contents('.', ref=branch)
+        return repo.get_dir_contents(path, ref=branch)
 
     def get_file(self, file_name, repo_name, branch):
         """Gets the file's content from a GitHub repository.

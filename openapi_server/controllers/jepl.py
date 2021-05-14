@@ -117,15 +117,30 @@ class JePLUtils(object):
 
     @staticmethod
     def get_files(
+        file_type,
         gh_utils,
         repo,
         branch='sqaaas'):
-        """Get JePL file structure from the given repo.
+        """Get JePL files of the given type from the remote repository.
 
+        :param file_type: Type of JePL file, one of [config, composer, jenkinsfile].
         :param gh_utils: GithubUtils object.
         :param repo: Name of the git repository.
         """
-        file_list = gh_utils.get_repo_content(repo, branch)
+        prefix_names = {
+            'config': 'config',
+            'composer': 'docker-compose'
+        }
+        path = '.'
+        if file_type in ['config', 'composer']:
+            path = '.sqa'
+        file_list = gh_utils.get_repo_content(repo, branch, path)
+        prefix = prefix_names[file_type]
+        return [
+            file_content
+                for file_content in file_list
+                    if file_content.name.startswith(prefix)
+        ]
 
     @staticmethod
     def push_files(
@@ -146,16 +161,26 @@ class JePLUtils(object):
         :param commands_script_list: List of generated scripts for the commands builder.
         :param branch: Name of the branch in the remote repository.
         """
+        # config
+        config_files_pushed = []
         for config_data in config_data_list:
+            _file_name = config_data['file_name']
             logger.debug('Pushing JePL config file to GitHub repository <%s>: %s' % (
-                repo, config_data['file_name']))
+                repo, _file_name))
             gh_utils.push_file(
-                config_data['file_name'],
+                _file_name,
                 config_data['data_yml'],
-                'Update %s' % config_data['file_name'],
+                'Update %s' % _file_name,
                 repo,
                 branch=branch
             )
+            config_files_pushed.append(_file_name)
+        config_files_from_repo = get_files('config', gh_utils, repo)
+        config_files_to_remove = set(config_files_from_repo).difference(set(config_files_pushed))
+        for config_file in config_files_to_remove:
+            logger.debug('Deleting no longer needed config.yml file: %s' % config_file)
+            gh_utils.delete_file(config_file)
+        # composer
         logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
             repo, composer_data['file_name']))
         gh_utils.push_file(
@@ -165,6 +190,7 @@ class JePLUtils(object):
             repo,
             branch=branch
         )
+        # jenkinsfile
         logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
         # FIXME Getting only the last commit as the representation for the whole
         # set of JePL files. This HAS to be changed so that a unique commit is done
@@ -175,6 +201,7 @@ class JePLUtils(object):
             repo,
             branch=branch
         )
+        # commands' builder scripts
         for commands_script in commands_script_list:
             logger.debug('Pushing script for commands builder to GitHub repository <%s>: %s' % (
                 repo, commands_script['file_name']))
