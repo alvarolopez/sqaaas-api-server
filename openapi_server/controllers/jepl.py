@@ -115,7 +115,6 @@ class JePLUtils(object):
 
         return (config_data_list, composer_data, jenkinsfile, commands_script_list)
 
-    @staticmethod
     def get_files(
         file_type,
         gh_utils,
@@ -142,8 +141,9 @@ class JePLUtils(object):
                     if file_content.name.startswith(prefix)
         ]
 
-    @staticmethod
+    @classmethod
     def push_files(
+            cls,
             gh_utils,
             repo,
             config_data_list,
@@ -153,6 +153,7 @@ class JePLUtils(object):
             branch='sqaaas'):
         """Push the given JePL file structure to the given repo.
 
+        :param cls: Current class (from classmethod)
         :param gh_utils: GitHubUtils object.
         :param repo: Name of the git repository.
         :param config_data_list: List of pipeline's JePL config data.
@@ -175,7 +176,10 @@ class JePLUtils(object):
                 branch=branch
             )
             config_files_pushed.append(_file_name)
-        config_files_from_repo = get_files('config', gh_utils, repo)
+        config_files_from_repo = [
+            file_content.path
+                for file_content in cls.get_files('config', gh_utils, repo)
+        ]
         config_files_to_remove = set(config_files_from_repo).difference(set(config_files_pushed))
         for config_file in config_files_to_remove:
             logger.debug('Deleting no longer needed config.yml file: %s' % config_file)
