@@ -183,7 +183,7 @@ class JePLUtils(object):
         config_files_to_remove = set(config_files_from_repo).difference(set(config_files_pushed))
         for config_file in config_files_to_remove:
             logger.debug('Deleting no longer needed config.yml file: %s' % config_file)
-            gh_utils.delete_file(config_file)
+            gh_utils.delete_file(config_file, repo)
         # composer
         logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
             repo, composer_data['file_name']))
