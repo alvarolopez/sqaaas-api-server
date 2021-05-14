@@ -116,6 +116,18 @@ class JePLUtils(object):
         return (config_data_list, composer_data, jenkinsfile, commands_script_list)
 
     @staticmethod
+    def get_files(
+        gh_utils,
+        repo,
+        branch='sqaaas'):
+        """Get JePL file structure from the given repo.
+
+        :param gh_utils: GithubUtils object.
+        :param repo: Name of the git repository.
+        """
+        file_list = gh_utils.get_repo_content(repo, branch)
+
+    @staticmethod
     def push_files(
             gh_utils,
             repo,
@@ -126,8 +138,8 @@ class JePLUtils(object):
             branch='sqaaas'):
         """Push the given JePL file structure to the given repo.
 
-        :param gh_utils: object to run GitHubUtils.push_file() method.
-        :param repo: URL of the remote repository
+        :param gh_utils: GitHubUtils object.
+        :param repo: Name of the git repository.
         :param config_data_list: List of pipeline's JePL config data.
         :param composer_data: Dict containing pipeline's JePL composer data.
         :param jenkinsfile: String containing the Jenkins configuration.
