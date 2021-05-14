@@ -17,6 +17,7 @@ from openapi_server.controllers import db
 from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
+from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
@@ -335,7 +336,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
         logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
     else:
         gh_utils.create_org_repository(pipeline_repo)
-    commit_id = ctls_utils.push_jepl_files(
+    commit_id = JePLUtils.push_files(
         gh_utils,
         pipeline_repo,
         config_data_list,
@@ -489,7 +490,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
     jenkinsfile = pipeline_data['data']['jenkinsfile']
-    ctls_utils.push_jepl_files(
+    JePLUtils.push_files(
         gh_utils,
         fork_repo,
         config_data_list,

@@ -1,7 +1,13 @@
 import copy
+import logging
 import namegenerator
 
 from jinja2 import Environment, PackageLoader, select_autoescape
+
+from openapi_server.controllers import utils as ctls_utils
+
+
+logger = logging.getLogger('sqaaas_api.jepl')
 
 
 class JePLUtils(object):
@@ -65,7 +71,6 @@ class JePLUtils(object):
             'commands': '&&'.join(cmd_list)
         })
 
-    @staticmethod
     def get_jenkinsfile(config_data_list):
         """Returns a String with the Jenkinsfile rendered from the given
         JSON payload.
@@ -78,3 +83,96 @@ class JePLUtils(object):
         template = env.get_template('Jenkinsfile')
 
         return template.render(config_data_list=config_data_list)
+
+    @classmethod
+    def compose_files(cls, config_json, composer_json):
+        """Composes the JePL file structure from the raw JSONs obtained
+        through the HTTP request.
+
+        :param cls: Current class (from classmethod)
+        :param config_json: JePL's config as received through the API request (JSON payload)
+        :param composer_json: Composer content as received throught the API request (JSON payload).
+        """
+        # Extract & process those data that are not directly translated into
+        # the composer and JePL config
+        config_data_list, composer_data, commands_script_list = ctls_utils.process_extra_data(
+            config_json,
+            composer_json)
+
+        # Convert JSON to YAML
+        for elem in config_data_list:
+            elem['data_yml'] = ctls_utils.json_to_yaml(elem['data_json'])
+        composer_data['data_yml'] = ctls_utils.json_to_yaml(composer_data['data_json'])
+
+        # Set file names to JePL data
+        # Note the composer data is forced to be a list since the API spec
+        # currently defines it as an object, not as a list
+        config_data_list = cls.append_file_name(
+            'config', config_data_list)
+        composer_data = cls.append_file_name(
+            'composer', [composer_data])[0]
+        jenkinsfile = cls.get_jenkinsfile(config_data_list)
+
+        return (config_data_list, composer_data, jenkinsfile, commands_script_list)
+
+    @staticmethod
+    def push_files(
+            gh_utils,
+            repo,
+            config_data_list,
+            composer_data,
+            jenkinsfile,
+            commands_script_list,
+            branch='sqaaas'):
+        """Push the given JePL file structure to the given repo.
+
+        :param gh_utils: object to run GitHubUtils.push_file() method.
+        :param repo: URL of the remote repository
+        :param config_data_list: List of pipeline's JePL config data.
+        :param composer_data: Dict containing pipeline's JePL composer data.
+        :param jenkinsfile: String containing the Jenkins configuration.
+        :param commands_script_list: List of generated scripts for the commands builder.
+        :param branch: Name of the branch in the remote repository.
+        """
+        for config_data in config_data_list:
+            logger.debug('Pushing JePL config file to GitHub repository <%s>: %s' % (
+                repo, config_data['file_name']))
+            gh_utils.push_file(
+                config_data['file_name'],
+                config_data['data_yml'],
+                'Update %s' % config_data['file_name'],
+                repo,
+                branch=branch
+            )
+        logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
+            repo, composer_data['file_name']))
+        gh_utils.push_file(
+            composer_data['file_name'],
+            composer_data['data_yml'],
+            'Update %s' % composer_data['file_name'],
+            repo,
+            branch=branch
+        )
+        logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
+        # FIXME Getting only the last commit as the representation for the whole
+        # set of JePL files. This HAS to be changed so that a unique commit is done
+        last_commit = gh_utils.push_file(
+            'Jenkinsfile',
+            jenkinsfile,
+            'Update Jenkinsfile',
+            repo,
+            branch=branch
+        )
+        for commands_script in commands_script_list:
+            logger.debug('Pushing script for commands builder to GitHub repository <%s>: %s' % (
+                repo, commands_script['file_name']))
+            gh_utils.push_file(
+                commands_script['file_name'],
+                commands_script['data'],
+                'Update %s' % commands_script['file_name'],
+                repo,
+                branch=branch
+            )
+        logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
+
+        return last_commit
