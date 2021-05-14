@@ -73,6 +73,22 @@ class GitHubUtils(object):
             r = repo.create_file(file_name, commit_msg, file_data, branch=branch)
         return r['commit'].sha
 
+    def delete_file(self, file_name, repo_name, branch='sqaaas'):
+        """Pushes a file into GitHub repository.
+
+        Returns the commit ID (SHA format).
+
+        :param file_name: Name of the affected file
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        :param branch: Branch to push
+        """
+        commit_msg = 'Delete %s file' % file_name
+        repo = self.client.get_repo(repo_name)
+        contents = self.get_file(file_name, repo_name, branch)
+        if contents:
+            repo.delete_file(contents.path, commit_msg, contents.sha, branch=branch)
+            self.logger.debug('File %s deleted from repository <%s>' % (file_name, repo_name))
+
     def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
         repo = self.client.get_repo(upstream_repo_name)
         fork = None
