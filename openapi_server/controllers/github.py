@@ -25,7 +25,26 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def get_repo_content(self, repo_name, file_name, branch):
+    def get_repo_content(self, repo_name, branch, path='.'):
+        """Gets the repository content from the given branch.
+
+        Returns a List of ContentFile objects.
+
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param branch: Name of the branch
+        """
+        repo = self.client.get_repo(repo_name)
+        return repo.get_dir_contents(path, ref=branch)
+
+    def get_file(self, file_name, repo_name, branch):
+        """Gets the file's content from a GitHub repository.
+
+        Returns a ContentFile object.
+
+        :param file_name: Name of the file
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param branch: Name of the branch
+        """
         repo = self.client.get_repo(repo_name)
         try:
             return repo.get_contents(file_name, ref=branch)
@@ -40,11 +59,11 @@ class GitHubUtils(object):
         :param file_name: Name of the affected file
         :param file_data: Contents of the file
         :param commit_msg: Message to use in the commit
-        :param repo_name: Name of the repo where the file will be pushed
-        :param branch: Branch to push to
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        :param branch: Branch to push
         """
         repo = self.client.get_repo(repo_name)
-        contents = self.get_repo_content(repo_name, file_name, branch)
+        contents = self.get_file(file_name, repo_name, branch)
         r = {}
         if contents:
             self.logger.debug('File <%s> already exists in the repository, updating..' % file_name)
@@ -53,6 +72,22 @@ class GitHubUtils(object):
             self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
             r = repo.create_file(file_name, commit_msg, file_data, branch=branch)
         return r['commit'].sha
+
+    def delete_file(self, file_name, repo_name, branch='sqaaas'):
+        """Pushes a file into GitHub repository.
+
+        Returns the commit ID (SHA format).
+
+        :param file_name: Name of the affected file
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        :param branch: Branch to push
+        """
+        commit_msg = 'Delete %s file' % file_name
+        repo = self.client.get_repo(repo_name)
+        contents = self.get_file(file_name, repo_name, branch)
+        if contents:
+            repo.delete_file(contents.path, commit_msg, contents.sha, branch=branch)
+            self.logger.debug('File %s deleted from repository <%s>' % (file_name, repo_name))
 
     def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
         repo = self.client.get_repo(upstream_repo_name)

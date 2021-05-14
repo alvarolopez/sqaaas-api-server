@@ -5,6 +5,7 @@ import pathlib
 
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
+from openapi_server.controllers.jepl import JePLUtils
 
 
 DB_FILE = pathlib.Path(
@@ -65,7 +66,7 @@ def add_entry(pipeline_id, pipeline_repo, body):
     """
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-    config_data_list, composer_data, jenkinsfile, commands_script_list = ctls_utils.get_jepl_files(
+    config_data_list, composer_data, jenkinsfile, commands_script_list = JePLUtils.compose_files(
         config_json, composer_json
     )
 
