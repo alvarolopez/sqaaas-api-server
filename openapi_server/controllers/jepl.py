@@ -19,8 +19,9 @@ class JePLUtils(object):
             'commands_script': ['.sqa/script', 'sh']
         }
         chunk_list = copy.deepcopy(file_type_chunks[file_type])
-        random_str = namegenerator.gen()
-        chunk_list.insert(1, random_str)
+        if random:
+            random_str = namegenerator.gen()
+            chunk_list.insert(1, random_str)
 
         return '.'.join(chunk_list)
 
