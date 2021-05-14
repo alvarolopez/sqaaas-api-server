@@ -25,7 +25,15 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def get_repo_content(self, repo_name, file_name, branch):
+    def get_file(self, file_name, repo_name, branch):
+        """Gets the file's content from a GitHub repository.
+
+        Returns a ContentFile object.
+
+        :param file_name: Name of the file
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param branch: Name of the branch
+        """
         repo = self.client.get_repo(repo_name)
         try:
             return repo.get_contents(file_name, ref=branch)
@@ -44,7 +52,7 @@ class GitHubUtils(object):
         :param branch: Branch to push
         """
         repo = self.client.get_repo(repo_name)
-        contents = self.get_repo_content(repo_name, file_name, branch)
+        contents = self.get_file(file_name, repo_name, branch)
         r = {}
         if contents:
             self.logger.debug('File <%s> already exists in the repository, updating..' % file_name)
