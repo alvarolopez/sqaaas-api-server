@@ -102,6 +102,8 @@ class JePLUtils(object):
         # Convert JSON to YAML
         for elem in config_data_list:
             elem['data_yml'] = ctls_utils.json_to_yaml(elem['data_json'])
+            # NOTE Remove the following line when moving to JePL>2.1.0
+            elem['data_yml'] = rekey_criteria_codes(elem['data_yml'])
         composer_data['data_yml'] = ctls_utils.json_to_yaml(composer_data['data_json'])
 
         # Set file names to JePL data
