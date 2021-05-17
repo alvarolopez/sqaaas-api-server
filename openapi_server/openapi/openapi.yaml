@@ -727,7 +727,7 @@ components:
         - repos
         type: object
       example:
-        qc_style:
+        QC.Sty:
           repos:
             simple-java-maven-app:
               container: checkstyle
@@ -751,7 +751,7 @@ components:
           JPL_IGNOREFAILURES: defined
           JPL_DOCKERPUSH: docs service1 service4
         sqa_criteria:
-          qc_style:
+          QC.Sty:
             repos:
               simple-java-maven-app:
                 container: checkstyle
@@ -809,7 +809,7 @@ components:
             - repos
             type: object
           example:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
@@ -1040,7 +1040,7 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
@@ -1068,7 +1068,7 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
@@ -1223,7 +1223,7 @@ components:
       example:
         file_name: '{"file_name":"config.yml"}'
         content:
-          qc_style:
+          QC.Sty:
             repos:
               simple-java-maven-app:
                 container: checkstyle
@@ -1267,7 +1267,7 @@ components:
             - repos
             type: object
           example:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
@@ -1324,7 +1324,7 @@ components:
               agent any
 
               stages {
-                  stage('SQA baseline criterion: qc_style') {
+                  stage('SQA baseline criterion: QC.Sty') {
                       when {
                           branch pattern: 'sqaaas', comparator: ''
                       }
@@ -1343,7 +1343,7 @@ components:
                           }
                       }
                   }
-                  stage('SQA baseline criterion: qc_doc') {
+                  stage('SQA baseline criterion: QC.Doc') {
                       when {
                           branch pattern: 'build', comparator: ''
                       }

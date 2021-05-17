@@ -275,3 +275,23 @@ def process_extra_data(config_json, composer_json):
         })
 
     return (config_data_list, composer_data, commands_script_list)
+
+
+# NOTE (workaround) Back to the old criteria codes from JePL 2.1.0
+# FIXME by removing when using JePL > 2.1.0
+def rekey_criteria_codes(record):
+    criteria_map = {
+        'QC.Sty': 'qc_style',
+        'QC.Uni': 'qc_coverage',
+        'QC.Fun': 'qc_functional',
+        'QC.Sec': 'qc_security',
+        'QC.Doc': 'qc_doc',
+    }
+    if isinstance(record, str):
+        for new, old in criteria_map.items():
+            record = record.replace(new, old)
+        return record
+    elif isinstance(record, dict):
+        return {
+            criteria_map.get(new, new): old for new, old in record.items()
+        }
