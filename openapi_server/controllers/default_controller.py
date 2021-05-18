@@ -317,7 +317,7 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> web.Response:
+async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None) -> web.Response:
     """Runs pipeline.
 
     Executes the given pipeline by means of the Jenkins API.
@@ -326,20 +326,38 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
     :type pipeline_id: str
     :param issue_badge: Flag to indicate whether a badge shall be issued if the pipeline succeeds
     :type issue_badge: bool
+    :param repo_url: URL of the upstream repository to fetch the code from
+    :type repo_url: str
+    :param repo_branch: Branch name of the upstream repository to fetch the code from
+    :type repo_branch: str
 
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_branch = 'sqaaas'
 
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
-    repo_data = gh_utils.get_repository(pipeline_repo)
-    if repo_data:
-        logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
+    if repo_url:
+        if ctls_utils.has_this_repo(config_data_list):
+            logger.debug('Remote repository URL provided. Forking repository <%s>' % repo_url)
+            fork_repo, fork_default_branch = gh_utils.create_fork(repo_url)
+            pipeline_repo = fork_repo
+            pipeline_repo_branch = repo_branch
+        else:
+            _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
+            logger.error(_reason)
+            return web.Response(status=422, reason=_reason)
     else:
-        gh_utils.create_org_repository(pipeline_repo)
+        repo_data = gh_utils.get_repository(pipeline_repo)
+        if repo_data:
+            logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
+        else:
+            gh_utils.create_org_repository(pipeline_repo)
+    logger.info('Using pipeline repository: %s (branch: %s)' % (
+        pipeline_repo, pipeline_repo_branch))
 
     commit_id = JePLUtils.push_files(
         gh_utils,
@@ -347,7 +365,8 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
         config_data_list,
         composer_data,
         jenkinsfile,
-        pipeline_data['data']['commands_scripts']
+        pipeline_data['data']['commands_scripts'],
+        branch=pipeline_repo_branch
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
     repo_data = gh_utils.get_repository(pipeline_repo)
