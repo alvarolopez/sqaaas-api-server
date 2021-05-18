@@ -110,9 +110,11 @@ class GitHubUtils(object):
             else:
                 _branch_source = upstream_repo.raw_data['default_branch']
             _branch_target = fork_default_branch
-            if upstream_repo.get_branch(_branch_target):
-                self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
-            else:
+            try:
+                if upstream_repo.get_branch(_branch_target):
+                    self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
+            except GithubException:
+                self.logger.debug('Branch <%s> does not exist in fork' % _branch_target)
                 self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
                 _branch_source_obj = upstream_repo.get_branch(_branch_source)
                 upstream_repo.create_git_ref(

@@ -355,8 +355,10 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         if ctls_utils.has_this_repo(config_data_list):
             logger.debug('Remote repository URL provided. Forking repository <%s>' % repo_url)
             fork_repo, fork_default_branch = gh_utils.create_fork(repo_url)
-            pipeline_repo = fork_repo
-            pipeline_repo_branch = repo_branch
+            pipeline_repo = fork_repo + '.sqaaas'
+            pipeline_repo_branch = fork_default_branch
+            if repo_branch:
+                pipeline_repo_branch = repo_branch
         else:
             _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
             logger.error(_reason)
