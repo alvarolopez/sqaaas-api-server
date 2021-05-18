@@ -22,6 +22,9 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
 
+SUPPORTED_PLATFORMS = [
+    'github.com'
+]
 TOKEN_GH_FILE = config.get_repo(
     'token', fallback='/etc/sqaaas/.gh_token')
 GITHUB_ORG = config.get_repo('organization')
@@ -341,6 +344,14 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
     if repo_url:
+        url_parsed = urlparse(repo_url)
+        git_platform = url_parsed.netloc
+        if git_platform not in SUPPORTED_PLATFORMS:
+            _reason = 'Git platform <%s> not supported (choose from %s)' % (git_platform, SUPPORTED_PLATFORMS)
+            logger.error(_reason)
+            return web.Response(status=422, reason=_reason)
+
+        repo_url = urlparse(repo_url).path.strip('/')
         if ctls_utils.has_this_repo(config_data_list):
             logger.debug('Remote repository URL provided. Forking repository <%s>' % repo_url)
             fork_repo, fork_default_branch = gh_utils.create_fork(repo_url)
