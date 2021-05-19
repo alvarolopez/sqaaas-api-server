@@ -23,9 +23,12 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
 
-SUPPORTED_PLATFORMS = [
-    'github.com'
-]
+SUPPORTED_PLATFORMS = {
+    'github': 'https://github.com'
+}
+REPOSITORY_BACKEND = config.get(
+    'repository_backend'
+)
 TOKEN_GH_FILE = config.get_repo(
     'token', fallback='/etc/sqaaas/.gh_token')
 GITHUB_ORG = config.get_repo('organization')
@@ -79,12 +82,14 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     pipeline_id = str(uuid.uuid4())
     pipeline_name = body['name']
     pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
+    pipeline_repo_url = '/'.join([SUPPORTED_PLATFORMS[REPOSITORY_BACKEND], pipeline_repo])
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
 
     db.add_entry(
         pipeline_id,
         pipeline_repo,
+        pipeline_repo_url,
         body
     )
 
@@ -107,6 +112,7 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data['raw_request']
     pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_url = pipeline_data['pipeline_repo_url']
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
     config_json_last, composer_json_last, jenkinsfile_data_last = ctls_utils.get_pipeline_data(pipeline_data_raw)
@@ -127,6 +133,7 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
         db.add_entry(
             pipeline_id,
             pipeline_repo,
+            pipeline_repo_url,
             body
         )
     else:
@@ -339,6 +346,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_url = pipeline_data['pipeline_repo_url']
     pipeline_repo_branch = 'sqaaas'
 
     config_data_list = pipeline_data['data']['config']
@@ -357,7 +365,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         # gh_repo_name = '/'.join([GITHUB_ORG, target_repo_name])
         # logger.debug('Target repository name obtained from the given URL: %s' % gh_repo_name)
         gh_utils.create_org_repository(pipeline_repo)
-        git_utils.clone_and_push(repo_url, pipeline_repo, source_repo_branch=repo_branch)
+        git_utils.clone_and_push(repo_url, pipeline_repo_url, source_repo_branch=repo_branch)
         logger.info('Pipeline repository updated with the content from source repository: %s' % pipeline_repo)
 
 #         # url_parsed = urlparse(repo_url)
