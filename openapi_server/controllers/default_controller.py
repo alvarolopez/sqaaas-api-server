@@ -362,12 +362,13 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         if repo_branch:
             pipeline_repo_branch = repo_branch
             _branch_msg = '(branch: %s)' % repo_branch
-        logger.info('Fetching code from the remote repository URL provided: <%s> %s' % (repo_url, _branch_msg))
+        logger.info('Remote repository URL provided, cloning repository in %s organization: <%s> %s' % (GITHUB_ORG, repo_url, _branch_msg))
+        logger.debug('Creating pipeline repository in %s organization: %s' % (GITHUB_ORG, pipeline_repo_url))
         gh_utils.create_org_repository(pipeline_repo)
+        logger.debug('Cloning locally the source repository <%s> & Pushing to target repository: %s' % (repo_url, pipeline_repo_url))
         pipeline_repo_branch = git_utils.clone_and_push(
             repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
-        logger.info(('Pipeline repository updated with the content from source '
-                     'repository: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
+        logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if repo_data:

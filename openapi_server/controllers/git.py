@@ -34,7 +34,7 @@ class GitUtils(object):
         os.chmod(helper_path, stat.S_IEXEC)
         os.environ['GIT_ASKPASS'] = helper_path
         os.environ['GIT_PASSWORD'] = self.access_token
-        self.logger.debug('Helper and environment variables set')
+        self.logger.debug('Git environment set: askpass helper & env vars')
 
     def clone_and_push(self, source_repo, target_repo, source_repo_branch=None):
         """Copies the source Git repository into the target one.
@@ -59,7 +59,7 @@ class GitUtils(object):
                 sqaaas.pull()
                 self.logger.debug('Repository updated: %s' % repo.remotes.sqaaas.url)
             except GitCommandError as e:
-                self.logger.warning('Error fetching from target repository: %s' % target_repo)
+                self.logger.warning('Could not fetch&pull from target repository: %s (git msg: %s)' % (target_repo, e))
             finally:
                 sqaaas.push()
                 self.logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
