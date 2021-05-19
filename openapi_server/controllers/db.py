@@ -36,7 +36,7 @@ def print_content():
     logger.debug('Current DB content: %s' % list(db))
 
 
-def add_entry(pipeline_id, pipeline_repo, body):
+def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body):
     """Adds a standard entry in the DB.
 
     Each entry has both the raw data from the request and the
@@ -45,6 +45,7 @@ def add_entry(pipeline_id, pipeline_repo, body):
 
     |-- <pipeline_id>: ID of the pipeline
         |-- 'pipeline_repo': [String] Name of the repository in the remote platform.
+        |-- 'pipeline_repo_url': [String] Absolute URL of the repository in the remote platform.
         |-- 'data': [Dict] Internal representation of the data.
             |-- 'config': [List] Each independent JePL-compliant config data.
                 |-- 'data_json'
@@ -73,6 +74,7 @@ def add_entry(pipeline_id, pipeline_repo, body):
     db = load_content()
     db[pipeline_id] = {
         'pipeline_repo': pipeline_repo,
+        'pipeline_repo_url': pipeline_repo_url,
         'data': {
             'config': config_data_list,
             'composer': composer_data,
