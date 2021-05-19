@@ -183,13 +183,13 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
         _org_name, _repo_name = repo_name.split('/')
-        if not self.get_org_repository(repo_name):
+        repo = self.get_org_repository(repo_name)
+        if not repo:
             org = self.client.get_organization(_org_name)
             repo = org.create_repo(_repo_name)
             self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
-            return False
         return repo.raw_data['full_name']
 
     def delete_repo(self, repo_name):
