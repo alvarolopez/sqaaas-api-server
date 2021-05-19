@@ -363,43 +363,11 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
             pipeline_repo_branch = repo_branch
             _branch_msg = '(branch: %s)' % repo_branch
         logger.info('Fetching code from the remote repository URL provided: <%s> %s' % (repo_url, _branch_msg))
-        # target_repo_path = urlparse(repo_url).path.strip('/')
-        # target_repo_name = target_repo_path.split('/')[-1]
-        # target_repo_name += '.sqaaas'
-        # gh_repo_name = '/'.join([GITHUB_ORG, target_repo_name])
-        # logger.debug('Target repository name obtained from the given URL: %s' % gh_repo_name)
         gh_utils.create_org_repository(pipeline_repo)
         pipeline_repo_branch = git_utils.clone_and_push(
             repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
         logger.info(('Pipeline repository updated with the content from source '
                      'repository: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
-
-#         # url_parsed = urlparse(repo_url)
-#         # git_platform = url_parsed.netloc
-#         # if git_platform not in SUPPORTED_PLATFORMS:
-#         #     _reason = 'Git platform <%s> not supported (choose from %s)' % (git_platform, SUPPORTED_PLATFORMS)
-#         #     logger.error(_reason)
-#         #     return web.Response(status=422, reason=_reason)
-#
-#         # repo_url = urlparse(repo_url).path.strip('/')
-#         # if ctls_utils.has_this_repo(config_data_list):
-#         #     account_or_org = repo_url.split('/')[0]
-#         #     if account_or_org.lower() == GITHUB_ORG.lower():
-#         #         logger.debug('Remote repository belongs to the current organization')
-#         #     else:
-#         #         logger.debug('Remote repository belongs to an external organization. Forking..')
-#
-#
-#
-#             fork_repo, fork_default_branch = gh_utils.create_fork(repo_url)
-#             pipeline_repo = fork_repo + '.sqaaas'
-#             pipeline_repo_branch = fork_default_branch
-#             if repo_branch:
-#                 pipeline_repo_branch = repo_branch
-#         else:
-#             _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
-#             logger.error(_reason)
-#             return web.Response(status=422, reason=_reason)
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if repo_data:
