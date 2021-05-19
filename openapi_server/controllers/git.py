@@ -42,12 +42,13 @@ class GitUtils(object):
         :param source_repo_branch: Specific branch name to use from the source repository
         """
         with tempfile.TemporaryDirectory() as dirpath:
-            self.setup_env(dirpath)
             repo = None
             if source_repo_branch:
                 repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
             else:
                 repo = Repo.clone_from(source_repo, dirpath)
+            self.setup_env(dirpath)
+
             sqaaas = repo.create_remote(REMOTE_NAME, url=target_repo)
             try:
                 sqaaas.fetch()
