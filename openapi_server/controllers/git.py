@@ -39,6 +39,8 @@ class GitUtils(object):
     def clone_and_push(self, source_repo, target_repo, source_repo_branch=None):
         """Copies the source Git repository into the target one.
 
+        Returns a tuple with the repository URL and default branch name.
+
         :param source_repo: Absolute URL of the source repository (e.g. https://example.org)
         :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
         :param source_repo_branch: Specific branch name to use from the source repository
@@ -61,3 +63,5 @@ class GitUtils(object):
             finally:
                 sqaaas.push()
                 self.logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
+            default_branch = repo.active_branch
+        return sqaaas.url, default_branch
