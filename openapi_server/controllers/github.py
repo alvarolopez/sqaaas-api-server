@@ -18,13 +18,6 @@ class GitHubUtils(object):
         self.client = Github(access_token)
         self.logger = logging.getLogger('sqaaas_api.github')
 
-    def get_org_repository(self, repo_name, org_name='eosc-synergy'):
-        org = self.client.get_organization(org_name)
-        try:
-            return org.get_repo(repo_name)
-        except UnknownObjectException:
-            return False
-
     def get_repo_content(self, repo_name, branch, path='.'):
         """Gets the repository content from the given branch.
 
@@ -166,6 +159,20 @@ class GitHubUtils(object):
             return repo.raw_data
         except UnknownObjectException:
             self.logger.debug('Repository <%s> not found!' % repo_name)
+            return False
+
+    def get_org_repository(self, repo_name, org_name='eosc-synergy'):
+        """Gets the given repository from Github.
+
+        If found, it returns the repo object, otherwise False
+
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        """
+        _org_name, _repo_name = repo_name.split('/')
+        org = self.client.get_organization(_org_name)
+        try:
+            return org.get_repo(_repo_name)
+        except UnknownObjectException:
             return False
 
     def create_org_repository(self, repo_name):
