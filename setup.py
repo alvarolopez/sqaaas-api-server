@@ -19,6 +19,7 @@ REQUIRES = [
     "PyGithub>=1.53",
     "python-jenkins>=1.7.0",
     "deepdiff>=5.2.3"
+    "GitPython>=3.1.17"
 ]
 
 setup(

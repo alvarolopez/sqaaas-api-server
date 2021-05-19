@@ -277,6 +277,20 @@ def process_extra_data(config_json, composer_json):
     return (config_data_list, composer_data, commands_script_list)
 
 
+def has_this_repo(config_data_list):
+    """Checks if a 'this_repo' has been defined in the existing criteria.
+
+    :param config_data_list: List of config.yml data files
+    """
+    this_repo = False
+    for config_data in config_data_list:
+        sqa_criteria_data = config_data['data_json']['sqa_criteria']
+        for criterion_name, criterion_data in sqa_criteria_data.items():
+            if 'this_repo' in criterion_data['repos']:
+                this_repo = True
+    return this_repo
+
+
 # NOTE (workaround) Back to the old criteria codes from JePL 2.1.0
 # FIXME by removing when using JePL > 2.1.0
 def rekey_criteria_codes(record):

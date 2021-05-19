@@ -15,6 +15,7 @@ from deepdiff import DeepDiff
 from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.badgr import BadgrUtils
+from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers.jepl import JePLUtils
@@ -22,6 +23,12 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.models.inline_object import InlineObject
 
 
+SUPPORTED_PLATFORMS = {
+    'github': 'https://github.com'
+}
+REPOSITORY_BACKEND = config.get(
+    'repository_backend'
+)
 TOKEN_GH_FILE = config.get_repo(
     'token', fallback='/etc/sqaaas/.gh_token')
 GITHUB_ORG = config.get_repo('organization')
@@ -46,6 +53,7 @@ with open(TOKEN_GH_FILE,'r') as f:
     token = f.read().strip()
 logger.debug('Loading GitHub token from local filesystem')
 gh_utils = GitHubUtils(token)
+git_utils = GitUtils(token)
 
 # Instance of CI system object
 with open(TOKEN_JK_FILE,'r') as f:
@@ -74,12 +82,14 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
     pipeline_id = str(uuid.uuid4())
     pipeline_name = body['name']
     pipeline_repo = '/'.join([GITHUB_ORG , pipeline_name + '.sqaaas'])
+    pipeline_repo_url = '/'.join([SUPPORTED_PLATFORMS[REPOSITORY_BACKEND], pipeline_repo])
     logger.debug('Repository ID for pipeline name <%s>: %s' % (pipeline_name, pipeline_repo))
     logger.debug('Using GitHub repository name: %s' % pipeline_repo)
 
     db.add_entry(
         pipeline_id,
         pipeline_repo,
+        pipeline_repo_url,
         body
     )
 
@@ -102,6 +112,7 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data['raw_request']
     pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_url = pipeline_data['pipeline_repo_url']
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
     config_json_last, composer_json_last, jenkinsfile_data_last = ctls_utils.get_pipeline_data(pipeline_data_raw)
@@ -122,6 +133,7 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
         db.add_entry(
             pipeline_id,
             pipeline_repo,
+            pipeline_repo_url,
             body
         )
     else:
@@ -317,7 +329,7 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> web.Response:
+async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None) -> web.Response:
     """Runs pipeline.
 
     Executes the given pipeline by means of the Jenkins API.
@@ -326,20 +338,45 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
     :type pipeline_id: str
     :param issue_badge: Flag to indicate whether a badge shall be issued if the pipeline succeeds
     :type issue_badge: bool
+    :param repo_url: URL of the upstream repository to fetch the code from
+    :type repo_url: str
+    :param repo_branch: Branch name of the upstream repository to fetch the code from
+    :type repo_branch: str
 
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_url = pipeline_data['pipeline_repo_url']
+    pipeline_repo_branch = 'sqaaas'
 
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
-    repo_data = gh_utils.get_repository(pipeline_repo)
-    if repo_data:
-        logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
-    else:
+    if repo_url:
+        if not ctls_utils.has_this_repo(config_data_list):
+            _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
+            logger.error(_reason)
+            return web.Response(status=422, reason=_reason)
+        _branch_msg = '(default branch)'
+        if repo_branch:
+            pipeline_repo_branch = repo_branch
+            _branch_msg = '(branch: %s)' % repo_branch
+        logger.info('Remote repository URL provided, cloning repository in %s organization: <%s> %s' % (GITHUB_ORG, repo_url, _branch_msg))
+        logger.debug('Creating pipeline repository in %s organization: %s' % (GITHUB_ORG, pipeline_repo_url))
         gh_utils.create_org_repository(pipeline_repo)
+        logger.debug('Cloning locally the source repository <%s> & Pushing to target repository: %s' % (repo_url, pipeline_repo_url))
+        pipeline_repo_branch = git_utils.clone_and_push(
+            repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
+        logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
+    else:
+        repo_data = gh_utils.get_repository(pipeline_repo)
+        if repo_data:
+            logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
+        else:
+            gh_utils.create_org_repository(pipeline_repo)
+    logger.info('Using pipeline repository: %s (branch: %s)' % (
+        pipeline_repo, pipeline_repo_branch))
 
     commit_id = JePLUtils.push_files(
         gh_utils,
@@ -347,7 +384,8 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False) -> 
         config_data_list,
         composer_data,
         jenkinsfile,
-        pipeline_data['data']['commands_scripts']
+        pipeline_data['data']['commands_scripts'],
+        branch=pipeline_repo_branch
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
     repo_data = gh_utils.get_repository(pipeline_repo)

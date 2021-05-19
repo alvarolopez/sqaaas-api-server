@@ -18,13 +18,6 @@ class GitHubUtils(object):
         self.client = Github(access_token)
         self.logger = logging.getLogger('sqaaas_api.github')
 
-    def get_org_repository(self, repo_name, org_name='eosc-synergy'):
-        org = self.client.get_organization(org_name)
-        try:
-            return org.get_repo(repo_name)
-        except UnknownObjectException:
-            return False
-
     def get_repo_content(self, repo_name, branch, path='.'):
         """Gets the repository content from the given branch.
 
@@ -33,7 +26,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param branch: Name of the branch
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         return repo.get_dir_contents(path, ref=branch)
 
     def get_file(self, file_name, repo_name, branch):
@@ -45,7 +38,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param branch: Name of the branch
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         try:
             return repo.get_contents(file_name, ref=branch)
         except (UnknownObjectException, GithubException):
@@ -62,7 +55,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         :param branch: Branch to push
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         contents = self.get_file(file_name, repo_name, branch)
         r = {}
         if contents:
@@ -83,33 +76,47 @@ class GitHubUtils(object):
         :param branch: Branch to push
         """
         commit_msg = 'Delete %s file' % file_name
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         contents = self.get_file(file_name, repo_name, branch)
         if contents:
             repo.delete_file(contents.path, commit_msg, contents.sha, branch=branch)
             self.logger.debug('File %s deleted from repository <%s>' % (file_name, repo_name))
 
-    def create_fork(self, upstream_repo_name, org_name='eosc-synergy'):
-        repo = self.client.get_repo(upstream_repo_name)
+    def create_fork(self, upstream_repo_name, upstream_branch_name=None, org_name='eosc-synergy'):
+        """Creates a fork in the given Github organization.
+
+        Returns a tuple with the fork repo and branch created.
+
+        :param upstream_repo_name: Name of the remote repo to fork (format: <user|org>/<repo_name>)
+        :param upstream_branch_name: Name of the remote branch to fork
+        :param org_name: Name of the Github organization to where the repo will be forked
+        """
+        upstream_repo = self.get_org_repository(upstream_repo_name)
         fork = None
         fork_default_branch = 'sqaaas'
-        upstream_org_name, repo_name = upstream_repo_name.split('/')
+        upstream_org_name = upstream_repo_name.split('/')[0]
+
         if upstream_org_name.lower() == org_name:
             self.logger.debug('Upstream organization matches the target organization <%s>' % org_name)
-            _branch_source = repo.raw_data['default_branch']
-            _branch_target = fork_default_branch
-            if repo.get_branch(_branch_target):
-                self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
+            if upstream_branch_name:
+                _branch_source = upstream_branch_name
             else:
+                _branch_source = upstream_repo.raw_data['default_branch']
+            _branch_target = fork_default_branch
+            try:
+                if upstream_repo.get_branch(_branch_target):
+                    self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
+            except GithubException:
+                self.logger.debug('Branch <%s> does not exist in fork' % _branch_target)
                 self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
-                _branch_source_obj = repo.get_branch(_branch_source)
-                repo.create_git_ref(
+                _branch_source_obj = upstream_repo.get_branch(_branch_source)
+                upstream_repo.create_git_ref(
                     ref='refs/heads/' + _branch_target,
                     sha=_branch_source_obj.commit.sha)
-            fork = repo
+            fork = upstream_repo
         else:
             org = self.client.get_organization(org_name)
-            fork = org.create_fork(repo)
+            fork = org.create_fork(upstream_repo)
             _fork_parent = fork.raw_data['parent']['owner']['login']
             if _fork_parent not in [upstream_org_name]:
                 self.logger.error('Repository (fork) already exists in <%s> organization. Removing..' % org_name)
@@ -121,7 +128,7 @@ class GitHubUtils(object):
         return (fork.raw_data['full_name'], fork_default_branch)
 
     def create_pull_request(self, upstream_repo_name, repo_name, branch, upstream_branch='master'):
-        repo = self.client.get_repo(upstream_repo_name)
+        repo = self.get_org_repository(upstream_repo_name)
         body = '''
         Add JePL folder structure via SQAaaS.
 
@@ -144,31 +151,53 @@ class GitHubUtils(object):
     def get_repository(self, repo_name):
         """Return raw data from a GitHub repository.
 
-        :param repo_name: GitHub's repo name (including organization/user)
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
         try:
-            repo = self.client.get_repo(repo_name)
+            repo = self.get_org_repository(repo_name)
             self.logger.debug('Repository <%s> found' % repo_name)
             return repo.raw_data
         except UnknownObjectException:
             self.logger.debug('Repository <%s> not found!' % repo_name)
             return False
 
-    def create_org_repository(self, repo_name):
+    def get_org_repository(self, repo_name, org_name='eosc-synergy'):
+        """Gets the given repository from Github.
+
+        If found, it returns the repo object, otherwise False
+
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        """
         _org_name, _repo_name = repo_name.split('/')
-        if not self.get_org_repository(repo_name):
+        org = self.client.get_organization(_org_name)
+        try:
+            return org.get_repo(_repo_name)
+        except UnknownObjectException:
+            return False
+
+    def create_org_repository(self, repo_name):
+        """Creates a GitHub repository for the current organization.
+
+        Returns the repository full name.
+
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        """
+        _org_name, _repo_name = repo_name.split('/')
+        repo = self.get_org_repository(repo_name)
+        if not repo:
             org = self.client.get_organization(_org_name)
             repo = org.create_repo(_repo_name)
             self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
+        return repo.raw_data['full_name']
 
     def delete_repo(self, repo_name):
         """Delete a GitHub repository.
 
-        :param repo_name: GitHub's repo name (including organization/user)
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         self.logger.debug('Deleting repository: %s' % repo_name)
         repo.delete()
         self.logger.debug('Repository <%s> successfully deleted' % repo_name)
@@ -176,9 +205,9 @@ class GitHubUtils(object):
     def get_commit_url(self, repo_name, commit_id):
         """Returns the commit URL (HTML format) that corresponds to the given commit ID.
 
-        :param repo_name: GitHub's repo name (including organization/user)
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param commit_id: SHA-based ID for the commit
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
         return repo.get_commit(commit_id).html_url
