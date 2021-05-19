@@ -26,7 +26,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param branch: Name of the branch
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         return repo.get_dir_contents(path, ref=branch)
 
     def get_file(self, file_name, repo_name, branch):
@@ -38,7 +38,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param branch: Name of the branch
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         try:
             return repo.get_contents(file_name, ref=branch)
         except (UnknownObjectException, GithubException):
@@ -55,7 +55,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         :param branch: Branch to push
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         contents = self.get_file(file_name, repo_name, branch)
         r = {}
         if contents:
@@ -76,7 +76,7 @@ class GitHubUtils(object):
         :param branch: Branch to push
         """
         commit_msg = 'Delete %s file' % file_name
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         contents = self.get_file(file_name, repo_name, branch)
         if contents:
             repo.delete_file(contents.path, commit_msg, contents.sha, branch=branch)
@@ -91,7 +91,7 @@ class GitHubUtils(object):
         :param upstream_branch_name: Name of the remote branch to fork
         :param org_name: Name of the Github organization to where the repo will be forked
         """
-        upstream_repo = self.client.get_repo(upstream_repo_name)
+        upstream_repo = self.get_org_repository(upstream_repo_name)
         fork = None
         fork_default_branch = 'sqaaas'
         upstream_org_name = upstream_repo_name.split('/')[0]
@@ -128,7 +128,7 @@ class GitHubUtils(object):
         return (fork.raw_data['full_name'], fork_default_branch)
 
     def create_pull_request(self, upstream_repo_name, repo_name, branch, upstream_branch='master'):
-        repo = self.client.get_repo(upstream_repo_name)
+        repo = self.get_org_repository(upstream_repo_name)
         body = '''
         Add JePL folder structure via SQAaaS.
 
@@ -154,7 +154,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
         try:
-            repo = self.client.get_repo(repo_name)
+            repo = self.get_org_repository(repo_name)
             self.logger.debug('Repository <%s> found' % repo_name)
             return repo.raw_data
         except UnknownObjectException:
@@ -197,7 +197,7 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         self.logger.debug('Deleting repository: %s' % repo_name)
         repo.delete()
         self.logger.debug('Repository <%s> successfully deleted' % repo_name)
@@ -208,6 +208,6 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param commit_id: SHA-based ID for the commit
         """
-        repo = self.client.get_repo(repo_name)
+        repo = self.get_org_repository(repo_name)
         self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
         return repo.get_commit(commit_id).html_url
