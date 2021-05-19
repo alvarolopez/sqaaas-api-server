@@ -182,6 +182,7 @@ class GitHubUtils(object):
             self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
+            return False
         return repo.raw_data['full_name']
 
     def delete_repo(self, repo_name):
