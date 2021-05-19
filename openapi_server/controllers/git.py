@@ -64,4 +64,4 @@ class GitUtils(object):
                 sqaaas.push()
                 self.logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
             default_branch = repo.active_branch
-        return sqaaas.url, default_branch
+        return sqaaas.url, default_branch.name
