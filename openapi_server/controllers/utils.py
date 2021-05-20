@@ -159,6 +159,20 @@ def process_extra_data(config_json, composer_json):
                 srv_push += ' %s' % srv_name
                 srv_push = srv_push.strip()
                 config_json['environment']['JPL_DOCKERPUSH'] = srv_push
+            if registry_data['credential_id']:
+                try:
+                    config_json['config']['credentials']
+                except KeyError:
+                    config_json['config']['credentials'] = []
+                config_json['config']['credentials'].append({
+                    'id': registry_data['credential_id'],
+                    'username_var': 'JPL_DOCKERUSER',
+                    'password_var': 'JPL_DOCKERPASS'
+                })
+            else:
+                logger.warning(('No credential ID has been set. Note that the Docker '
+                                'push feature might not work for registries that require '
+                                'authentication.'))
             # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
             # so defaulting to the last match
             if registry_data['url']:
