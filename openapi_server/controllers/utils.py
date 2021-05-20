@@ -47,18 +47,40 @@ def extended_data_validation(f):
             _reason = 'Invalid pipeline name (allowed characters: [A-Za-z0-9_.-])'
             logger.warning(_reason)
             return web.Response(status=400, reason=_reason)
-        # Check if registry>push, then registry>credential_id
-        do_docker_push = False
+        # Docker push feature
         for srv_name, srv_data in composer_data['services'].items():
             try:
                 registry_data = srv_data['image']['registry']
-                if registry_data['push'] and not registry_data['credential_id']:
-                    _reason = 'Request to push Docker images, but no credentials provided!'
-                    logger.warning(_reason)
-                    return web.Response(status=400, reason=_reason)
             except KeyError as e:
-                continue
-
+                logger.debug('No registry data found for service <%s>' % srv_name)
+            else:
+                if registry_data['push']:
+                    try:
+                        if not registry_data['credential_id']:
+                            raise KeyError
+                    except KeyError:
+                        _reason = 'Request to push Docker images, but no credentials provided!'
+                        logger.warning(_reason)
+                        return web.Response(status=400, reason=_reason)
+                    try:
+                        if not srv_data['image']['name']:
+                            raise KeyError
+                    except KeyError:
+                        _reason = 'Request to push Docker images, but no image name provided!'
+                        logger.warning(_reason)
+                        return web.Response(status=400, reason=_reason)
+                    try:
+                        if not srv_data['build']:
+                            raise KeyError
+                        else:
+                            has_context = 'context' in srv_data['build'].keys() and srv_data['build']['context']
+                            has_dockerfile = 'dockerfile' in srv_data['build'].keys() and srv_data['build']['dockerfile']
+                            if not (has_context or has_dockerfile):
+                                raise KeyError
+                    except KeyError:
+                        _reason = 'Request to push Docker images, but no build data provided!'
+                        logger.warning(_reason)
+                        return web.Response(status=400, reason=_reason)
         ret = await f(*args, **kwargs)
         return ret
     return decorated_function
