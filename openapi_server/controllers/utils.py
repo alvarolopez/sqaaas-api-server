@@ -191,10 +191,6 @@ def process_extra_data(config_json, composer_json):
                     'username_var': 'JPL_DOCKERUSER',
                     'password_var': 'JPL_DOCKERPASS'
                 })
-            else:
-                logger.warning(('No credential ID has been set. Note that the Docker '
-                                'push feature might not work for registries that require '
-                                'authentication.'))
             # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
             # so defaulting to the last match
             if registry_data['url']:
