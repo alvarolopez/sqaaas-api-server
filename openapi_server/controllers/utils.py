@@ -9,6 +9,7 @@ import yaml
 from aiohttp import web
 from urllib.parse import urlparse
 
+from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.jepl import JePLUtils
 
@@ -56,10 +57,13 @@ def extended_data_validation(f):
             else:
                 if registry_data['push']:
                     try:
-                        if not registry_data['credential_id']:
+                        if not (registry_data['credential_id'] or
+                                config.get_ci('jenkins_credential_id')):
                             raise KeyError
                     except KeyError:
-                        _reason = 'Request to push Docker images, but no credentials provided!'
+                        _reason = ('Request to push Docker images, but no credentials '
+                                   'provided and/or fallback credentials found in API '
+                                   'configuration')
                         logger.warning(_reason)
                         return web.Response(status=400, reason=_reason)
                     try:
@@ -181,13 +185,16 @@ def process_extra_data(config_json, composer_json):
                 srv_push += ' %s' % srv_name
                 srv_push = srv_push.strip()
                 config_json['environment']['JPL_DOCKERPUSH'] = srv_push
-            if registry_data['credential_id']:
+                credential_id = config.get_ci('jenkins_credential_id', fallback=None)
+                credential_id = credential_id.split('/')[-1]
+                if registry_data['credential_id']:
+                    credential_id = registry_data['credential_id']
                 try:
                     config_json['config']['credentials']
                 except KeyError:
                     config_json['config']['credentials'] = []
                 config_json['config']['credentials'].append({
-                    'id': registry_data['credential_id'],
+                    'id': credential_id,
                     'username_var': 'JPL_DOCKERUSER',
                     'password_var': 'JPL_DOCKERPASS'
                 })
