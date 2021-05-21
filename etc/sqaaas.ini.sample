@@ -28,7 +28,13 @@ github_organization_name = my_org
 ## Optional parameters (incl. default values) ##
 ## ------------------------------------------ ##
 ## - Path to file containing the Jenkins user's token
+##   + Defaults to: /etc/sqaaas/.jk_token
 # token = /etc/sqaaas/.jk_token
+## - Jenkins credential's ID to be used in order to push docker images to a remote
+##   registry. This feature allows to have a default credential, without the
+##   burden of requesting the user to add a credential in Jenkins as part of
+##   the pipeline composition.
+# jenkins_credential_id = my_docker_hub_creds
 
 
 [github]
