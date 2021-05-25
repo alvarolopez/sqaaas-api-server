@@ -44,7 +44,7 @@ class GitHubUtils(object):
         except (UnknownObjectException, GithubException):
             return False
 
-    def push_file(self, file_name, file_data, commit_msg, repo_name, branch='sqaaas'):
+    def push_file(self, file_name, file_data, commit_msg, repo_name, branch):
         """Pushes a file into GitHub repository.
 
         Returns the commit ID (SHA format).
@@ -60,13 +60,13 @@ class GitHubUtils(object):
         r = {}
         if contents:
             self.logger.debug('File <%s> already exists in the repository, updating..' % file_name)
-            r = repo.update_file(contents.path, commit_msg, file_data, contents.sha, branch=branch)
+            r = repo.update_file(contents.path, commit_msg, file_data, contents.sha, branch)
         else:
             self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
-            r = repo.create_file(file_name, commit_msg, file_data, branch=branch)
+            r = repo.create_file(file_name, commit_msg, file_data, branch)
         return r['commit'].sha
 
-    def delete_file(self, file_name, repo_name, branch='sqaaas'):
+    def delete_file(self, file_name, repo_name, branch):
         """Pushes a file into GitHub repository.
 
         Returns the commit ID (SHA format).
@@ -79,7 +79,7 @@ class GitHubUtils(object):
         repo = self.get_org_repository(repo_name)
         contents = self.get_file(file_name, repo_name, branch)
         if contents:
-            repo.delete_file(contents.path, commit_msg, contents.sha, branch=branch)
+            repo.delete_file(contents.path, commit_msg, contents.sha, branch)
             self.logger.debug('File %s deleted from repository <%s>' % (file_name, repo_name))
 
     def create_fork(self, upstream_repo_name, upstream_branch_name=None, org_name='eosc-synergy'):

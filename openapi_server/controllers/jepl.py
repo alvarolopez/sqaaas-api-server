@@ -121,12 +121,13 @@ class JePLUtils(object):
         file_type,
         gh_utils,
         repo,
-        branch='sqaaas'):
+        branch):
         """Get JePL files of the given type from the remote repository.
 
         :param file_type: Type of JePL file, one of [config, composer, jenkinsfile].
         :param gh_utils: GithubUtils object.
         :param repo: Name of the git repository.
+        :param branch: Name of the repository branch.
         """
         prefix_names = {
             'config': 'config',
@@ -152,7 +153,7 @@ class JePLUtils(object):
             composer_data,
             jenkinsfile,
             commands_script_list,
-            branch='sqaaas'):
+            branch):
         """Push the given JePL file structure to the given repo.
 
         :param cls: Current class (from classmethod)
@@ -175,17 +176,17 @@ class JePLUtils(object):
                 config_data['data_yml'],
                 'Update %s' % _file_name,
                 repo,
-                branch=branch
+                branch
             )
             config_files_pushed.append(_file_name)
         config_files_from_repo = [
             file_content.path
-                for file_content in cls.get_files('config', gh_utils, repo)
+                for file_content in cls.get_files('config', gh_utils, repo, branch)
         ]
         config_files_to_remove = set(config_files_from_repo).difference(set(config_files_pushed))
         for config_file in config_files_to_remove:
             logger.debug('Deleting no longer needed config.yml file: %s' % config_file)
-            gh_utils.delete_file(config_file, repo)
+            gh_utils.delete_file(config_file, repo, branch)
         # composer
         logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
             repo, composer_data['file_name']))
@@ -194,7 +195,7 @@ class JePLUtils(object):
             composer_data['data_yml'],
             'Update %s' % composer_data['file_name'],
             repo,
-            branch=branch
+            branch
         )
         # jenkinsfile
         logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
@@ -205,7 +206,7 @@ class JePLUtils(object):
             jenkinsfile,
             'Update Jenkinsfile',
             repo,
-            branch=branch
+            branch
         )
         # commands' builder scripts
         for commands_script in commands_script_list:
@@ -216,7 +217,7 @@ class JePLUtils(object):
                 commands_script['data'],
                 'Update %s' % commands_script['file_name'],
                 repo,
-                branch=branch
+                branch
             )
         logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
 
