@@ -393,7 +393,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     jk_job_name = '/'.join([
         JENKINS_GITHUB_ORG,
         _pipeline_repo_name,
-        pipeline_repo_branch
+        jk_utils.format_job_name(pipeline_repo_branch)
     ])
 
     _status = 200

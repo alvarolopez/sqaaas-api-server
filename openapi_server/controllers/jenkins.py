@@ -3,6 +3,7 @@ import requests
 import time
 
 from urllib.parse import urljoin
+from urllib.parse import quote_plus
 
 import jenkins
 
@@ -27,6 +28,16 @@ class JenkinsUtils(object):
             username = self.access_user,
             password = self.access_token)
         self.logger = logging.getLogger('sqaaas_api.jenkins')
+
+    @staticmethod
+    def format_job_name(job_name):
+        """Format job name according to what is expected by Jenkins.
+
+        Slash symbol '/' is double-encoded: ''%252F' instead of '%2F'
+
+        :param job_name: Name of the Jenkins job
+        """
+        return quote_plus(job_name.replace('/', '%2F'))
 
     def scan_organization(self, org_name='eosc-synergy-org'):
         path = '/job/%s/build?delay=0' % org_name
