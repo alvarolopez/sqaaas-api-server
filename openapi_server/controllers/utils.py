@@ -58,7 +58,7 @@ def extended_data_validation(f):
                 if registry_data['push']:
                     try:
                         if not (registry_data['credential_id'] or
-                                config.get_ci('jenkins_credential_id')):
+                                config.get_ci('docker_credential_id')):
                             raise KeyError
                     except KeyError:
                         _reason = ('Request to push Docker images, but no credentials '
@@ -174,6 +174,7 @@ def process_extra_data(config_json, composer_json):
     """
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
+        use_default_dockerhub_org = False
         ## Set JPL_DOCKER* envvars
         if 'registry' in srv_data['image'].keys():
             registry_data = srv_data['image'].pop('registry')
@@ -185,25 +186,34 @@ def process_extra_data(config_json, composer_json):
                 srv_push += ' %s' % srv_name
                 srv_push = srv_push.strip()
                 config_json['environment']['JPL_DOCKERPUSH'] = srv_push
-                credential_id = config.get_ci('jenkins_credential_id', fallback=None)
-                credential_id = credential_id.split('/')[-1]
-                if registry_data['credential_id']:
+                credential_id = None
+                if registry_data.get('credential_id', None):
                     credential_id = registry_data['credential_id']
+                else:
+                    credential_id = config.get_ci(
+                        'docker_credential_id', fallback=None)
+                    use_default_dockerhub_org = True
                 try:
                     config_json['config']['credentials']
                 except KeyError:
                     config_json['config']['credentials'] = []
-                config_json['config']['credentials'].append({
-                    'id': credential_id,
-                    'username_var': 'JPL_DOCKERUSER',
-                    'password_var': 'JPL_DOCKERPASS'
-                })
+                finally:
+                    config_json['config']['credentials'].append({
+                        'id': credential_id,
+                        'username_var': 'JPL_DOCKERUSER',
+                        'password_var': 'JPL_DOCKERPASS'
+                    })
             # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
             # so defaulting to the last match
             if registry_data['url']:
                 config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
         ## Set 'image' property as string (required by Docker Compose)
         srv_data['image'] = srv_data['image']['name']
+        if use_default_dockerhub_org:
+            org = config.get_ci(
+                'docker_credential_org', fallback=None)
+            img_name = srv_data['image']['name'].split('/')[-1]
+            srv_data['image'] = '/'.join([org, img_name])
         ## Set 'volumes' property (incl. default values)
         try:
             srv_data['volumes']

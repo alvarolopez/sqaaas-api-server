@@ -34,7 +34,10 @@ github_organization_name = my_org
 ##   registry. This feature allows to have a default credential, without the
 ##   burden of requesting the user to add a credential in Jenkins as part of
 ##   the pipeline composition.
-# jenkins_credential_id = my_docker_hub_creds
+# docker_credential_id = my_docker_hub_creds
+## - (Only in conjunction with 'docker_credential_id') Docker Hub's organization
+##   where the credentials set in 'docker_credential_id' are able to push images.
+# docker_credential_org = my_docker_hub_org
 
 
 [github]
