@@ -388,13 +388,12 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         branch=pipeline_repo_branch
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
-    repo_data = gh_utils.get_repository(pipeline_repo)
 
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
     jk_job_name = '/'.join([
         JENKINS_GITHUB_ORG,
         _pipeline_repo_name,
-        repo_data['default_branch']
+        pipeline_repo_branch
     ])
 
     _status = 200
