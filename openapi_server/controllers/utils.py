@@ -241,6 +241,12 @@ def process_extra_data(config_json, composer_json):
             if pop_prop:
                 props_to_remove.append(prop)
         [srv_data.pop(prop) for prop in props_to_remove]
+        ## Handle 'oneshot' services
+        oneshot = True
+        if 'oneshot' in srv_data.keys():
+            oneshot = srv_data.pop('oneshot')
+        if oneshot:
+            srv_data['command'] = 'sleep 6000000'
 
     composer_data = {'data_json': composer_json}
 
