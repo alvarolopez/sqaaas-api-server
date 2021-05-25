@@ -881,6 +881,9 @@ components:
             type: string
           environment:
             $ref: '#/components/schemas/Environment'
+          oneshot:
+            default: true
+            type: boolean
         type: object
       example:
         checkstyle:
@@ -978,6 +981,9 @@ components:
                 type: string
               environment:
                 $ref: '#/components/schemas/Environment'
+              oneshot:
+                default: true
+                type: boolean
             type: object
           example:
             checkstyle:
