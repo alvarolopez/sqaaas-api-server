@@ -448,9 +448,11 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         return web.Response(status=422, reason=_reason)
 
     jenkins_info = pipeline_data['jenkins']
+    build_info = jenkins_info['build_info']
+
     jk_job_name = jenkins_info['job_name']
-    build_url = jenkins_info['build_info']['url']
-    build_no = jenkins_info['build_info']['number']
+    build_url = build_info['url']
+    build_no = build_info['number']
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
@@ -479,7 +481,14 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     if jenkins_info['issue_badge']:
         if build_status in ['SUCCESS']:
             logger.info('Issuing badge as requested when running the pipeline')
-            badge_data = await _issue_badge(pipeline_id)
+            badge_data = await _issue_badge(
+                pipeline_id,
+                pipeline_data['data']['config'],
+                build_status,
+                build_url,
+                build_info['commit_id'],
+                build_info['commit_url']
+            )
             jenkins_info['issue_badge'] = False
         else:
             logger.warn('Will not issue a badge since build status is <%s>' % build_status)
@@ -607,35 +616,33 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
-async def _issue_badge(pipeline_id):
-    pipeline_data = db.get_entry(pipeline_id)
-    pipeline_repo = pipeline_data['pipeline_repo']
+async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, commit_id, commit_url):
+    """Issues a badge using BadgrUtils.
 
-    # Get 'ci_build_url' & 'commit_url'
-    try:
-        jenkins_info = pipeline_data['jenkins']
-        build_info = jenkins_info['build_info']
-        build_status = build_info['status']
-        if not build_status in ['SUCCESS', 'UNSTABLE']:
-            _reason = 'Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status)
-            logger.error(_reason)
-            return web.Response(status=422, reason=_reason)
-    except KeyError:
-        _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param config_data_list: List of config data Dicts
+    :type config_data_list: list
+    :param build_status:
+    :type build_status: str
+    :param build_url: Jenkins' job build URL.
+    :type build_url: str
+    :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
+    :type commit_id: str
+    :param commit_url: Commit URL of the git repository platform.
+    :type commit_url: str
+
+    """
+    if not build_status in ['SUCCESS', 'UNSTABLE']:
+        _reason = 'Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status)
         logger.error(_reason)
         return web.Response(status=422, reason=_reason)
-    build_url = build_info['url']
-    logger.debug('Getting build URL from Jenkins associated data: %s' % build_url)
-    commit_id = build_info['commit_id']
-    commit_url = build_info['commit_url']
-    logger.debug('Getting commit URL from Jenkins associated data: %s' % commit_url)
 
     # Get 'sw_criteria' & 'srv_criteria'
     SW_CODE_PREFIX = 'qc_'
     SRV_CODE_PREFIX = 'SvcQC'
     logger.debug('Filtering Software criteria codes by <%s> prefix' % SW_CODE_PREFIX)
     logger.debug('Filtering Service criteria codes by <%s> prefix' % SRV_CODE_PREFIX)
-    config_data_list = pipeline_data['data']['config']
     criteria = [
         config_data['data_json']['sqa_criteria'].keys()
             for config_data in config_data_list
@@ -686,12 +693,20 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     pipeline_data = db.get_entry(pipeline_id)
     try:
         jenkins_info = pipeline_data['jenkins']
+        build_info = jenkins_info['build_info']
     except KeyError:
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
         logger.error(_reason)
         return web.Response(status=422, reason=_reason)
 
-    badge_data = await _issue_badge(pipeline_id)
+    badge_data = await _issue_badge(
+        pipeline_id,
+        pipeline_data['data']['config'],
+        build_info['status'],
+        build_info['url'],
+        build_info['commit_id'],
+        build_info['commit_url']
+    )
 
     # Add badge data to DB
     db.update_jenkins(
