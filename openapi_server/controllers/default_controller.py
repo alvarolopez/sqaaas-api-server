@@ -641,7 +641,7 @@ async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, c
         raise SQAaaSAPIException(422, _reason)
 
     # Get 'sw_criteria' & 'srv_criteria'
-    SW_CODE_PREFIX = 'qc_'
+    SW_CODE_PREFIX = 'QC.'
     SRV_CODE_PREFIX = 'SvcQC'
     logger.debug('Filtering Software criteria codes by <%s> prefix' % SW_CODE_PREFIX)
     logger.debug('Filtering Service criteria codes by <%s> prefix' % SRV_CODE_PREFIX)
