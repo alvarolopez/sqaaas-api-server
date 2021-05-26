@@ -453,6 +453,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     jk_job_name = jenkins_info['job_name']
     build_url = build_info['url']
     build_no = build_info['number']
+    build_status = build_info.get('status', None)
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
