@@ -20,6 +20,7 @@ from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.controllers import utils as ctls_utils
+from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
 
 
@@ -480,8 +481,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 
     badge_data = jenkins_info['build_info']['badge']
     if jenkins_info['issue_badge']:
-        if build_status in ['SUCCESS']:
-            logger.info('Issuing badge as requested when running the pipeline')
+        logger.info('Issuing badge as requested when running the pipeline')
+        try:
             badge_data = await _issue_badge(
                 pipeline_id,
                 pipeline_data['data']['config'],
@@ -491,8 +492,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
                 build_info['commit_url']
             )
             jenkins_info['issue_badge'] = False
-        else:
-            logger.warn('Will not issue a badge since build status is <%s>' % build_status)
+        except SQAaaSAPIException as e:
+            return web.Response(status=e.http_code, reason=e.message)
 
     # Add build status to DB
     db.update_jenkins(
@@ -637,7 +638,7 @@ async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, c
     if not build_status in ['SUCCESS', 'UNSTABLE']:
         _reason = 'Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status)
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason)
+        raise SQAaaSAPIException(422, _reason)
 
     # Get 'sw_criteria' & 'srv_criteria'
     SW_CODE_PREFIX = 'qc_'
@@ -674,7 +675,7 @@ async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, c
     except Exception as e:
         _reason = 'Cannot issue a badge for pipeline <%s>: %s' % (pipeline_id, e)
         logger.error(_reason)
-        return web.Response(status=502, reason=_reason)
+        raise SQAaaSAPIException(502, _reason)
     else:
         logger.info('Badge successfully issued: %s' % badge_data['openBadgeId'])
         return badge_data
@@ -699,15 +700,17 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
         logger.error(_reason)
         return web.Response(status=422, reason=_reason)
-
-    badge_data = await _issue_badge(
-        pipeline_id,
-        pipeline_data['data']['config'],
-        build_info['status'],
-        build_info['url'],
-        build_info['commit_id'],
-        build_info['commit_url']
-    )
+    try:
+        badge_data = await _issue_badge(
+            pipeline_id,
+            pipeline_data['data']['config'],
+            build_info['status'],
+            build_info['url'],
+            build_info['commit_id'],
+            build_info['commit_url']
+        )
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message)
 
     # Add badge data to DB
     db.update_jenkins(
