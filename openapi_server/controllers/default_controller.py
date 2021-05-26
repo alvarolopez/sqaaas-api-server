@@ -495,7 +495,10 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
             )
             jenkins_info['issue_badge'] = False
         except SQAaaSAPIException as e:
-            return web.Response(status=e.http_code, reason=e.message)
+            if e.http_code == 422:
+                logger.warning(e.message)
+            else:
+                return web.Response(status=e.http_code, reason=e.message)
 
     # Add build status to DB
     db.update_jenkins(
