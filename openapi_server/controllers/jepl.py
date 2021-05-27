@@ -131,10 +131,11 @@ class JePLUtils(object):
         """
         prefix_names = {
             'config': 'config',
-            'composer': 'docker-compose'
+            'composer': 'docker-compose',
+            'commands_script': 'script'
         }
         path = '.'
-        if file_type in ['config', 'composer']:
+        if file_type in ['config', 'composer', 'commands_script']:
             path = '.sqa'
         file_list = gh_utils.get_repo_content(repo, branch, path)
         prefix = prefix_names[file_type]
@@ -209,6 +210,7 @@ class JePLUtils(object):
             branch
         )
         # commands' builder scripts
+        commands_scripts_pushed = []
         for commands_script in commands_script_list:
             logger.debug('Pushing script for commands builder to GitHub repository <%s>: %s' % (
                 repo, commands_script['file_name']))
@@ -219,6 +221,16 @@ class JePLUtils(object):
                 repo,
                 branch
             )
+            commands_scripts_pushed.append(commands_script['file_name'])
+        commands_scripts_from_repo = [
+            file_content.path
+                for file_content in cls.get_files('commands_script', gh_utils, repo, branch)
+        ]
+        commands_scripts_to_remove = set(commands_scripts_from_repo).difference(set(commands_scripts_pushed))
+        for script in commands_scripts_to_remove:
+            logger.debug('Deleting no longer needed commands\' builder script file: %s' % script)
+            gh_utils.delete_file(script, repo, branch)
+
         logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
 
         return last_commit
