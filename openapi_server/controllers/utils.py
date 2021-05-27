@@ -158,6 +158,26 @@ def get_pipeline_data(request_body):
     return (config_json, composer_json, jenkinsfile_data)
 
 
+class ProcessExtraData(object):
+    """Utils class for the extra data processing."""
+    @staticmethod
+    def set_build_context(service_name, repo_name, composer_json):
+        """Set the context within the docker-compose.yml's build property.
+
+        :param service_name: Name of the DC service
+        :param repo_name: Relative repo checkout path
+        :param composer_json: Composer data (JSON)
+        """
+        if service_name:
+            try:
+                composer_json['services'][service_name]['build']['context'] = repo_name
+                logger.debug('Build context set <%s> for service <%s>' % (
+                    repo_name, service_name))
+            except KeyError:
+                logger.debug(('No build definition found for service <%s>. Not setting '
+                              'build context' % service_name))
+
+
 def process_extra_data(config_json, composer_json):
     """Manage those properties, present in the API spec, that cannot
     be directly translated into a workable 'config.yml' or composer
@@ -271,7 +291,10 @@ def process_extra_data(config_json, composer_json):
             }
         config_json['config']['project_repos'] = project_repos_final
 
-    # CONFIG:SQA_CRITERIA (Multiple stages/Jenkins when clause, Array-to-Object transformation for repos)
+    # CONFIG:SQA_CRITERIA
+    # - Multiple stages/Jenkins when clause
+    # - Array-to-Object conversion for repos
+    # - Set 'context' to the appropriate checkout path for building the Dockerfile
     config_data_list = []
     commands_script_list = []
     config_json_no_when = copy.deepcopy(config_json)
@@ -281,6 +304,7 @@ def process_extra_data(config_json, composer_json):
             repos_old = criterion_data_copy.pop('repos')
             repos_new = {}
             for repo in repos_old:
+                service_name = repo.get('container', None)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
@@ -288,6 +312,8 @@ def process_extra_data(config_json, composer_json):
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
                     repos_new['this_repo'] = repo
+                    # Set Dockerfile's 'context' in the composer
+                    ProcessExtraData.set_build_context(service_name, '.', composer_json)
                 else:
                     repo_name = project_repos_mapping[repo_url]['name']
                     repos_new[repo_name] = repo
@@ -308,6 +334,8 @@ def process_extra_data(config_json, composer_json):
                         commands_script_list.extend(commands_script_data)
                         script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
                         repos_new[repo_name]['commands'] = [script_call]
+                    # Set Dockerfile's 'context' in the composer
+                    ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
         if 'when' in criterion_data.keys():
             config_json_when = copy.deepcopy(config_json)
