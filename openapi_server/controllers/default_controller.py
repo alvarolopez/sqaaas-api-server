@@ -372,10 +372,9 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
-        if repo_data:
-            logger.warning('Repository <%s> already exists!' % repo_data['full_name'])
-        else:
-            gh_utils.create_org_repository(pipeline_repo)
+        if not repo_data:
+            repo_data = gh_utils.create_org_repository(pipeline_repo)
+        pipeline_repo_branch = repo_data.default_branch
     logger.info('Using pipeline repository: %s (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
 

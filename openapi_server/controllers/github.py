@@ -149,17 +149,21 @@ class GitHubUtils(object):
         return pr.raw_data
 
     def get_repository(self, repo_name):
-        """Return raw data from a GitHub repository.
+        """Return a Repository from a GitHub repo if it exists, False otherwise.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
+        repo = False
         try:
             repo = self.get_org_repository(repo_name)
-            self.logger.debug('Repository <%s> found' % repo_name)
-            return repo.raw_data
-        except UnknownObjectException:
-            self.logger.debug('Repository <%s> not found!' % repo_name)
-            return False
+        except UnknownObjectException as e:
+            self.logger.debug('Unknown Github exception: %s' % e)
+        finally:
+            if repo:
+                self.logger.debug('Repository <%s> found' % repo_name)
+            else:
+                self.logger.debug('Repository <%s> not found!' % repo_name)
+        return repo
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         """Gets the given repository from Github.
@@ -178,7 +182,7 @@ class GitHubUtils(object):
     def create_org_repository(self, repo_name):
         """Creates a GitHub repository for the current organization.
 
-        Returns the repository full name.
+        Returns the Repository object.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
@@ -190,7 +194,7 @@ class GitHubUtils(object):
             self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
-        return repo.raw_data['full_name']
+        return repo
 
     def delete_repo(self, repo_name):
         """Delete a GitHub repository.
