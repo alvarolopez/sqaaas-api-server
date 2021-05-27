@@ -232,7 +232,7 @@ def process_extra_data(config_json, composer_json):
         if use_default_dockerhub_org:
             org = config.get_ci(
                 'docker_credential_org', fallback=None)
-            img_name = srv_data['image']['name'].split('/')[-1]
+            img_name = srv_data['image'].split('/')[-1]
             srv_data['image'] = '/'.join([org, img_name])
         ## Set 'volumes' property (incl. default values)
         try:
