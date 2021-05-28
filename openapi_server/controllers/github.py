@@ -109,41 +109,14 @@ class GitHubUtils(object):
         """
         upstream_repo = self.get_repository(upstream_repo_name)
         fork = None
-        # fork_default_branch = 'sqaaas'
         upstream_org_name = upstream_repo_name.split('/')[0]
 
         if upstream_org_name.lower() in [org_name]:
             self.logger.debug('Upstream organization matches the target organization <%s>' % org_name)
         else:
-            # if upstream_branch_name:
-            #     _branch_source = upstream_branch_name
-            # else:
-            #     _branch_source = upstream_repo.raw_data['default_branch']
-            # _branch_target = fork_default_branch
-            # try:
-            #     if upstream_repo.get_branch(_branch_target):
-            #         self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
-            # except GithubException:
-            #     self.logger.debug('Branch <%s> does not exist in fork' % _branch_target)
-            #     self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
-            #     _branch_source_obj = upstream_repo.get_branch(_branch_source)
-            #     upstream_repo.create_git_ref(
-            #         ref='refs/heads/' + _branch_target,
-            #         sha=_branch_source_obj.commit.sha)
-            # fork = upstream_repo
-
             org = self.client.get_organization(org_name)
             fork = org.create_fork(upstream_repo)
 
-            # _fork_parent = fork.raw_data['parent']['owner']['login']
-            # if _fork_parent not in [upstream_org_name]:
-            #     self.logger.error('Repository (fork) already exists in <%s> organization. Removing..' % org_name)
-            #     raise GithubException(status=422, data={'message': 'Reference (fork) already exists'})
-            # else:
-            #     self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
-            # fork_default_branch = fork.raw_data['parent']['default_branch']
-
-        # return (fork.raw_data['full_name'], fork_default_branch)
         return fork
 
     def create_pull_request(self,
