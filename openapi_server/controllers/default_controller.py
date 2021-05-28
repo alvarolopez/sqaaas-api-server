@@ -11,6 +11,7 @@ from aiohttp import web
 from jinja2 import Environment, PackageLoader
 from urllib.parse import urlparse
 from deepdiff import DeepDiff
+import namegenerator
 
 from openapi_server import config
 from openapi_server.controllers import db
@@ -534,6 +535,12 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     :type body: dict | bytes
 
     """
+    pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
+    config_data_list = pipeline_data['data']['config']
+    composer_data = pipeline_data['data']['composer']
+    jenkinsfile = pipeline_data['data']['jenkinsfile']
+
     body = InlineObject.from_dict(body)
     url_parsed = urlparse(body.repo)
     netloc_without_extension = url_parsed.netloc.split('.')[0]
@@ -544,32 +551,51 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
                        SUPPORTED_PLATFORMS.keys()))
         logger.error(_reason)
         return web.Response(status=422, reason=_reason)
-    upstream_repo = url_parsed.path
-    upstream_repo = upstream_repo.lstrip('/')
-    logger.debug('Upstream repository path: %s' % upstream_repo)
+    target_repo_name = url_parsed.path
+    target_repo_name = target_repo_name.lstrip('/')
+    logger.debug('Target repository (base) path: %s' % target_repo_name)
+    target_repo = gh_utils.get_repository(target_repo_name)
 
-    # step 1: create the fork
-    fork_repo, fork_default_branch = gh_utils.create_fork(upstream_repo)
-    logger.debug('Using fork default branch: %s' % fork_default_branch)
-    # step 2: push JePL files to fork
-    pipeline_data = db.get_entry(pipeline_id)
-    config_data_list = pipeline_data['data']['config']
-    composer_data = pipeline_data['data']['composer']
-    jenkinsfile = pipeline_data['data']['jenkinsfile']
+    # step 1: create the source repo (either fork or target repo itself)
+    fork_created = gh_utils.create_fork(target_repo_name)
+    if fork_created:
+        source_repo = fork_created
+        source_branch_name = fork_created.parent.default_branch
+    else:
+        logger.debug('Source (head) and target (base) are the same repository')
+        source_repo = target_repo
+        source_branch_name = '_'.join(['sqaaas', namegenerator.gen()])
+        logger.debug('Random branch name generated: %s' % source_branch_name)
+        gh_utils.create_branch(
+            source_repo.full_name, source_branch_name, source_repo.default_branch)
+    logger.debug('Using source (head) repo\'s default branch: %s' % source_repo.default_branch)
+    # step 2: push JePL files
     JePLUtils.push_files(
         gh_utils,
-        fork_repo,
+        source_repo.full_name,
         config_data_list,
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
-        branch=fork_default_branch)
-    # step 3: create PR
-    pr = gh_utils.create_pull_request(
-        upstream_repo,
-        fork_repo,
-        branch=fork_default_branch)
-    pr_url = pr['html_url']
+        branch=source_branch_name)
+    # step 3: create PR if it does not exist
+    target_pr_data = [
+        dict([['html_url', pr.html_url], ['data', (pr.head.repo.name, pr.head.ref)]])
+            for pr in target_repo.get_pulls() if pr.state in ['open']]
+    source_repo_data = (source_repo.name, source_branch_name)
+    pr_exists = [
+        pr_data
+            for pr_data in target_pr_data if pr_data['data'] == source_repo_data
+    ]
+    if pr_exists:
+        pr_url = pr_exists[0]['html_url']
+        logger.info('Pull request <%s> updated (already existed)' % pr_url)
+    else:
+        pr = gh_utils.create_pull_request(
+            source_repo.full_name,
+            source_branch_name,
+            target_repo_name)
+        pr_url = pr['html_url']
 
     r = {'pull_request_url': pr_url}
     return web.json_response(r, status=200)
