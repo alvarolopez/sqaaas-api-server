@@ -14,20 +14,24 @@ class InlineObject(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo: str=None):
+    def __init__(self, repo: str=None, branch: str=None):
         """InlineObject - a model defined in OpenAPI
 
         :param repo: The repo of this InlineObject.
+        :param branch: The branch of this InlineObject.
         """
         self.openapi_types = {
-            'repo': str
+            'repo': str,
+            'branch': str
         }
 
         self.attribute_map = {
-            'repo': 'repo'
+            'repo': 'repo',
+            'branch': 'branch'
         }
 
         self._repo = repo
+        self._branch = branch
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineObject':
@@ -58,5 +62,30 @@ class InlineObject(Model):
         :param repo: The repo of this InlineObject.
         :type repo: str
         """
+        if repo is None:
+            raise ValueError("Invalid value for `repo`, must not be `None`")
 
         self._repo = repo
+
+    @property
+    def branch(self):
+        """Gets the branch of this InlineObject.
+
+        Brach from the upstream repo used as the base for the pull request
+
+        :return: The branch of this InlineObject.
+        :rtype: str
+        """
+        return self._branch
+
+    @branch.setter
+    def branch(self, branch):
+        """Sets the branch of this InlineObject.
+
+        Brach from the upstream repo used as the base for the pull request
+
+        :param branch: The branch of this InlineObject.
+        :type branch: str
+        """
+
+        self._branch = branch

@@ -553,8 +553,12 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         return web.Response(status=422, reason=_reason)
     target_repo_name = url_parsed.path
     target_repo_name = target_repo_name.lstrip('/')
-    logger.debug('Target repository (base) path: %s' % target_repo_name)
     target_repo = gh_utils.get_repository(target_repo_name)
+    target_branch_name = target_repo.default_branch
+    if body.branch:
+        target_branch_name = body.branch
+    logger.debug('Target repository (base) path: %s (branch: %s)' % (
+        target_repo_name, target_branch_name))
 
     # step 1: create the source repo (either fork or target repo itself)
     fork_created = gh_utils.create_fork(target_repo_name)
@@ -563,12 +567,14 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         source_branch_name = fork_created.parent.default_branch
     else:
         logger.debug('Source (head) and target (base) are the same repository')
-        source_repo = target_repo
         source_branch_name = '_'.join(['sqaaas', namegenerator.gen()])
-        logger.debug('Random branch name generated: %s' % source_branch_name)
-        gh_utils.create_branch(
-            source_repo.full_name, source_branch_name, source_repo.default_branch)
-    logger.debug('Using source (head) repo\'s default branch: %s' % source_repo.default_branch)
+        logger.debug('Source (head) random branch name generated: %s' % source_branch_name)
+        source_repo = gh_utils.create_branch(
+            target_repo_name, source_branch_name, target_branch_name)
+        logger.debug('Branch <%s> created from head branch <%s>' % (
+            source_branch_name, target_branch_name))
+    logger.debug('Source repository (head) path: %s (branch: %s)' % (
+       source_repo.full_name, source_branch_name))
     # step 2: push JePL files
     JePLUtils.push_files(
         gh_utils,
@@ -594,7 +600,9 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         pr = gh_utils.create_pull_request(
             source_repo.full_name,
             source_branch_name,
-            target_repo_name)
+            target_repo_name,
+            target_branch_name
+        )
         pr_url = pr['html_url']
 
     r = {'pull_request_url': pr_url}

@@ -454,6 +454,12 @@ paths:
                   description: URL of the upstream repo
                   format: uri
                   type: string
+                branch:
+                  description: Brach from the upstream repo used as the base for the
+                    pull request
+                  type: string
+              required:
+              - repo
               type: object
         required: true
         x-body-name: body
@@ -861,6 +867,8 @@ components:
                   credential_id:
                     type: string
                 type: object
+            required:
+            - name
             type: object
           hostname:
             type: string
@@ -961,6 +969,8 @@ components:
                       credential_id:
                         type: string
                     type: object
+                required:
+                - name
                 type: object
               hostname:
                 type: string
@@ -1420,6 +1430,12 @@ components:
           description: URL of the upstream repo
           format: uri
           type: string
+        branch:
+          description: Brach from the upstream repo used as the base for the pull
+            request
+          type: string
+      required:
+      - repo
       type: object
     inline_response_200_5:
       example:
