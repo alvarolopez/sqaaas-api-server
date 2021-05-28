@@ -82,53 +82,87 @@ class GitHubUtils(object):
             repo.delete_file(contents.path, commit_msg, contents.sha, branch)
             self.logger.debug('File %s deleted from repository <%s>' % (file_name, repo_name))
 
+    def create_branch(self, repo_name, branch_name, head_branch_name):
+        """Creates a branch in the given Github repository.
+
+        Returns a Repository object.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        :param branch_name: Name of the branch to create
+        :param head_branch_name: Name of the branch to do the checkout from
+        """
+        repo = self.get_repository(repo_name)
+        head_branch = repo.get_branch(head_branch_name)
+        repo.create_git_ref(
+            ref='refs/heads/' + branch_name,
+            sha=head_branch.commit.sha)
+        return repo
+
     def create_fork(self, upstream_repo_name, upstream_branch_name=None, org_name='eosc-synergy'):
         """Creates a fork in the given Github organization.
 
-        Returns a tuple with the fork repo and branch created.
+        Returns a Repository object.
 
         :param upstream_repo_name: Name of the remote repo to fork (format: <user|org>/<repo_name>)
         :param upstream_branch_name: Name of the remote branch to fork
         :param org_name: Name of the Github organization to where the repo will be forked
         """
-        upstream_repo = self.get_org_repository(upstream_repo_name)
+        upstream_repo = self.get_repository(upstream_repo_name)
         fork = None
-        fork_default_branch = 'sqaaas'
+        # fork_default_branch = 'sqaaas'
         upstream_org_name = upstream_repo_name.split('/')[0]
 
-        if upstream_org_name.lower() == org_name:
+        if upstream_org_name.lower() in [org_name]:
             self.logger.debug('Upstream organization matches the target organization <%s>' % org_name)
-            if upstream_branch_name:
-                _branch_source = upstream_branch_name
-            else:
-                _branch_source = upstream_repo.raw_data['default_branch']
-            _branch_target = fork_default_branch
-            try:
-                if upstream_repo.get_branch(_branch_target):
-                    self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
-            except GithubException:
-                self.logger.debug('Branch <%s> does not exist in fork' % _branch_target)
-                self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
-                _branch_source_obj = upstream_repo.get_branch(_branch_source)
-                upstream_repo.create_git_ref(
-                    ref='refs/heads/' + _branch_target,
-                    sha=_branch_source_obj.commit.sha)
-            fork = upstream_repo
         else:
+            # if upstream_branch_name:
+            #     _branch_source = upstream_branch_name
+            # else:
+            #     _branch_source = upstream_repo.raw_data['default_branch']
+            # _branch_target = fork_default_branch
+            # try:
+            #     if upstream_repo.get_branch(_branch_target):
+            #         self.logger.debug('Branch <%s> already exists in fork' % _branch_target)
+            # except GithubException:
+            #     self.logger.debug('Branch <%s> does not exist in fork' % _branch_target)
+            #     self.logger.debug('Creating <%s> branch from source branch <%s>' % (_branch_target, _branch_source))
+            #     _branch_source_obj = upstream_repo.get_branch(_branch_source)
+            #     upstream_repo.create_git_ref(
+            #         ref='refs/heads/' + _branch_target,
+            #         sha=_branch_source_obj.commit.sha)
+            # fork = upstream_repo
+
             org = self.client.get_organization(org_name)
             fork = org.create_fork(upstream_repo)
-            _fork_parent = fork.raw_data['parent']['owner']['login']
-            if _fork_parent not in [upstream_org_name]:
-                self.logger.error('Repository (fork) already exists in <%s> organization. Removing..' % org_name)
-                raise GithubException(status=422, data={'message': 'Reference (fork) already exists'})
-            else:
-                self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
-            fork_default_branch = fork.raw_data['parent']['default_branch']
 
-        return (fork.raw_data['full_name'], fork_default_branch)
+            # _fork_parent = fork.raw_data['parent']['owner']['login']
+            # if _fork_parent not in [upstream_org_name]:
+            #     self.logger.error('Repository (fork) already exists in <%s> organization. Removing..' % org_name)
+            #     raise GithubException(status=422, data={'message': 'Reference (fork) already exists'})
+            # else:
+            #     self.logger.debug('New fork created: %s' % fork.raw_data['full_name'])
+            # fork_default_branch = fork.raw_data['parent']['default_branch']
 
-    def create_pull_request(self, upstream_repo_name, repo_name, branch, upstream_branch='master'):
-        repo = self.get_org_repository(upstream_repo_name)
+        # return (fork.raw_data['full_name'], fork_default_branch)
+        return fork
+
+    def create_pull_request(self,
+                            repo_name, branch_name,
+                            upstream_repo_name, upstream_branch_name=None):
+        """Creates a pull request in the given upstream repository.
+
+        Returns a Repository object.
+
+        :param repo_name: Name of the source repository (format: <user|org>/<repo_name>)
+        :param branch_name: Name of the source branch
+        :param upstream_repo_name: Name of the remote repo to fork (format: <user|org>/<repo_name>)
+        :param upstream_branch_name: Name of the remote branch to fork
+        """
+        upstream_repo = self.get_repository(upstream_repo_name)
+        if not upstream_branch_name:
+            upstream_branch_name = upstream_repo.default_branch
+            self.logger.debug(('Branch not defined for the upstream repository. '
+                               'Using default: %s' % upstream_branch_name))
         body = '''
         Add JePL folder structure via SQAaaS.
 
@@ -138,14 +172,17 @@ class GitHubUtils(object):
           - [x] Jenkinsfile
         '''
         _repo_org = repo_name.split('/')[0]
-        head = ':'.join([_repo_org, branch])
-        self.logger.debug('Creating pull request: %s (head) -> %s (base)' % (head, upstream_branch))
-        pr = repo.create_pull(
-            title='Set up JePL in project <%s>' % upstream_repo_name,
+        head = ':'.join([_repo_org, branch_name])
+
+        self.logger.debug('Creating pull request: %s (head) -> %s (base)' % (
+            head, upstream_branch_name))
+        pr = upstream_repo.create_pull(
+            title='Add CI/CD pipeline (JePL) in project <%s>' % upstream_repo_name,
             body=body,
             head=head,
-            base=upstream_branch)
-        self.logger.debug('Pull request successfully created: %s (head) -> %s (base)' % (head, upstream_branch))
+            base=upstream_branch_name)
+        self.logger.debug(('Pull request successfully created: %s (head) -> %s '
+                           '(base)' % (head, upstream_branch_name)))
         return pr.raw_data
 
     def get_repository(self, repo_name):
@@ -155,7 +192,7 @@ class GitHubUtils(object):
         """
         repo = False
         try:
-            repo = self.get_org_repository(repo_name)
+            repo = self.client.get_repo(repo_name)
         except UnknownObjectException as e:
             self.logger.debug('Unknown Github exception: %s' % e)
         finally:
@@ -166,7 +203,7 @@ class GitHubUtils(object):
         return repo
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
-        """Gets the given repository from Github.
+        """Gets a repository from the given Github organization.
 
         If found, it returns the repo object, otherwise False
 
