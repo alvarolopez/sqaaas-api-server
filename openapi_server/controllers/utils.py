@@ -327,7 +327,7 @@ def process_extra_data(config_json, composer_json):
                         commands_script_data = JePLUtils.append_file_name(
                             'commands_script',
                             [{
-                                'data': commands_script_data
+                                'content': commands_script_data
                             }],
                             force_random_name=True
                         )

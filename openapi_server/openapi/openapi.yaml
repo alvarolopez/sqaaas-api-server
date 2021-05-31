@@ -280,7 +280,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_1'
+                $ref: '#/components/schemas/inline_response_200_2'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -374,6 +374,35 @@ paths:
           description: Pipeline not found
       summary: Gets JePL config configuration for the given pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config/scripts:
+    get:
+      description: |
+        Returns the content of the list of scripts generated for the commands builder.
+      operationId: get_pipeline_commands_scripts
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/inline_response_200_1'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets the commands builder scripts
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/jenkinsfile:
     get:
       description: |
@@ -422,7 +451,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
+                $ref: '#/components/schemas/inline_response_200_3'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -470,7 +499,7 @@ paths:
               example:
                 pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_5'
+                $ref: '#/components/schemas/inline_response_200_6'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -536,7 +565,7 @@ paths:
               example:
                 build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
               schema:
-                $ref: '#/components/schemas/inline_response_200_3'
+                $ref: '#/components/schemas/inline_response_200_4'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -572,7 +601,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_4'
+                $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -1297,6 +1326,27 @@ components:
       type: object
     inline_response_200_1:
       example:
+        file_name: '{"file_name":"script.sh"}'
+        content: |-
+          (
+          cd workdir ; npm install
+          )
+      properties:
+        file_name:
+          example: '{"file_name":"script.sh"}'
+          title: file_name
+          type: string
+        content:
+          example: |-
+            (
+            cd workdir ; npm install
+            )
+          title: content
+          type: string
+      title: inline_response_200_1
+      type: object
+    inline_response_200_2:
+      example:
         file_name: '{"file_name":"docker-compose.yml"}'
         content:
           services:
@@ -1326,9 +1376,9 @@ components:
           type: string
         content:
           $ref: '#/components/schemas/JePL_composer'
-      title: inline_response_200_1
+      title: inline_response_200_2
       type: object
-    inline_response_200_2:
+    inline_response_200_3:
       example:
         file_name: Jenkinsfile
         content: |-
@@ -1386,9 +1436,9 @@ components:
           type: string
         content:
           type: string
-      title: inline_response_200_2
+      title: inline_response_200_3
       type: object
-    inline_response_200_3:
+    inline_response_200_4:
       example:
         build_url: https://openapi-generator.tech
       properties:
@@ -1396,9 +1446,9 @@ components:
           format: uri
           title: build_url
           type: string
-      title: inline_response_200_3
+      title: inline_response_200_4
       type: object
-    inline_response_200_4:
+    inline_response_200_5:
       example:
         openbadge_id: https://openapi-generator.tech
         build_status: success
@@ -1422,7 +1472,7 @@ components:
           format: uri
           title: openbadge_id
           type: string
-      title: inline_response_200_4
+      title: inline_response_200_5
       type: object
     inline_object:
       properties:
@@ -1437,7 +1487,7 @@ components:
       required:
       - repo
       type: object
-    inline_response_200_5:
+    inline_response_200_6:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
@@ -1445,7 +1495,7 @@ components:
           format: uri
           title: pull_request_url
           type: string
-      title: inline_response_200_5
+      title: inline_response_200_6
       type: object
     JePL_config_config:
       example:

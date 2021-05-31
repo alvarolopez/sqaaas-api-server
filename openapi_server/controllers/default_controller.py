@@ -291,6 +291,23 @@ async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Res
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
+async def get_pipeline_commands_scripts(request: web.Request, pipeline_id) -> web.Response:
+    """Gets the commands builder scripts
+
+    Returns the content of the list of scripts generated for the commands builder.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+    commands_scripts = pipeline_data['data']['commands_scripts']
+
+    return web.json_response(commands_scripts, status=200)
+
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
 async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Response:
     """Gets Jenkins pipeline definition used by the pipeline.
 
