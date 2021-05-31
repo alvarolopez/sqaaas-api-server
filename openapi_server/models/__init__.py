@@ -11,6 +11,7 @@ from openapi_server.models.inline_response2002 import InlineResponse2002
 from openapi_server.models.inline_response2003 import InlineResponse2003
 from openapi_server.models.inline_response2004 import InlineResponse2004
 from openapi_server.models.inline_response2005 import InlineResponse2005
+from openapi_server.models.inline_response2006 import InlineResponse2006
 from openapi_server.models.inline_response201 import InlineResponse201
 from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server.models.je_pl_config import JePLConfig

@@ -14,20 +14,24 @@ class InlineResponse2003(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None):
+    def __init__(self, file_name: str=None, content: str=None):
         """InlineResponse2003 - a model defined in OpenAPI
 
-        :param build_url: The build_url of this InlineResponse2003.
+        :param file_name: The file_name of this InlineResponse2003.
+        :param content: The content of this InlineResponse2003.
         """
         self.openapi_types = {
-            'build_url': str
+            'file_name': str,
+            'content': str
         }
 
         self.attribute_map = {
-            'build_url': 'build_url'
+            'file_name': 'file_name',
+            'content': 'content'
         }
 
-        self._build_url = build_url
+        self._file_name = file_name
+        self._content = content
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse2003':
@@ -39,22 +43,43 @@ class InlineResponse2003(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def build_url(self):
-        """Gets the build_url of this InlineResponse2003.
+    def file_name(self):
+        """Gets the file_name of this InlineResponse2003.
 
 
-        :return: The build_url of this InlineResponse2003.
+        :return: The file_name of this InlineResponse2003.
         :rtype: str
         """
-        return self._build_url
+        return self._file_name
 
-    @build_url.setter
-    def build_url(self, build_url):
-        """Sets the build_url of this InlineResponse2003.
+    @file_name.setter
+    def file_name(self, file_name):
+        """Sets the file_name of this InlineResponse2003.
 
 
-        :param build_url: The build_url of this InlineResponse2003.
-        :type build_url: str
+        :param file_name: The file_name of this InlineResponse2003.
+        :type file_name: str
         """
 
-        self._build_url = build_url
+        self._file_name = file_name
+
+    @property
+    def content(self):
+        """Gets the content of this InlineResponse2003.
+
+
+        :return: The content of this InlineResponse2003.
+        :rtype: str
+        """
+        return self._content
+
+    @content.setter
+    def content(self, content):
+        """Sets the content of this InlineResponse2003.
+
+
+        :param content: The content of this InlineResponse2003.
+        :type content: str
+        """
+
+        self._content = content

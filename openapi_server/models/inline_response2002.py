@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server import util
 
 
@@ -14,7 +15,7 @@ class InlineResponse2002(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, file_name: str=None, content: str=None):
+    def __init__(self, file_name: str=None, content: JePLComposer=None):
         """InlineResponse2002 - a model defined in OpenAPI
 
         :param file_name: The file_name of this InlineResponse2002.
@@ -22,7 +23,7 @@ class InlineResponse2002(Model):
         """
         self.openapi_types = {
             'file_name': str,
-            'content': str
+            'content': JePLComposer
         }
 
         self.attribute_map = {
@@ -69,7 +70,7 @@ class InlineResponse2002(Model):
 
 
         :return: The content of this InlineResponse2002.
-        :rtype: str
+        :rtype: JePLComposer
         """
         return self._content
 
@@ -79,7 +80,7 @@ class InlineResponse2002(Model):
 
 
         :param content: The content of this InlineResponse2002.
-        :type content: str
+        :type content: JePLComposer
         """
 
         self._content = content

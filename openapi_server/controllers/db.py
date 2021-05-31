@@ -57,6 +57,7 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body):
                 |-- 'data_yml'
                 |-- 'file_name'
             |-- 'jenkinsfile': [String] Jenkins-compliant pipeline.
+            |-- 'commands_scripts': [String] Scripts generated for the commands builder.
         |-- 'raw_request': [Dict] API spec representation (from JSON request).
         |-- 'jenkins': [Dict] Jenkins-related data about the pipeline execution.
             |-- 'job_name'
