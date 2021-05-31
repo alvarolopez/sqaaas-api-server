@@ -216,7 +216,7 @@ class JePLUtils(object):
                 repo, commands_script['file_name']))
             gh_utils.push_file(
                 commands_script['file_name'],
-                commands_script['data'],
+                commands_script['content'],
                 'Update %s' % commands_script['file_name'],
                 repo,
                 branch
