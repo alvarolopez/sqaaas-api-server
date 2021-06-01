@@ -192,12 +192,22 @@ class ProcessExtraData(object):
         repo_key = repo_checkout_dir
         if repo_checkout_dir in ['.']:
             repo_key = 'this_repo'
-        if 'tox' in repos_data[repo_key].keys():
+        if not 'tox' in repos_data[repo_key].keys():
+            logger.debug('Tox enviroment not found. Skipping environment setup.')
+        else:
+            # tox_file
             tox_file = repos_data[repo_key]['tox'].get('tox_file', None)
             if not tox_file:
                 tox_file = 'tox.ini'
             repos_data[repo_key]['tox']['tox_file'] = os.path.join(
                 repo_checkout_dir, tox_file)
+            # testenv
+            testenv = repos_data[repo_key]['tox'].get('testenv', [])
+            if not testenv:
+                testenv = ['ALL']
+            logger.debug('Tox environment set (tox_file: %s, testenv: %s)' % (
+                tox_file, testenv))
+            repos_data[repo_key]['tox']['testenv'] = testenv
 
 
 def process_extra_data(config_json, composer_json):
