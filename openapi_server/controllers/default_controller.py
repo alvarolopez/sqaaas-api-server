@@ -418,6 +418,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     build_item_no = None
     build_no = None
     build_url = None
+    build_status = 'NOT_EXECUTED'
     scan_org_wait = False
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
@@ -441,6 +442,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         build_item_no=build_item_no,
         build_no=build_no,
         build_url=build_url,
+        build_status=build_status,
         scan_org_wait=scan_org_wait,
         issue_badge=issue_badge
     )
