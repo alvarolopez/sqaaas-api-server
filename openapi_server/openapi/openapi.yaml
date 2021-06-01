@@ -694,12 +694,13 @@ components:
     Tox_simplified:
       properties:
         testenv:
+          default:
+          - ALL
           example:
           - cover
           items:
             minLength: 1
             type: string
-          minItems: 1
           title: testenv
           type: array
         tox_file:
@@ -707,8 +708,6 @@ components:
           example: tox.ini
           title: tox_file
           type: string
-      required:
-      - testenv
       title: Tox_simplified
       type: object
     When_branch:

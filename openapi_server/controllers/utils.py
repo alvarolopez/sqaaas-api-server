@@ -2,6 +2,7 @@ import copy
 import functools
 import itertools
 import logging
+import os
 import re
 import uuid
 import yaml
@@ -177,6 +178,37 @@ class ProcessExtraData(object):
                 logger.debug(('No build definition found for service <%s>. Not setting '
                               'build context' % service_name))
 
+    @staticmethod
+    def set_tox_env(repo_checkout_dir, repos_data):
+        """Prepare the Tox environment for the given repo.
+
+        Includes:
+        - chdir to the checkout dir when not 'this_repo'
+        - set defaults (tox.ini, run only envs from envlist)
+
+        :param repo_checkout_dir: Relative repo checkout path
+        :param repos_data: The individual repository data
+        """
+        repo_key = repo_checkout_dir
+        if repo_checkout_dir in ['.']:
+            repo_key = 'this_repo'
+        if not 'tox' in repos_data[repo_key].keys():
+            logger.debug('Tox enviroment not found. Skipping environment setup.')
+        else:
+            # tox_file
+            tox_file = repos_data[repo_key]['tox'].get('tox_file', None)
+            if not tox_file:
+                tox_file = 'tox.ini'
+            repos_data[repo_key]['tox']['tox_file'] = os.path.join(
+                repo_checkout_dir, tox_file)
+            # testenv
+            testenv = repos_data[repo_key]['tox'].get('testenv', [])
+            if not testenv:
+                testenv = ['ALL']
+            logger.debug('Tox environment set (tox_file: %s, testenv: %s)' % (
+                tox_file, testenv))
+            repos_data[repo_key]['tox']['testenv'] = testenv
+
 
 def process_extra_data(config_json, composer_json):
     """Manage those properties, present in the API spec, that cannot
@@ -312,6 +344,8 @@ def process_extra_data(config_json, composer_json):
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
                     repos_new['this_repo'] = repo
+                    # Modify Tox properties (chdir, defaults)
+                    ProcessExtraData.set_tox_env('.', repos_new)
                     # Set Dockerfile's 'context' in the composer
                     ProcessExtraData.set_build_context(service_name, '.', composer_json)
                 else:
@@ -334,6 +368,8 @@ def process_extra_data(config_json, composer_json):
                         commands_script_list.extend(commands_script_data)
                         script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
                         repos_new[repo_name]['commands'] = [script_call]
+                    # Modify Tox properties (chdir, defaults)
+                    ProcessExtraData.set_tox_env(repo_name, repos_new)
                     # Set Dockerfile's 'context' in the composer
                     ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
