@@ -430,6 +430,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
+        build_status = 'WAITING_SCAN_ORG'
         reason = 'Triggered scan organization for building the Jenkins job'
 
     if issue_badge:
@@ -489,6 +490,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
             jenkins_info['build_info'].update({
                 'url': build_url,
                 'number': build_no,
+                'status': 'EXECUTING'
             })
             jenkins_info['scan_org_wait'] = False
         else:
