@@ -6,6 +6,8 @@ import tempfile
 from git import Repo
 from git.exc import GitCommandError
 
+from openapi_server.exception import SQAaaSAPIException
+
 
 REMOTE_NAME = 'sqaaas'
 
@@ -47,11 +49,15 @@ class GitUtils(object):
         """
         with tempfile.TemporaryDirectory() as dirpath:
             repo = None
-            if source_repo_branch:
-                repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
+            try:
+                if source_repo_branch:
+                    repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
+                else:
+                    repo = Repo.clone_from(source_repo, dirpath)
+            except GitCommandError as e:
+                raise SQAaaSAPIException(422, e)
             else:
-                repo = Repo.clone_from(source_repo, dirpath)
-            self.setup_env(dirpath)
+                self.setup_env(dirpath)
 
             sqaaas = repo.create_remote(REMOTE_NAME, url=target_repo)
             try:
