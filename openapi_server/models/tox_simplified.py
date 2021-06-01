@@ -14,7 +14,7 @@ class ToxSimplified(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, testenv: List[str]=[], tox_file: str='tox.ini'):
+    def __init__(self, testenv: List[str]=["ALL"], tox_file: str='tox.ini'):
         """ToxSimplified - a model defined in OpenAPI
 
         :param testenv: The testenv of this ToxSimplified.

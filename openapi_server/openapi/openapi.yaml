@@ -694,7 +694,8 @@ components:
     Tox_simplified:
       properties:
         testenv:
-          default: []
+          default:
+          - ALL
           example:
           - cover
           items:
