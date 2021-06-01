@@ -414,22 +414,23 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         jk_utils.format_job_name(pipeline_repo_branch)
     ])
 
-    _status = 200
     build_item_no = None
     build_no = None
     build_url = None
     build_status = 'NOT_EXECUTED'
     scan_org_wait = False
+    reason = ''
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = 'QUEUED'
         logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
+        reason = 'Triggered the existing Jenkins job'
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
-        _status = 204
+        reason = 'Triggered scan organization for building the Jenkins job'
 
     if issue_badge:
         logger.debug('Badge issuing (<issue_badge> flag) is requested for the current build: %s' % commit_id)
@@ -447,8 +448,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         issue_badge=issue_badge
     )
 
-    r = {'build_url': build_url}
-    return web.json_response(r, status=_status)
+    return web.Response(status=204, reason=reason)
 
 
 @ctls_utils.debug_request
