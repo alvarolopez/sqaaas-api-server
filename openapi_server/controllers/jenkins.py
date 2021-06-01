@@ -68,8 +68,13 @@ class JenkinsUtils(object):
 
         :param full_job_name: job name including folder/s, name & branch
         """
-        item_no = self.server.build_job(full_job_name)
-        self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
+        item_no = None
+        try:
+            item_no = self.server.build_job(full_job_name)
+        except Exception:
+            self.logger.warning('Job <%s> has not been queued yet')
+        else:
+            self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
         return item_no
 
     def get_queue_item(self, item_no):
