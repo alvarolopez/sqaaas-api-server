@@ -64,16 +64,29 @@ class JenkinsUtils(object):
         return self.get_job_info(job_name)
 
     def build_job(self, full_job_name):
+        """Build existing job.
+
+        :param full_job_name: job name including folder/s, name & branch
+        """
         item_no = self.server.build_job(full_job_name)
         self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
-        queue_data = {}
-        sleep_time_seconds = 15
-        while 'executable' not in list(queue_data):
-            self.logger.debug('Waiting for job to start (sleeping %s seconds)..' % sleep_time_seconds)
-            time.sleep(sleep_time_seconds)
-            queue_data = self.server.get_queue_item(item_no)
+        return item_no
 
-        return queue_data['executable']
+    def get_queue_item(self, item_no):
+        """Get the status of the build item in the Jenkins queue.
+
+        :param item_no: item number in the Jenkins queue.
+        """
+        queue_data = self.server.get_queue_item(item_no)
+        executable_data = None
+        if 'executable' not in list(queue_data):
+            self.logger.debug('Waiting for job to start. Queue item: %s' % queue_data['url'])
+        else:
+            executable_data = queue_data['executable']
+            self.logger.debug('Job started the execution (url: %s, number: %s)' % (
+                executable_data['url'], executable_data['number']
+            ))
+        return executable_data
 
     def get_build_info(self, full_job_name, build_no, depth=0):
         self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))

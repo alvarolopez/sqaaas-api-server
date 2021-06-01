@@ -122,6 +122,7 @@ def update_jenkins(
         jk_job_name,
         commit_id,
         commit_url,
+        build_item_no=None,
         build_no=None,
         build_url=None,
         scan_org_wait=False,
@@ -134,6 +135,7 @@ def update_jenkins(
     :param jk_job_name: Name of the pipeline job in Jenkins.
     :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
     :param commit_url: Commit URL of the git repository platform.
+    :param build_item_no: Jenkins' job build item number, i.e. previous to the actual build number.
     :param build_no: Jenkins' job build number.
     :param build_url: Jenkins' job build URL.
     :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
@@ -148,6 +150,7 @@ def update_jenkins(
         'build_info': {
             'commit_id': commit_id,
             'commit_url': commit_url,
+            'item_number': build_item_no,
             'number': build_no,
             'url': build_url,
             'status': build_status,

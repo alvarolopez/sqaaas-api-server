@@ -414,20 +414,24 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         jk_utils.format_job_name(pipeline_repo_branch)
     ])
 
-    _status = 200
+    build_item_no = None
     build_no = None
     build_url = None
+    build_status = 'NOT_EXECUTED'
     scan_org_wait = False
+    reason = ''
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
-        last_build_data = jk_utils.build_job(jk_job_name)
-        build_no = last_build_data['number']
-        build_url = last_build_data['url']
-        logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
+        build_item_no = jk_utils.build_job(jk_job_name)
+        if build_item_no:
+            build_status = 'QUEUED'
+        logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
+        reason = 'Triggered the existing Jenkins job'
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
-        _status = 204
+        build_status = 'WAITING_SCAN_ORG'
+        reason = 'Triggered scan organization for building the Jenkins job'
 
     if issue_badge:
         logger.debug('Badge issuing (<issue_badge> flag) is requested for the current build: %s' % commit_id)
@@ -437,14 +441,15 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         jk_job_name,
         commit_id,
         commit_url,
+        build_item_no=build_item_no,
         build_no=build_no,
         build_url=build_url,
+        build_status=build_status,
         scan_org_wait=scan_org_wait,
         issue_badge=issue_badge
     )
 
-    r = {'build_url': build_url}
-    return web.json_response(r, status=_status)
+    return web.Response(status=204, reason=reason)
 
 
 @ctls_utils.debug_request
@@ -459,6 +464,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 
     """
     pipeline_data = db.get_entry(pipeline_id)
+    pipeline_repo = pipeline_data['pipeline_repo']
 
     if 'jenkins' not in pipeline_data.keys():
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
@@ -469,27 +475,36 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     build_info = jenkins_info['build_info']
 
     jk_job_name = jenkins_info['job_name']
-    build_url = build_info['url']
+    build_item_no = build_info['item_number']
     build_no = build_info['number']
+    build_url = build_info['url']
     build_status = build_info.get('status', None)
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
-        last_build_data = jk_utils.get_job_info(jk_job_name)
-        if last_build_data:
-            build_url = last_build_data['lastBuild']['url']
-            build_no = last_build_data['lastBuild']['number']
+        build_data = jk_utils.get_job_info(jk_job_name)
+        if build_data:
+            build_url = build_data['lastBuild']['url']
+            build_no = build_data['lastBuild']['number']
             logger.info('Jenkins job build URL (after Scan Organization finished) obtained: %s' % build_url)
             jenkins_info['build_info'].update({
                 'url': build_url,
                 'number': build_no,
+                'status': 'EXECUTING'
             })
             jenkins_info['scan_org_wait'] = False
         else:
             logger.debug('Job still waiting for scan organization to end')
             build_status = 'WAITING_SCAN_ORG'
 
-    if build_no:
+    if not build_no:
+        build_data = jk_utils.get_queue_item(build_item_no)
+        if build_data:
+            build_no = build_data['number']
+            build_url = build_data['url']
+            build_status = 'EXECUTING'
+            logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
+    else:
         _status = jk_utils.get_build_info(
             jk_job_name,
             build_no
@@ -523,6 +538,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         jk_job_name,
         commit_id=jenkins_info['build_info']['commit_id'],
         commit_url=jenkins_info['build_info']['commit_url'],
+        build_item_no=build_item_no,
         build_no=build_no,
         build_url=build_url,
         scan_org_wait=jenkins_info['scan_org_wait'],
