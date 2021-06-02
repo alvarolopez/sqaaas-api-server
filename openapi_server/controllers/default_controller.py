@@ -591,7 +591,9 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         return web.Response(status=422, reason=_reason)
     target_repo_name = url_parsed.path
     target_repo_name = target_repo_name.lstrip('/')
-    target_repo = gh_utils.get_repository(target_repo_name)
+    target_repo = gh_utils.get_repository(
+        target_repo_name, raise_exception=True)
+
     target_branch_name = target_repo.default_branch
     if body.branch:
         target_branch_name = body.branch
