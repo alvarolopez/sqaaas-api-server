@@ -158,16 +158,19 @@ class GitHubUtils(object):
                            '(base)' % (head, upstream_branch_name)))
         return pr.raw_data
 
-    def get_repository(self, repo_name):
+    def get_repository(self, repo_name, raise_exception=False):
         """Return a Repository from a GitHub repo if it exists, False otherwise.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param raise_exception: Boolean to mark whether the UnknownObjectException shall be raised
         """
         repo = False
         try:
             repo = self.client.get_repo(repo_name)
         except UnknownObjectException as e:
             self.logger.debug('Unknown Github exception: %s' % e)
+            if raise_exception:
+                raise e
         finally:
             if repo:
                 self.logger.debug('Repository <%s> found' % repo_name)
