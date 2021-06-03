@@ -161,7 +161,7 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     if 'jenkins' in pipeline_data.keys():
         jk_job_name = pipeline_data['jenkins']['job_name']
         if jk_utils.exist_job(jk_job_name):
-            jk_utils.scan_organization()
+            await jk_utils.scan_organization()
     else:
         logger.debug('Jenkins job not found. Pipeline might not have been yet executed')
 
@@ -433,7 +433,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
         reason = 'Triggered the existing Jenkins job'
     else:
-        jk_utils.scan_organization()
+        await jk_utils.scan_organization()
         scan_org_wait = True
         build_status = 'WAITING_SCAN_ORG'
         reason = 'Triggered scan organization for building the Jenkins job'

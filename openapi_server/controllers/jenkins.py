@@ -1,10 +1,10 @@
 import logging
-import requests
 import time
 
 from urllib.parse import urljoin
 from urllib.parse import quote_plus
 
+import aiohttp
 import jenkins
 
 
@@ -28,6 +28,7 @@ class JenkinsUtils(object):
             username = self.access_user,
             password = self.access_token)
         self.logger = logging.getLogger('sqaaas_api.jenkins')
+        self.aio_session = aiohttp.ClientSession()
 
     @staticmethod
     def format_job_name(job_name):
@@ -39,12 +40,14 @@ class JenkinsUtils(object):
         """
         return quote_plus(job_name.replace('/', '%2F'))
 
-    def scan_organization(self, org_name='eosc-synergy-org'):
+    async def scan_organization(self, org_name='eosc-synergy-org'):
         path = '/job/%s/build?delay=0' % org_name
-        r = requests.post(
-            urljoin(self.endpoint, path),
-            auth=(self.access_user, self.access_token))
-        r.raise_for_status()
+
+        url = urljoin(self.endpoint, path)
+        auth = aiohttp.BasicAuth(self.access_user,
+                                 password=self.access_token)
+        async with self.session.post(url, auth=auth) as r:
+            r.raise_for_status()
         self.logger.debug('Triggered GitHub organization scan')
 
     def get_job_info(self, name, depth=0):
